@@ -1,59 +1,98 @@
 @model BTL_NMCNPM_QuanLyChamSocThuCung.ViewModels.ReceptionIndexViewModel
 @{
-    ViewData["Title"] = "Tiếp nhận thú cưng";
+    ViewData["Title"] = "Tiếp nhận tại quầy";
+    var confirmedCount = Model.Appointments.Count(x => x.Status == "Confirmed");
+    var processingCount = Model.Appointments.Count(x => x.Status == "Processing");
 }
-<link rel="stylesheet" href="~/css/reception.css" />
+<link rel="stylesheet" href="~/css/reception.css" asp-append-version="true" />
 
-<div class="reception-page">
-    <div class="reception-heading">
-        <div>
-            <h2>Tiếp nhận thú cưng</h2>
-            <p>Danh sách lịch hẹn đã xác nhận và đang chăm sóc.</p>
-        </div>
-    </div>
+<div class="paw-app">
+    <aside class="paw-sidebar">
+        <a class="paw-brand" asp-controller="Reception" asp-action="Index"><span class="paw-brand-mark">✿</span><span>PawHaven<small>CARE MANAGEMENT</small></span></a>
+        <div class="paw-nav-label">VẬN HÀNH</div>
+        <a class="paw-nav-item" asp-controller="Home" asp-action="Index"><span>⌂</span>Tổng quan</a>
+        <a class="paw-nav-item active" asp-controller="Reception" asp-action="Index"><span>▣</span>Tiếp nhận tại quầy</a>
+        <a class="paw-nav-item" href="#appointment-list"><span>▦</span>Lịch hẹn</a>
+        <a class="paw-nav-item" href="#appointment-list"><span>◷</span>Đang thực hiện</a>
+        <div class="paw-nav-label">QUẢN LÝ</div>
+        <div class="paw-nav-item muted"><span>♙</span>Khách hàng</div>
+        <div class="paw-nav-item muted"><span>♡</span>Hồ sơ thú cưng</div>
+        <div class="paw-nav-item muted"><span>♧</span>Kỹ thuật viên</div>
+        <div class="paw-nav-item muted"><span>▤</span>Thanh toán</div>
+        <div class="paw-nav-item muted"><span>⚙</span>Cài đặt</div>
+        <div class="paw-user"><div class="paw-avatar">NV</div><div><b>Nhân viên</b><small>Lễ tân / Tiếp nhận</small></div></div>
+    </aside>
 
-    @if (TempData["Success"] != null) { <div class="alert alert-success">@TempData["Success"]</div> }
-    @if (TempData["Error"] != null) { <div class="alert alert-danger">@TempData["Error"]</div> }
+    <main class="paw-main">
+        <header class="paw-topbar">
+            <div><span class="paw-breadcrumb">Vận hành</span><span class="paw-crumb-sep">/</span><b>Tiếp nhận tại quầy</b></div>
+            <div class="paw-top-right"><span class="paw-open"><i></i> Cơ sở đang hoạt động</span><span class="paw-notice">♧</span></div>
+        </header>
 
-    <form method="get" class="search-form">
-        <input type="text" name="keyword" value="@Model.Keyword" class="form-control"
-               placeholder="Tìm theo tên thú cưng, khách hàng hoặc số điện thoại..." />
-        <button class="btn btn-primary" type="submit">Tìm kiếm</button>
-        <a asp-action="Index" class="btn btn-outline-secondary">Xóa lọc</a>
-    </form>
+        <section class="paw-content">
+            <div class="paw-page-heading">
+                <div><span class="paw-eyebrow">QUẢN LÝ LỊCH HẸN</span><h1>Tiếp nhận thú cưng tại quầy</h1><p>Tra cứu lịch hẹn và hoàn tất thông tin trước khi bàn giao cho kỹ thuật viên.</p></div>
+                <div class="paw-date-chip">▦ &nbsp; @DateTime.Today.ToString("dddd, dd/MM/yyyy")</div>
+            </div>
 
-    <div class="table-responsive">
-        <table class="table table-hover align-middle">
-            <thead>
-                <tr>
-                    <th>Thú cưng</th>
-                    <th>Khách hàng</th>
-                    <th>Số điện thoại</th>
-                    <th>Ngày hẹn</th>
-                    <th>Trạng thái</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-            @if (Model.Appointments.Count == 0)
-            {
-                <tr><td colspan="6" class="text-center text-muted py-4">Không có lịch hẹn phù hợp.</td></tr>
-            }
-            else
-            {
-                @foreach (var item in Model.Appointments)
-                {
-                    <tr>
-                        <td><strong>@item.Pet.PetName</strong><div class="small text-muted">@item.Pet.Species - @item.Pet.Breed</div></td>
-                        <td>@item.Pet.Customer.CustomerName</td>
-                        <td>@item.Pet.Customer.PhoneNumber</td>
-                        <td>@item.AppointmentDate.ToString("dd/MM/yyyy HH:mm")</td>
-                        <td><span class="status-pill">@item.Status</span></td>
-                        <td class="text-end"><a asp-action="Details" asp-route-id="@item.AppointmentId" class="btn btn-sm btn-primary">Chi tiết</a></td>
-                    </tr>
-                }
-            }
-            </tbody>
-        </table>
-    </div>
+            @if (TempData["Success"] != null) { <div class="alert alert-success">@TempData["Success"]</div> }
+            @if (TempData["Error"] != null) { <div class="alert alert-danger">@TempData["Error"]</div> }
+
+            <div class="paw-stat-grid">
+                <div class="paw-stat"><span>Lịch chờ tiếp nhận</span><strong>@confirmedCount</strong><small>Đã xác nhận</small><b class="stat-icon amber">◷</b></div>
+                <div class="paw-stat"><span>Đang chăm sóc</span><strong>@processingCount</strong><small>Đang được xử lý</small><b class="stat-icon green">♡</b></div>
+                <div class="paw-stat"><span>Tổng lịch đang theo dõi</span><strong>@Model.Appointments.Count</strong><small>Trong danh sách hiện tại</small><b class="stat-icon blue">▦</b></div>
+            </div>
+
+            <div class="paw-workspace">
+                <section class="paw-panel paw-appointments" id="appointment-list">
+                    <div class="paw-panel-heading"><div><h2>Tra cứu lịch hẹn</h2><p>Tìm bằng số điện thoại, tên khách hàng hoặc thú cưng</p></div><span class="paw-count">@Model.Appointments.Count lịch</span></div>
+                    <form method="get" class="paw-search">
+                        <span>⌕</span>
+                        <input type="text" name="keyword" value="@Model.Keyword" placeholder="Nhập số điện thoại hoặc tên khách hàng..." />
+                        <button type="submit">Tìm kiếm</button>
+                    </form>
+                    <div class="paw-result-heading"><span><i></i> Danh sách lịch hẹn phù hợp</span><a asp-action="Index">Xóa bộ lọc</a></div>
+                    @if (Model.Appointments.Count == 0)
+                    {
+                        <div class="paw-empty"><span>♡</span><b>Chưa tìm thấy lịch hẹn</b><p>Thử tìm bằng số điện thoại hoặc tên thú cưng khác.</p></div>
+                    }
+                    else
+                    {
+                        <div class="paw-appointment-list">
+                        @foreach (var item in Model.Appointments)
+                        {
+                            <article class="paw-appointment">
+                                <div class="paw-pet-avatar">🐾</div>
+                                <div class="paw-appointment-info">
+                                    <div class="paw-appointment-title"><b>@item.Pet.PetName</b><span class="paw-status @(item.Status == "Processing" ? "is-processing" : "is-confirmed")">@(item.Status == "Processing" ? "Đang chăm sóc" : "Đã xác nhận")</span></div>
+                                    <p>@item.Pet.Customer.CustomerName · @item.Pet.Customer.PhoneNumber</p>
+                                    <small>@item.Pet.Species @(!string.IsNullOrWhiteSpace(item.Pet.Breed) ? "· " + item.Pet.Breed : "") &nbsp;|&nbsp; @item.AppointmentDate.ToString("HH:mm, dd/MM/yyyy")</small>
+                                    @if (!string.IsNullOrWhiteSpace(item.Pet.AllergyNote)) { <div class="paw-warning">⚠ Lưu ý dị ứng: @item.Pet.AllergyNote</div> }
+                                </div>
+                                <a class="paw-open-button" asp-action="Details" asp-route-id="@item.AppointmentId">@(item.Status == "Confirmed" ? "Tiếp nhận" : "Chi tiết") <span>→</span></a>
+                            </article>
+                        }
+                        </div>
+                    }
+                </section>
+
+                <aside class="paw-panel paw-today">
+                    <div class="paw-panel-heading"><div><h2>Lịch hẹn trong ngày</h2><p>Các lượt hẹn đang cần theo dõi</p></div><span class="paw-calendar">▦</span></div>
+                    <div class="paw-timeline">
+                    @foreach (var item in Model.Appointments.OrderBy(x => x.AppointmentDate).Take(8))
+                    {
+                        <div class="paw-timeline-item">
+                            <time>@item.AppointmentDate.ToString("HH:mm")</time>
+                            <div class="paw-timeline-dot"></div>
+                            <div class="paw-timeline-detail"><b>@item.Pet.PetName</b><small>@item.Pet.Customer.CustomerName</small><span>@(item.Status == "Processing" ? "Đang chăm sóc" : "Chờ tiếp nhận")</span></div>
+                            <a asp-action="Details" asp-route-id="@item.AppointmentId">›</a>
+                        </div>
+                    }
+                    </div>
+                    <div class="paw-side-note"><b>Nhắc nhở</b><p>Kiểm tra tiền sử bệnh và dị ứng của thú cưng trước khi xác nhận tiếp nhận.</p></div>
+                </aside>
+            </div>
+        </section>
+    </main>
 </div>
