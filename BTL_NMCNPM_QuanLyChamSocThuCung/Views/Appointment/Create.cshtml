@@ -153,6 +153,17 @@
                 return serviceChecks().map(function (el) { return el.value; });
             }
 
+            function clearValidationFor(field) {
+                const span = document.querySelector('[data-valmsg-for="' + field + '"]');
+                if (span) span.textContent = '';
+            }
+
+            function clearValueError() {
+                clearValidationFor('StartTime');
+                const hint = document.getElementById('slotClientError');
+                if (hint) hint.remove();
+            }
+
             function updateSummary() {
                 let duration = 0;
                 let price = 0;
@@ -207,6 +218,10 @@
 
                 if (!slots || slots.length === 0) {
                     slotBox.innerHTML = '<div class="slot-hint">Không còn khung giờ phù hợp trong ngày này.</div>';
+                    if (previous) {
+                        startTimeInput.value = '';
+                        sumTime.textContent = 'Chưa chọn';
+                    }
                     return;
                 }
 
@@ -233,7 +248,12 @@
                     const match = Array.from(slotBox.querySelectorAll('.slot-btn'))
                         .find(function (b) { return !b.disabled && b.textContent === previous; });
 
-                    if (match) match.click();
+                    if (match) {
+                        match.click();
+                    } else {
+                        startTimeInput.value = '';
+                        sumTime.textContent = 'Chưa chọn';
+                    }
                 }
             }
 
@@ -246,8 +266,7 @@
                 startTimeInput.value = slot.value;
                 sumTime.textContent = slot.label;
 
-                const hint = document.getElementById('slotClientError');
-                if (hint) hint.remove();
+                clearValueError();
             }
 
             async function refreshSlots(keepSelection) {
@@ -257,6 +276,7 @@
                 if (!keepSelection) {
                     startTimeInput.value = '';
                     sumTime.textContent = 'Chưa chọn';
+                    clearValueError();
                 }
 
                 if (!date) {
@@ -296,6 +316,10 @@
                 checkbox.addEventListener('change', function () {
                     const card = checkbox.closest('.service-card');
                     if (card) card.classList.toggle('selected', checkbox.checked);
+
+                    clearValidationFor('ServiceIds');
+                    const serviceError = document.getElementById('serviceClientError');
+                    if (serviceError) serviceError.remove();
 
                     updateSummary();
                     refreshSlots(false);
