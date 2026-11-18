@@ -1,0 +1,63 @@
+@model BTL_NMCNPM_QuanLyChamSocThuCung.Models.ViewModels.VaccinationCreateViewModel
+
+<div class="modal fade" id="addVaccineModal" tabindex="-1" aria-labelledby="addVaccineModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow border-0">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="addVaccineModalLabel">
+                    <i class="bi bi-shield-plus me-2"></i>Thêm Mũi Tiêm Chủng Mới
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="AddVaccination" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="PetId" />
+
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label asp-for="VaccineName" class="form-label fw-bold">
+                            Tên loại Vắc-xin <span class="text-danger">*</span>
+                        </label>
+                        <input asp-for="VaccineName" class="form-control" placeholder="VD: Vắc-xin 7 bệnh, Vắc-xin phòng Dại..." required />
+                        <span asp-validation-for="VaccineName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="VaccinationDate" class="form-label fw-bold">
+                                Ngày tiêm <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="VaccinationDate" type="date" class="form-control" required />
+                            <span asp-validation-for="VaccinationDate" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="NextDueDate" class="form-label fw-bold">
+                                Ngày hẹn nhắc lại
+                            </label>
+                            <input asp-for="NextDueDate" type="date" class="form-control" />
+                            <span asp-validation-for="NextDueDate" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Note" class="form-label fw-bold">Ghi chú chuyên môn</label>
+                        <textarea asp-for="Note" class="form-control" rows="2" placeholder="Liều lượng, nhà sản xuất, phản ứng sau tiêm..."></textarea>
+                        <span asp-validation-for="Note" class="text-danger small"></span>
+                    </div>
+
+                    <div class="alert alert-light border small text-muted mb-0">
+                        <i class="bi bi-info-circle me-1 text-primary"></i>
+                        Mỗi lần tiêm chủng được lưu thành 1 bản ghi riêng rẽ (chuẩn 1NF) để phục vụ tra cứu lịch sử và xuất sổ tiêm phòng.
+                    </div>
+                </div>
+
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-success px-4">
+                        <i class="bi bi-check-lg me-1"></i>Lưu mũi tiêm
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

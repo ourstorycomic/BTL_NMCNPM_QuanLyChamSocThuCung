@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using BTL_NMCNPM_QuanLyChamSocThuCung.Data;
+using BTL_NMCNPM_QuanLyChamSocThuCung.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +9,8 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<IPetService, PetService>();
 
 var app = builder.Build();
 

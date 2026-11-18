@@ -1,10 +1,11 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - BTL_NMCNPM_QuanLyChamSocThuCung</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/BTL_NMCNPM_QuanLyChamSocThuCung.styles.css" asp-append-version="true" />
 </head>
@@ -20,17 +21,60 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Trang chủ</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="nav-link text-dark fw-semibold" asp-area="" asp-controller="Pet" asp-action="Index">
+                                <i class="bi bi-heart-pulse-fill text-danger me-1"></i>Hồ sơ Thú cưng
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Chính sách</a>
                         </li>
                     </ul>
+                    <div class="d-flex align-items-center">
+                        @{
+                            var activeRole = Context.Request.Cookies["PetCare_ActiveRole"] ?? "Customer";
+                        }
+                        <div class="dropdown">
+                            <button class="btn btn-sm @(activeRole == "Staff" ? "btn-warning" : "btn-primary") dropdown-toggle shadow-sm rounded-pill px-3" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi @(activeRole == "Staff" ? "bi-person-badge-fill" : "bi-person-heart") me-1"></i>
+                                Vai trò: <strong>@(activeRole == "Staff" ? "Nhân viên" : "Khách hàng")</strong>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow">
+                                <li><h6 class="dropdown-header">Chuyển góc nhìn kiểm thử:</h6></li>
+                                <li>
+                                    <a class="dropdown-item @(activeRole == "Customer" ? "active" : "")" asp-controller="Pet" asp-action="SwitchRole" asp-route-role="Customer" asp-route-returnUrl="@Context.Request.Path">
+                                        <i class="bi bi-person-heart me-2 text-primary"></i>Khách hàng (Chủ nuôi)
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item @(activeRole == "Staff" ? "active" : "")" asp-controller="Pet" asp-action="SwitchRole" asp-route-role="Staff" asp-route-returnUrl="@Context.Request.Path">
+                                        <i class="bi bi-person-badge-fill me-2 text-warning"></i>Nhân viên / Bác sĩ
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
         </nav>
     </header>
     <div class="container">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
