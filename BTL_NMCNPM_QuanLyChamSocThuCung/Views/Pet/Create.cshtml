@@ -1,193 +1,217 @@
 @model BTL_NMCNPM_QuanLyChamSocThuCung.Models.ViewModels.PetCreateViewModel
 
 @{
-    ViewData["Title"] = "Thêm Thú cưng mới";
+    ViewData["Title"] = "Đăng ký Thú cưng";
     bool isStaff = ViewBag.IsStaff == true;
     var customerOptions = ViewBag.CustomerOptions as List<BTL_NMCNPM_QuanLyChamSocThuCung.Models.ViewModels.CustomerOptionViewModel>;
 }
 
 <div class="row justify-content-center">
-    <div class="col-lg-9">
-        <div class="d-flex align-items-center justify-content-between mb-3">
+    <div class="col-lg-10">
+        <div class="d-flex align-items-center justify-content-between mb-4">
             <div>
                 <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb mb-1">
-                        <li class="breadcrumb-item"><a asp-action="Index">Thú cưng</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Đăng ký mới</li>
+                    <ol class="breadcrumb mb-1 small">
+                        <li class="breadcrumb-item"><a asp-action="Index" class="text-decoration-none text-muted">Hồ sơ thú cưng</a></li>
+                        <li class="breadcrumb-item active fw-bold text-dark" aria-current="page">Đăng ký mới</li>
                     </ol>
                 </nav>
-                <h2 class="fw-bold text-primary mb-0">
-                    <i class="bi bi-plus-circle-fill text-primary me-2"></i>Đăng ký Hồ sơ Thú cưng mới
-                </h2>
+                <h3 class="fw-bold text-dark mb-0 d-flex align-items-center">
+                    <span class="rounded-3 bg-success bg-opacity-10 text-success p-2 d-inline-flex align-items-center justify-content-center me-2" style="width: 36px; height: 36px;">
+                        <i class="bi bi-plus-circle-fill"></i>
+                    </span>
+                    Đăng ký Hồ sơ Thú cưng mới
+                </h3>
             </div>
-            <a asp-action="Index" class="btn btn-outline-secondary rounded-pill">
-                <i class="bi bi-arrow-left me-1"></i>Hủy & Quay lại
+            <a asp-action="Index" class="btn btn-paw-outline">
+                <i class="bi bi-arrow-left me-1"></i>Quay lại
             </a>
         </div>
 
-        <div class="card border-0 shadow-sm">
-            <div class="card-body p-4 p-md-5">
-                <form asp-action="Create" method="post" enctype="multipart/form-data">
-                    @Html.AntiForgeryToken()
-                    <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-4 shadow-sm" role="alert"></div>
+        <div class="paw-card p-4 p-md-5">
+            <form asp-action="Create" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-4 rounded-3" role="alert"></div>
 
-                    @if (isStaff && customerOptions != null && customerOptions.Any())
-                    {
-                        <div class="p-3 bg-light rounded-3 border mb-4">
-                            <label asp-for="CustomerId" class="form-label fw-bold text-dark">
-                                <i class="bi bi-person-check-fill text-warning me-1"></i>Chọn Chủ nuôi (Khách hàng) <span class="text-danger">*</span>
+                @if (isStaff && customerOptions != null && customerOptions.Any())
+                {
+                    <div class="p-3 bg-light rounded-3 border mb-4">
+                        <label asp-for="CustomerId" class="form-label fw-bold text-dark">
+                            <i class="bi bi-person-check-fill text-success me-1"></i>Chủ nuôi sở hữu <span class="text-danger">*</span>
+                        </label>
+                        <select asp-for="CustomerId" class="form-select rounded-3" required>
+                            <option value="">-- Chọn khách hàng sở hữu thú cưng --</option>
+                            @foreach (var c in customerOptions)
+                            {
+                                <option value="@c.CustomerId">@c.DisplayText</option>
+                            }
+                        </select>
+                        <span asp-validation-for="CustomerId" class="text-danger small"></span>
+                    </div>
+                }
+
+                <!-- 1. THÔNG TIN ĐỊNH DANH & ẢNH ĐẠI DIỆN -->
+                <div class="d-flex align-items-center border-bottom pb-2 mb-4">
+                    <span class="badge rounded-pill bg-success me-2">1</span>
+                    <h5 class="fw-bold text-dark mb-0">Thông tin Nhận diện & Ngoại hình</h5>
+                </div>
+
+                <div class="row g-4 mb-4">
+                    <!-- Preview ảnh -->
+                    <div class="col-md-4 text-center">
+                        <label class="form-label fw-bold d-block text-dark small">Ảnh đại diện thú cưng</label>
+                        <div class="position-relative d-inline-block mb-2">
+                            <img id="avatarPreview" src="https://placehold.co/140x140?text=Preview" 
+                                 alt="Preview" class="pet-avatar-box object-fit-cover border" 
+                                 style="width: 140px; height: 140px; border-radius: 16px;" />
+                        </div>
+                        <div class="text-muted" style="font-size: 0.75rem;">Hỗ trợ upload ảnh máy tính hoặc dán link URL</div>
+                    </div>
+
+                    <div class="col-md-8">
+                        <div class="mb-3">
+                            <label asp-for="ImageFile" class="form-label fw-semibold small text-dark">
+                                <i class="bi bi-upload text-success me-1"></i>Tải file ảnh từ thiết bị:
                             </label>
-                            <select asp-for="CustomerId" class="form-select select2" required>
-                                <option value="">-- Chọn khách hàng sở hữu thú cưng --</option>
-                                @foreach (var c in customerOptions)
-                                {
-                                    <option value="@c.CustomerId">@c.DisplayText</option>
-                                }
-                            </select>
-                            <span asp-validation-for="CustomerId" class="text-danger small"></span>
-                        </div>
-                    }
-
-                    <!-- 1. THÔNG TIN ĐỊNH DANH & ẢNH ĐẠI DIỆN -->
-                    <h5 class="fw-bold text-secondary border-bottom pb-2 mb-4">
-                        <i class="bi bi-info-circle-fill text-primary me-2"></i>1. Thông tin Nhận diện & Ngoại hình
-                    </h5>
-
-                    <div class="row g-4 mb-4">
-                        <!-- Preview ảnh -->
-                        <div class="col-md-4 text-center">
-                            <label class="form-label fw-bold d-block">Ảnh đại diện thú cưng</label>
-                            <div class="position-relative d-inline-block mb-3">
-                                <img id="avatarPreview" src="https://placehold.co/150x150?text=Preview" 
-                                     alt="Preview" class="rounded-circle object-fit-cover border border-4 border-primary-subtle shadow" 
-                                     style="width: 140px; height: 140px;" />
-                            </div>
-                            <div class="text-muted small">Hỗ trợ file ảnh (JPG, PNG, WEBP) hoặc nhập đường dẫn URL</div>
+                            <input asp-for="ImageFile" type="file" class="form-control rounded-3" accept="image/*" id="imageFileInput" />
+                            <span asp-validation-for="ImageFile" class="text-danger small"></span>
                         </div>
 
-                        <div class="col-md-8">
-                            <!-- Chọn ảnh máy tính -->
-                            <div class="mb-3">
-                                <label asp-for="ImageFile" class="form-label fw-semibold">
-                                    <i class="bi bi-upload me-1"></i>Tải ảnh từ máy tính:
+                        <div class="mb-3">
+                            <label asp-for="ImageUrl" class="form-label fw-semibold small text-dark">
+                                <i class="bi bi-link-45deg text-success me-1"></i>Hoặc dán đường dẫn ảnh (URL):
+                            </label>
+                            <input asp-for="ImageUrl" class="form-control rounded-3" id="imageUrlInput" placeholder="https://example.com/pet-image.jpg" />
+                            <span asp-validation-for="ImageUrl" class="text-danger small"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label asp-for="PetName" class="form-label fw-bold text-dark small">
+                            Tên thú cưng <span class="text-danger">*</span>
+                        </label>
+                        <input asp-for="PetName" class="form-control rounded-3" placeholder="VD: Mochi, Lucky, Bông..." required />
+                        <span asp-validation-for="PetName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label asp-for="Species" class="form-label fw-bold text-dark small">
+                            Loài <span class="text-danger">*</span>
+                        </label>
+                        <select asp-for="Species" class="form-select rounded-3" required>
+                            <option value="">-- Chọn loài --</option>
+                            <option value="Mèo" selected>Mèo</option>
+                            <option value="Chó">Chó</option>
+                            <option value="Thỏ">Thỏ</option>
+                            <option value="Hamster">Hamster</option>
+                            <option value="Khác">Khác</option>
+                        </select>
+                        <span asp-validation-for="Species" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label asp-for="Breed" class="form-label fw-bold text-dark small">Giống loài chi tiết</label>
+                        <input asp-for="Breed" class="form-control rounded-3" placeholder="VD: Mèo Anh lông ngắn, Poodle..." />
+                        <span asp-validation-for="Breed" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold text-dark small d-block">Giới tính <span class="text-danger">*</span></label>
+                        <div class="d-flex gap-4 pt-1">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" asp-for="Gender" value="Đực" id="genderMale" checked>
+                                <label class="form-check-label text-dark fw-medium" for="genderMale">
+                                    <i class="bi bi-gender-male text-info me-1"></i>Đực
                                 </label>
-                                <input asp-for="ImageFile" type="file" class="form-control" accept="image/*" id="imageFileInput" />
-                                <span asp-validation-for="ImageFile" class="text-danger small"></span>
                             </div>
-
-                            <!-- Hoặc nhập link URL -->
-                            <div class="mb-3">
-                                <label asp-for="ImageUrl" class="form-label fw-semibold">
-                                    <i class="bi bi-link-45deg me-1"></i>Hoặc nhập đường dẫn ảnh (URL):
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" asp-for="Gender" value="Cái" id="genderFemale">
+                                <label class="form-check-label text-dark fw-medium" for="genderFemale">
+                                    <i class="bi bi-gender-female text-danger me-1"></i>Cái
                                 </label>
-                                <input asp-for="ImageUrl" class="form-control" id="imageUrlInput" placeholder="https://example.com/pet-image.jpg" />
-                                <span asp-validation-for="ImageUrl" class="text-danger small"></span>
+                            </div>
+                        </div>
+                        <span asp-validation-for="Gender" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="BirthDate" class="form-label fw-bold text-dark small">Ngày sinh (ước lượng)</label>
+                        <input asp-for="BirthDate" type="date" class="form-control rounded-3" />
+                        <span asp-validation-for="BirthDate" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="Weight" class="form-label fw-bold text-dark small">
+                            Cân nặng (kg) <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group">
+                            <input asp-for="Weight" type="number" step="0.01" min="0.01" class="form-control rounded-start-3" placeholder="VD: 5.6" required />
+                            <span class="input-group-text rounded-end-3 bg-light">kg</span>
+                        </div>
+                        <span asp-validation-for="Weight" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <!-- 2. HỒ SƠ Y TẾ & CẢNH BÁO FR-09 KÈM GỢI Ý TAGS -->
+                <div class="d-flex align-items-center border-bottom pb-2 mb-4 pt-3">
+                    <span class="badge rounded-pill bg-warning text-dark me-2">2</span>
+                    <h5 class="fw-bold text-dark mb-0">Hồ sơ Y tế & Cảnh báo Sức khỏe (FR-09)</h5>
+                </div>
+
+                <div class="row g-4 mb-4">
+                    <!-- Ghi chú dị ứng -->
+                    <div class="col-md-6">
+                        <label asp-for="AllergyNote" class="form-label fw-bold text-danger small">
+                            <i class="bi bi-exclamation-triangle-fill me-1"></i>Ghi chú Dị ứng (Thuốc, Thức ăn, Sữa tắm...)
+                        </label>
+                        <textarea asp-for="AllergyNote" id="allergyInput" class="form-control rounded-3 border-danger-subtle" rows="3" 
+                                  placeholder="VD: Thành phần ngũ cốc, sữa tắm chứa Sulfate..."></textarea>
+                        <span asp-validation-for="AllergyNote" class="text-danger small"></span>
+
+                        <!-- Gợi ý tag Dị ứng -->
+                        <div class="mt-2">
+                            <div class="text-muted" style="font-size: 0.72rem; font-weight: 600;">GỢI Ý DỊ ỨNG NHANH:</div>
+                            <div class="d-flex flex-wrap gap-1 mt-1">
+                                <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2 rounded-pill small" onclick="appendTag('allergyInput', 'Sữa tắm chứa Sulfate')">+ Sữa tắm chứa Sulfate</button>
+                                <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2 rounded-pill small" onclick="appendTag('allergyInput', 'Thành phần ngũ cốc')">+ Thành phần ngũ cốc</button>
+                                <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2 rounded-pill small" onclick="appendTag('allergyInput', 'Đạm bò')">+ Đạm bò</button>
+                                <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2 rounded-pill small" onclick="appendTag('allergyInput', 'Thuốc xịt ve rận')">+ Thuốc xịt ve rận</button>
                             </div>
                         </div>
                     </div>
 
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-6">
-                            <label asp-for="PetName" class="form-label fw-bold">
-                                Tên thú cưng <span class="text-danger">*</span>
-                            </label>
-                            <input asp-for="PetName" class="form-control" placeholder="VD: Miu Miu, Corgi Bông..." required />
-                            <span asp-validation-for="PetName" class="text-danger small"></span>
-                        </div>
+                    <!-- Tiền sử bệnh & Tính cách đặc biệt (FR-09) -->
+                    <div class="col-md-6">
+                        <label asp-for="MedicalHistory" class="form-label fw-bold text-dark small">
+                            <i class="bi bi-journal-medical text-success me-1"></i>Tiền sử Bệnh nền & Đặc điểm tính cách
+                        </label>
+                        <textarea asp-for="MedicalHistory" id="medicalInput" class="form-control rounded-3" rows="3" 
+                                  placeholder="VD: Bé hơi nhát, nhẹ tay khi cắt móng. Đã triệt sản..."></textarea>
+                        <span asp-validation-for="MedicalHistory" class="text-danger small"></span>
 
-                        <div class="col-md-3">
-                            <label asp-for="Species" class="form-label fw-bold">
-                                Loài <span class="text-danger">*</span>
-                            </label>
-                            <select asp-for="Species" class="form-select" required>
-                                <option value="">-- Chọn loài --</option>
-                                <option value="Chó">Chó</option>
-                                <option value="Mèo">Mèo</option>
-                                <option value="Thỏ">Thỏ</option>
-                                <option value="Hamster">Hamster</option>
-                                <option value="Chim cảnh">Chim cảnh</option>
-                                <option value="Khác">Khác</option>
-                            </select>
-                            <span asp-validation-for="Species" class="text-danger small"></span>
-                        </div>
-
-                        <div class="col-md-3">
-                            <label asp-for="Breed" class="form-label fw-bold">Giống loài chi tiết</label>
-                            <input asp-for="Breed" class="form-control" placeholder="VD: Poodle, Golden, Anh lông ngắn..." />
-                            <span asp-validation-for="Breed" class="text-danger small"></span>
-                        </div>
-
-                        <div class="col-md-4">
-                            <label class="form-label fw-bold d-block">Giới tính <span class="text-danger">*</span></label>
-                            <div class="d-flex gap-4 pt-1">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" asp-for="Gender" value="Đực" id="genderMale" checked>
-                                    <label class="form-check-label" for="genderMale">
-                                        <i class="bi bi-gender-male text-info me-1"></i>Đực
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" asp-for="Gender" value="Cái" id="genderFemale">
-                                    <label class="form-check-label" for="genderFemale">
-                                        <i class="bi bi-gender-female text-danger me-1"></i>Cái
-                                    </label>
-                                </div>
+                        <!-- Gợi ý tag Tính cách FR-09 -->
+                        <div class="mt-2">
+                            <div class="text-muted" style="font-size: 0.72rem; font-weight: 600;">GỢI Ý TÍNH CÁCH (FR-09):</div>
+                            <div class="d-flex flex-wrap gap-1 mt-1">
+                                <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 rounded-pill small" onclick="appendTag('medicalInput', 'Bé nhút nhát, sợ người lạ')">+ Bé nhút nhát</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 rounded-pill small" onclick="appendTag('medicalInput', 'Hay cắn khi cắt móng')">+ Hay cắn khi cắt móng</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 rounded-pill small" onclick="appendTag('medicalInput', 'Sợ tiếng máy sấy')">+ Sợ tiếng máy sấy</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 rounded-pill small" onclick="appendTag('medicalInput', 'Rất hiền và hợp tác tốt')">+ Bé rất hiền & hợp tác</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 rounded-pill small" onclick="appendTag('medicalInput', 'Da nhạy cảm, dễ mẩn đỏ')">+ Da nhạy cảm</button>
                             </div>
-                            <span asp-validation-for="Gender" class="text-danger small"></span>
-                        </div>
-
-                        <div class="col-md-4">
-                            <label asp-for="BirthDate" class="form-label fw-bold">Ngày sinh (ước lượng)</label>
-                            <input asp-for="BirthDate" type="date" class="form-control" />
-                            <span asp-validation-for="BirthDate" class="text-danger small"></span>
-                        </div>
-
-                        <div class="col-md-4">
-                            <label asp-for="Weight" class="form-label fw-bold">
-                                Cân nặng (kg) <span class="text-danger">*</span>
-                            </label>
-                            <div class="input-group">
-                                <input asp-for="Weight" type="number" step="0.01" min="0.01" class="form-control" placeholder="VD: 3.5" required />
-                                <span class="input-group-text">kg</span>
-                            </div>
-                            <span asp-validation-for="Weight" class="text-danger small"></span>
                         </div>
                     </div>
+                </div>
 
-                    <!-- 2. HỒ SƠ Y TẾ & LƯU Ý SỨC KHỎE (FR-09) -->
-                    <h5 class="fw-bold text-secondary border-bottom pb-2 mb-4 pt-3">
-                        <i class="bi bi-heart-pulse-fill text-danger me-2"></i>2. Hồ sơ Y tế & Cảnh báo Sức khỏe (FR-09)
-                    </h5>
-
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-6">
-                            <label asp-for="AllergyNote" class="form-label fw-bold text-danger">
-                                <i class="bi bi-exclamation-triangle-fill me-1"></i>Ghi chú Dị ứng (nếu có)
-                            </label>
-                            <textarea asp-for="AllergyNote" class="form-control border-danger-subtle" rows="3" 
-                                      placeholder="VD: Dị ứng sữa tươi, dị ứng thuốc gây mê, dị ứng xà phòng hương liệu..."></textarea>
-                            <span asp-validation-for="AllergyNote" class="text-danger small"></span>
-                            <div class="form-text text-danger">Thông tin này sẽ được cảnh báo nổi bật khi tiếp nhận tại quầy và khi làm dịch vụ!</div>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label asp-for="MedicalHistory" class="form-label fw-bold text-warning-emphasis">
-                                <i class="bi bi-journal-medical me-1"></i>Tiền sử Bệnh nền & Đặc điểm tính cách
-                            </label>
-                            <textarea asp-for="MedicalHistory" class="form-control" rows="3" 
-                                      placeholder="VD: Từng phẫu thuật gãy xương, tim mạch nhạy cảm, nhát người lạ, sợ máy sấy..."></textarea>
-                            <span asp-validation-for="MedicalHistory" class="text-danger small"></span>
-                        </div>
-                    </div>
-
-                    <div class="d-flex justify-content-end gap-2 border-top pt-4">
-                        <a asp-action="Index" class="btn btn-light px-4">Hủy bỏ</a>
-                        <button type="submit" class="btn btn-primary px-5 shadow-sm rounded-pill">
-                            <i class="bi bi-check-lg me-1"></i>Hoàn tất Đăng ký
-                        </button>
-                    </div>
-                </form>
-            </div>
+                <div class="d-flex justify-content-end gap-2 border-top pt-4">
+                    <a asp-action="Index" class="btn btn-paw-outline">Hủy bỏ</a>
+                    <button type="submit" class="btn btn-paw-primary px-5 shadow">
+                        <i class="bi bi-check-lg me-1"></i>Hoàn tất Đăng ký Thú cưng
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -195,6 +219,16 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
+        // Tag appender helper
+        function appendTag(inputId, text) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            const current = input.value.trim();
+            if (current.includes(text)) return;
+            input.value = current ? `${current}. ${text}` : text;
+            input.focus();
+        }
+
         // Live image preview
         const fileInput = document.getElementById('imageFileInput');
         const urlInput = document.getElementById('imageUrlInput');
