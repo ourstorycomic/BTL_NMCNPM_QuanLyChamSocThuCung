@@ -1,59 +1,302 @@
-@model BTL_NMCNPM_QuanLyChamSocThuCung.ViewModels.ReceptionIndexViewModel
+﻿@model BTL_NMCNPM_QuanLyChamSocThuCung.ViewModels.ReceptionIndexViewModel
 @{
-    ViewData["Title"] = "Tiếp nhận thú cưng";
+    ViewData["Title"] = "Tiếp nhận thú cưng tại quầy";
+    var waitingCount = Model.Appointments.Count(a => a.Status == "Confirmed");
+    var processingCount = Model.Appointments.Count(a => a.Status == "Processing");
 }
-<link rel="stylesheet" href="~/css/reception.css" />
 
-<div class="reception-page">
-    <div class="reception-heading">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<style>
+    .paw-dashboard {
+        background-color: #f6f7f5;
+        border-radius: 20px;
+        padding: 24px;
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        color: #1e293b;
+    }
+
+    .paw-card {
+        background: #ffffff;
+        border: 1px solid #eceeed;
+        border-radius: 16px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+    }
+
+    .paw-shift-pill {
+        background-color: #e8f5ee;
+        color: #15803d;
+        font-weight: 600;
+        font-size: 0.85rem;
+        padding: 6px 14px;
+        border-radius: 50px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .paw-btn-dark {
+        background-color: #181c1a;
+        color: #ffffff;
+        border-radius: 12px;
+        font-weight: 600;
+        padding: 10px 20px;
+        border: none;
+    }
+
+        .paw-btn-dark:hover {
+            background-color: #2d3330;
+            color: #ffffff;
+        }
+
+    .paw-btn-blue {
+        background-color: #1d5bd6;
+        color: #ffffff;
+        border-radius: 10px;
+        font-weight: 600;
+        border: none;
+        padding: 7px 14px;
+        font-size: 0.85rem;
+    }
+
+        .paw-btn-blue:hover {
+            background-color: #1749ad;
+            color: #ffffff;
+        }
+
+    .paw-kpi-num {
+        font-size: 1.75rem;
+        font-weight: 800;
+        line-height: 1.2;
+    }
+
+    .paw-badge-wait {
+        background-color: #eef4ff;
+        color: #2563eb;
+        font-weight: 600;
+        padding: 5px 12px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+    }
+
+    .paw-badge-proc {
+        background-color: #fef3c7;
+        color: #d97706;
+        font-weight: 600;
+        padding: 5px 12px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+    }
+
+    .paw-row-item {
+        transition: background-color 0.15s;
+        cursor: pointer;
+    }
+
+        .paw-row-item:hover {
+            background-color: #f8fafc;
+        }
+</style>
+
+<div class="paw-dashboard my-2">
+    <!-- Header giống PawHaven -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-2">
         <div>
-            <h2>Tiếp nhận thú cưng</h2>
-            <p>Danh sách lịch hẹn đã xác nhận và đang chăm sóc.</p>
+            <h3 class="fw-bold mb-0" style="color: #111827;">Tiếp nhận thú cưng tại quầy</h3>
+            <small class="text-muted">@DateTime.Now.ToString("dddd, dd/MM/yyyy") • Quầy Lễ tân & Chăm sóc</small>
+        </div>
+        <div>
+            <span class="paw-shift-pill">
+                <span style="width:8px;height:8px;background:#16a34a;border-radius:50%;display:inline-block;"></span>
+                Đang hoạt động • Tiếp nhận trực tiếp
+            </span>
         </div>
     </div>
 
-    @if (TempData["Success"] != null) { <div class="alert alert-success">@TempData["Success"]</div> }
-    @if (TempData["Error"] != null) { <div class="alert alert-danger">@TempData["Error"]</div> }
+    <div class="row g-4">
+        <!-- CỘT TRÁI (7 PHẦN): TÌM KIẾM & TRẠNG THÁI SẴN SÀNG -->
+        <div class="col-lg-7">
+            <!-- Box tìm lịch hẹn -->
+            <div class="paw-card p-4 mb-4">
+                <label class="fw-bold mb-2 d-block" style="font-size: 0.95rem;">
+                    Tìm lịch hẹn theo số điện thoại khách hàng hoặc tên thú cưng
+                </label>
+                <form method="get" asp-action="Index" class="d-flex gap-2">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0 text-muted" style="border-radius: 12px 0 0 12px;">
+                            <i class="bi bi-telephone"></i>
+                        </span>
+                        <input type="text" name="keyword" value="@Model.Keyword"
+                               class="form-control border-start-0 ps-1"
+                               style="border-radius: 0 12px 12px 0; height: 46px;"
+                               placeholder="Nhập SĐT (VD: 0912345678) hoặc tên bé..." />
+                    </div>
+                    <button type="submit" class="paw-btn-dark d-flex align-items-center gap-2 text-nowrap">
+                        <i class="bi bi-search"></i> Tìm kiếm
+                    </button>
+                    @if (!string.IsNullOrWhiteSpace(Model.Keyword))
+                    {
+                        <a asp-action="Index" class="btn btn-outline-secondary d-flex align-items-center" style="border-radius: 12px;">
+                            Xóa
+                        </a>
+                    }
+                </form>
+            </div>
 
-    <form method="get" class="search-form">
-        <input type="text" name="keyword" value="@Model.Keyword" class="form-control"
-               placeholder="Tìm theo tên thú cưng, khách hàng hoặc số điện thoại..." />
-        <button class="btn btn-primary" type="submit">Tìm kiếm</button>
-        <a asp-action="Index" class="btn btn-outline-secondary">Xóa lọc</a>
-    </form>
-
-    <div class="table-responsive">
-        <table class="table table-hover align-middle">
-            <thead>
-                <tr>
-                    <th>Thú cưng</th>
-                    <th>Khách hàng</th>
-                    <th>Số điện thoại</th>
-                    <th>Ngày hẹn</th>
-                    <th>Trạng thái</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-            @if (Model.Appointments.Count == 0)
+            <!-- Thẻ hiển thị nhanh lịch hẹn đầu tiên tìm thấy hoặc hướng dẫn chọn -->
+            @{
+                var firstItem = Model.Appointments.FirstOrDefault();
+            }
+            @if (firstItem != null)
             {
-                <tr><td colspan="6" class="text-center text-muted py-4">Không có lịch hẹn phù hợp.</td></tr>
+                <div class="paw-card p-4" style="border-top: 4px solid #16a34a;">
+                    <div class="d-flex justify-content-between align-items-center pb-3 mb-3 border-bottom">
+                        <span class="fw-bold text-success">
+                            <i class="bi bi-check-circle-fill me-1"></i>
+                            @(string.IsNullOrWhiteSpace(Model.Keyword) ? "Lịch hẹn gần nhất cần xử lý" : "Đã tìm thấy lịch hẹn phù hợp")
+                        </span>
+                        <span class="text-muted small fw-semibold">#@firstItem.AppointmentId.ToString().Substring(0, 6).ToUpper()</span>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-sm-4">
+                            <div class="d-flex align-items-start gap-2">
+                                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center" style="width:36px;height:36px;">
+                                    <i class="bi bi-person-fill text-secondary"></i>
+                                </div>
+                                <div>
+                                    <div class="text-muted" style="font-size:0.72rem;font-weight:700;">KHÁCH HÀNG</div>
+                                    <div class="fw-bold">@firstItem.Pet.Customer.CustomerName</div>
+                                    <small class="text-muted">@firstItem.Pet.Customer.PhoneNumber</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="d-flex align-items-start gap-2">
+                                <div class="rounded-circle bg-success bg-opacity-10 text-success fw-bold d-flex align-items-center justify-content-center" style="width:36px;height:36px;">
+                                    @firstItem.Pet.PetName.Substring(0, 1).ToUpper()
+                                </div>
+                                <div>
+                                    <div class="text-muted" style="font-size:0.72rem;font-weight:700;">THÚ CƯNG</div>
+                                    <div class="fw-bold">@firstItem.Pet.PetName</div>
+                                    <small class="text-muted">@firstItem.Pet.Species • @firstItem.Pet.Breed</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="d-flex align-items-start gap-2">
+                                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center" style="width:36px;height:36px;">
+                                    <i class="bi bi-clock text-secondary"></i>
+                                </div>
+                                <div>
+                                    <div class="text-muted" style="font-size:0.72rem;font-weight:700;">GIỜ HẸN</div>
+                                    <div class="fw-bold">@firstItem.AppointmentDate.ToString("HH:mm")</div>
+                                    <small class="text-muted">@firstItem.AppointmentDate.ToString("dd/MM/yyyy")</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-3 rounded-3 mb-3" style="background-color: #fefce8; border: 1px solid #fef08a; color: #854d0e; font-size: 0.88rem;">
+                        <i class="bi bi-info-circle-fill me-1"></i>
+                        Bấm nút bên dưới để mở phiếu nhập <strong>cân nặng thực tế</strong>, phân công <strong>kỹ thuật viên</strong> và <strong>cập nhật tiến trình ảnh</strong>.
+                    </div>
+
+                    <div class="d-flex justify-content-end">
+                        <a asp-action="Details" asp-route-id="@firstItem.AppointmentId" class="paw-btn-blue px-4 py-2 fs-6 text-decoration-none">
+                            <i class="bi bi-clipboard2-check me-1"></i>
+                            @(firstItem.Status == "Confirmed" ? "Mở phiếu tiếp nhận thú cưng" : "Cập nhật tiến độ chăm sóc")
+                        </a>
+                    </div>
+                </div>
             }
             else
             {
-                @foreach (var item in Model.Appointments)
-                {
-                    <tr>
-                        <td><strong>@item.Pet.PetName</strong><div class="small text-muted">@item.Pet.Species - @item.Pet.Breed</div></td>
-                        <td>@item.Pet.Customer.CustomerName</td>
-                        <td>@item.Pet.Customer.PhoneNumber</td>
-                        <td>@item.AppointmentDate.ToString("dd/MM/yyyy HH:mm")</td>
-                        <td><span class="status-pill">@item.Status</span></td>
-                        <td class="text-end"><a asp-action="Details" asp-route-id="@item.AppointmentId" class="btn btn-sm btn-primary">Chi tiết</a></td>
-                    </tr>
-                }
+                <div class="paw-card p-5 text-center text-muted">
+                    <i class="bi bi-search fs-1 d-block mb-2 opacity-50"></i>
+                    Không tìm thấy lịch hẹn nào khớp với từ khóa của bạn.
+                </div>
             }
-            </tbody>
-        </table>
+        </div>
+
+        <!-- CỘT PHẢI (5 PHẦN): 3 THẺ KPI & DANH SÁCH LỊCH HẸN HÔM NAY -->
+        <div class="col-lg-5">
+            <!-- 3 Thẻ KPI -->
+            <div class="row g-3 mb-4">
+                <div class="col-4">
+                    <div class="paw-card p-3">
+                        <small class="text-muted d-block mb-1">Đang chờ</small>
+                        <div class="paw-kpi-num" style="color: #ea580c;">@waitingCount</div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="paw-card p-3">
+                        <small class="text-muted d-block mb-1">Đang chăm sóc</small>
+                        <div class="paw-kpi-num" style="color: #2563eb;">@processingCount</div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="paw-card p-3">
+                        <small class="text-muted d-block mb-1">Tổng xử lý</small>
+                        <div class="paw-kpi-num" style="color: #16a34a;">@(waitingCount + processingCount)</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Danh sách lịch hẹn đang chờ -->
+            <div class="paw-card p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h6 class="fw-bold mb-0">Lịch hẹn đang chờ & xử lý</h6>
+                        <small class="text-muted" style="font-size: 0.78rem;">Bấm vào một dòng để tiếp nhận hoặc cập nhật</small>
+                    </div>
+                    <a asp-action="Index" class="text-decoration-none small fw-semibold" style="color: #2563eb;">Xem tất cả</a>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0" style="font-size: 0.88rem;">
+                        <thead>
+                            <tr class="text-muted" style="font-size: 0.72rem; letter-spacing: 0.5px;">
+                                <th>GIỜ</th>
+                                <th>THÚ CƯNG / KHÁCH</th>
+                                <th class="text-end">TRẠNG THÁI</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Appointments)
+                            {
+                                <tr class="paw-row-item" onclick="location.href='@Url.Action("Details", new { id = item.AppointmentId })'">
+                                    <td class="fw-bold text-primary py-3">
+                                        @item.AppointmentDate.ToString("HH:mm")
+                                        <div class="text-muted fw-normal" style="font-size:0.72rem;">@item.AppointmentDate.ToString("dd/MM")</div>
+                                    </td>
+                                    <td class="py-3">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="rounded-3 bg-light border fw-bold text-success d-flex align-items-center justify-content-center"
+                                                 style="width:32px;height:32px;font-size:0.8rem;">
+                                                @item.Pet.PetName.Substring(0, 1).ToUpper()
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold text-dark">@item.Pet.PetName</div>
+                                                <div class="text-muted" style="font-size:0.78rem;">@item.Pet.Customer.CustomerName</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-end py-3">
+                                        @if (item.Status == "Confirmed")
+                                        {
+                                            <span class="paw-badge-wait">Chờ tiếp nhận</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="paw-badge-proc">Đang làm</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
