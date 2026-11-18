@@ -1,0 +1,59 @@
+@model BTL_NMCNPM_QuanLyChamSocThuCung.ViewModels.ReceptionIndexViewModel
+@{
+    ViewData["Title"] = "Tiếp nhận thú cưng";
+}
+<link rel="stylesheet" href="~/css/reception.css" />
+
+<div class="reception-page">
+    <div class="reception-heading">
+        <div>
+            <h2>Tiếp nhận thú cưng</h2>
+            <p>Danh sách lịch hẹn đã xác nhận và đang chăm sóc.</p>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null) { <div class="alert alert-success">@TempData["Success"]</div> }
+    @if (TempData["Error"] != null) { <div class="alert alert-danger">@TempData["Error"]</div> }
+
+    <form method="get" class="search-form">
+        <input type="text" name="keyword" value="@Model.Keyword" class="form-control"
+               placeholder="Tìm theo tên thú cưng, khách hàng hoặc số điện thoại..." />
+        <button class="btn btn-primary" type="submit">Tìm kiếm</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Xóa lọc</a>
+    </form>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Thú cưng</th>
+                    <th>Khách hàng</th>
+                    <th>Số điện thoại</th>
+                    <th>Ngày hẹn</th>
+                    <th>Trạng thái</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            @if (Model.Appointments.Count == 0)
+            {
+                <tr><td colspan="6" class="text-center text-muted py-4">Không có lịch hẹn phù hợp.</td></tr>
+            }
+            else
+            {
+                @foreach (var item in Model.Appointments)
+                {
+                    <tr>
+                        <td><strong>@item.Pet.PetName</strong><div class="small text-muted">@item.Pet.Species - @item.Pet.Breed</div></td>
+                        <td>@item.Pet.Customer.CustomerName</td>
+                        <td>@item.Pet.Customer.PhoneNumber</td>
+                        <td>@item.AppointmentDate.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td><span class="status-pill">@item.Status</span></td>
+                        <td class="text-end"><a asp-action="Details" asp-route-id="@item.AppointmentId" class="btn btn-sm btn-primary">Chi tiết</a></td>
+                    </tr>
+                }
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
