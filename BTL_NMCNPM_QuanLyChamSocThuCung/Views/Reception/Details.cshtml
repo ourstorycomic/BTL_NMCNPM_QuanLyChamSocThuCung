@@ -4,147 +4,121 @@
     var appointment = Model.Appointment;
     var ticket = Model.Ticket;
 }
-<link rel="stylesheet" href="~/css/reception.css" />
+<link rel="stylesheet" href="~/css/reception.css" asp-append-version="true" />
 
-<div class="reception-page">
-    <a asp-action="Index" class="btn btn-outline-secondary btn-sm mb-3">← Quay lại danh sách</a>
-    <div class="reception-heading">
-        <div><h2>Thông tin tiếp nhận</h2><p>Mã lịch hẹn: @appointment.AppointmentId</p></div>
-        <span class="status-pill">@appointment.Status</span>
-    </div>
+<div class="paw-app">
+    <aside class="paw-sidebar">
+        <a class="paw-brand" asp-controller="Reception" asp-action="Index"><span class="paw-brand-mark">✿</span><span>PawHaven<small>CARE MANAGEMENT</small></span></a>
+        <div class="paw-nav-label">VẬN HÀNH</div>
+        <a class="paw-nav-item" asp-controller="Home" asp-action="Index"><span>⌂</span>Tổng quan</a>
+        <a class="paw-nav-item active" asp-controller="Reception" asp-action="Index"><span>▣</span>Tiếp nhận tại quầy</a>
+        <a class="paw-nav-item" asp-controller="Reception" asp-action="Index"><span>▦</span>Lịch hẹn</a>
+        <div class="paw-nav-item muted"><span>◷</span>Đang thực hiện</div>
+        <div class="paw-nav-label">QUẢN LÝ</div>
+        <div class="paw-nav-item muted"><span>♙</span>Khách hàng</div>
+        <div class="paw-nav-item muted"><span>♡</span>Hồ sơ thú cưng</div>
+        <div class="paw-nav-item muted"><span>♧</span>Kỹ thuật viên</div>
+        <div class="paw-nav-item muted"><span>▤</span>Thanh toán</div>
+        <div class="paw-nav-item muted"><span>⚙</span>Cài đặt</div>
+        <div class="paw-user"><div class="paw-avatar">NV</div><div><b>Nhân viên</b><small>Lễ tân / Tiếp nhận</small></div></div>
+    </aside>
 
-    @if (TempData["Success"] != null) { <div class="alert alert-success">@TempData["Success"]</div> }
-    @if (TempData["Error"] != null) { <div class="alert alert-danger">@TempData["Error"]</div> }
+    <main class="paw-main">
+        <header class="paw-topbar"><div><a asp-action="Index" class="paw-back-link">← Tiếp nhận tại quầy</a><span class="paw-crumb-sep">/</span><b>Chi tiết lịch hẹn</b></div><div class="paw-top-right"><span class="paw-open"><i></i> Cơ sở đang hoạt động</span></div></header>
+        <section class="paw-content">
+            <div class="paw-page-heading"><div><span class="paw-eyebrow">HỒ SƠ TIẾP NHẬN</span><h1>@appointment.Pet.PetName <span class="paw-status @(appointment.Status == "Processing" ? "is-processing" : appointment.Status == "Completed" ? "is-completed" : "is-confirmed")">@(appointment.Status == "Confirmed" ? "Chờ tiếp nhận" : appointment.Status == "Processing" ? "Đang chăm sóc" : "Hoàn thành")</span></h1><p>Mã lịch hẹn: @appointment.AppointmentId</p></div><a asp-action="Index" class="paw-secondary-button">← Quay lại danh sách</a></div>
 
-    <div class="row g-3 mb-4">
-        <div class="col-md-6">
-            <section class="info-card">
-                <h5>Thông tin thú cưng</h5>
-                <p><b>Tên:</b> @appointment.Pet.PetName</p>
-                <p><b>Loài:</b> @appointment.Pet.Species</p>
-                <p><b>Giống:</b> @appointment.Pet.Breed</p>
-                <p><b>Giới tính:</b> @appointment.Pet.Gender</p>
-                <p><b>Cân nặng hiện tại:</b> @appointment.Pet.Weight kg</p>
-                <p><b>Tiền sử bệnh:</b> @(appointment.Pet.MedicalHistory ?? "Chưa cập nhật")</p>
-                <p><b>Dị ứng:</b> @(appointment.Pet.AllergyNote ?? "Chưa ghi nhận")</p>
-            </section>
-        </div>
-        <div class="col-md-6">
-            <section class="info-card">
-                <h5>Thông tin khách hàng và lịch hẹn</h5>
-                <p><b>Khách hàng:</b> @appointment.Pet.Customer.CustomerName</p>
-                <p><b>Điện thoại:</b> @appointment.Pet.Customer.PhoneNumber</p>
-                <p><b>Email:</b> @(appointment.Pet.Customer.Email ?? "—")</p>
-                <p><b>Thời gian hẹn:</b> @appointment.AppointmentDate.ToString("dd/MM/yyyy HH:mm")</p>
-                <p><b>Ghi chú lịch hẹn:</b> @(appointment.Notes ?? "—")</p>
-                <h6 class="mt-3">Dịch vụ</h6>
-                @if (appointment.AppointmentServices.Count == 0) { <p>Chưa có dịch vụ.</p> }
-                else {
-                    <ul>@foreach (var line in appointment.AppointmentServices) { <li>@line.Service.ServiceName (x@line.Quantity)</li> }</ul>
-                }
-            </section>
-        </div>
-    </div>
+            @if (TempData["Success"] != null) { <div class="alert alert-success">@TempData["Success"]</div> }
+            @if (TempData["Error"] != null) { <div class="alert alert-danger">@TempData["Error"]</div> }
 
-    @if (ticket == null && appointment.Status == "Confirmed")
-    {
-        <section class="info-card mb-4">
-            <h5>Tiếp nhận thú cưng</h5>
-            @if (Model.StaffMembers.Count == 0) { <div class="alert alert-warning">Chưa có tài khoản nhân viên có trạng thái hoạt động. Hãy thêm nhân viên có Role = Staff trước.</div> }
-            else
-            {
-                <form asp-action="CheckIn" method="post">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" name="AppointmentId" value="@appointment.AppointmentId" />
-                    <div class="row g-3">
-                        <div class="col-md-4">
-                            <label class="form-label">Nhân viên tiếp nhận</label>
-                            <select name="StaffId" class="form-select" required>
-                                <option value="">-- Chọn nhân viên --</option>
-                                @foreach (var staff in Model.StaffMembers) { <option value="@staff.Id">@staff.FullName</option> }
-                            </select>
+            <div class="paw-detail-grid">
+                <div class="paw-detail-main">
+                    <section class="paw-panel paw-pet-summary">
+                        <div class="paw-pet-avatar large">🐾</div>
+                        <div class="paw-pet-summary-text"><span class="paw-eyebrow">THÚ CƯNG ĐƯỢC ĐẶT LỊCH</span><h2>@appointment.Pet.PetName</h2><p>@appointment.Pet.Species · @appointment.Pet.Breed · @appointment.Pet.Gender</p><small>Cân nặng đã ghi nhận: @appointment.Pet.Weight kg</small></div>
+                        <div class="paw-summary-date"><small>THỜI GIAN HẸN</small><b>@appointment.AppointmentDate.ToString("HH:mm")</b><span>@appointment.AppointmentDate.ToString("dd/MM/yyyy")</span></div>
+                    </section>
+
+                    <section class="paw-panel">
+                        <div class="paw-panel-heading"><div><h2>Thông tin tiếp nhận</h2><p>Kiểm tra thông tin khách hàng và tình trạng thú cưng</p></div><span class="paw-section-number">01</span></div>
+                        <div class="paw-info-grid">
+                            <div><small>KHÁCH HÀNG</small><b>@appointment.Pet.Customer.CustomerName</b></div>
+                            <div><small>SỐ ĐIỆN THOẠI</small><b>@appointment.Pet.Customer.PhoneNumber</b></div>
+                            <div><small>EMAIL</small><b>@(appointment.Pet.Customer.Email ?? "Chưa cập nhật")</b></div>
+                            <div><small>GIỐNG / LOÀI</small><b>@appointment.Pet.Species · @appointment.Pet.Breed</b></div>
                         </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Cân nặng thực tế (kg)</label>
-                            <input name="ActualWeight" type="number" min="0.1" max="300" step="0.01" value="@appointment.Pet.Weight" class="form-control" required />
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label">Tình trạng ban đầu / lưu ý</label>
-                            <textarea name="InitialCondition" class="form-control" rows="2" placeholder="Ví dụ: Thú cưng hơi mệt, cần chú ý vùng chân trước..."></textarea>
-                        </div>
-                    </div>
-                    <button class="btn btn-primary mt-3" type="submit">Xác nhận tiếp nhận</button>
-                </form>
-            }
-        </section>
-    }
-    else if (ticket != null)
-    {
-        <section class="info-card mb-4">
-            <h5>Phiếu tiếp nhận</h5>
-            <p><b>Thời gian:</b> @ticket.CheckInTime.ToString("dd/MM/yyyy HH:mm")</p>
-            <p><b>Nhân viên:</b> @ticket.Staff.FullName</p>
-            <p><b>Cân nặng lúc tiếp nhận:</b> @ticket.ActualWeight kg</p>
-        </section>
+                        @if (!string.IsNullOrWhiteSpace(appointment.Pet.AllergyNote)) { <div class="paw-warning prominent">⚠ <div><b>Thú cưng có tiền sử dị ứng</b><span>@appointment.Pet.AllergyNote</span></div></div> }
+                        @if (!string.IsNullOrWhiteSpace(appointment.Pet.MedicalHistory)) { <div class="paw-medical-note"><b>Tiền sử bệnh:</b> @appointment.Pet.MedicalHistory</div> }
+                        @if (!string.IsNullOrWhiteSpace(appointment.Notes)) { <div class="paw-medical-note"><b>Ghi chú lịch hẹn:</b> @appointment.Notes</div> }
+                    </section>
 
-        <section class="info-card mb-4">
-            <h5>Lịch sử chăm sóc</h5>
-            @if (ticket.CareProgresses.Count == 0) { <p class="text-muted">Chưa có cập nhật chăm sóc.</p> }
-            @foreach (var progress in ticket.CareProgresses.OrderByDescending(p => p.UpdatedAt))
-            {
-                <div class="progress-entry">
-                    <div class="d-flex justify-content-between flex-wrap gap-2">
-                        <strong>@progress.StepDescription</strong>
-                        <span class="status-pill">@progress.ProgressStatus</span>
-                    </div>
-                    <div class="small text-muted">@progress.UpdatedAt.ToString("dd/MM/yyyy HH:mm") - @progress.Staff.FullName</div>
-                    @if (!string.IsNullOrWhiteSpace(progress.StaffNotes)) { <p class="mb-2">@progress.StaffNotes</p> }
-                    @if (!string.IsNullOrWhiteSpace(progress.ResultImageUrl))
+                    @if (ticket == null && appointment.Status == "Confirmed")
                     {
-                        <a href="@progress.ResultImageUrl" target="_blank" rel="noopener"><img src="@progress.ResultImageUrl" class="care-result-image" alt="Ảnh kết quả chăm sóc" /></a>
+                        <section class="paw-panel">
+                            <div class="paw-panel-heading"><div><h2>Thông tin tiếp nhận tại quầy</h2><p>Ghi nhận tình trạng thực tế trước khi chuyển sang chăm sóc</p></div><span class="paw-section-number">02</span></div>
+                            @if (Model.StaffMembers.Count == 0) { <div class="alert alert-warning">Chưa có tài khoản nhân viên hoạt động (Role = Staff). Vui lòng bổ sung nhân viên trước khi tiếp nhận.</div> }
+                            else
+                            {
+                                <form asp-action="CheckIn" method="post" class="paw-form">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="AppointmentId" value="@appointment.AppointmentId" />
+                                    <div class="paw-form-grid">
+                                        <div class="paw-field"><label>Cân nặng thực tế <em>*</em></label><div class="paw-input-with-unit"><input name="ActualWeight" type="number" min="0.1" max="300" step="0.01" value="@appointment.Pet.Weight" required /><span>kg</span></div><small>Cân nặng hiện tại: @appointment.Pet.Weight kg</small></div>
+                                        <div class="paw-field"><label>Chỉ định kỹ thuật viên <em>*</em></label><select name="StaffId" required><option value="">Chọn kỹ thuật viên phụ trách</option>@foreach (var staff in Model.StaffMembers) { <option value="@staff.Id">@staff.FullName</option> }</select><small>Nhân viên phụ trách chăm sóc thú cưng</small></div>
+                                        <div class="paw-field full"><label>Tình trạng sức khỏe ban đầu <em>*</em></label><textarea name="InitialCondition" rows="4" maxlength="500" placeholder="Mô tả tình trạng sức khỏe, biểu hiện bất thường hoặc lưu ý khi chăm sóc..."></textarea><small>Thông tin này sẽ được lưu vào lịch sử chăm sóc.</small></div>
+                                    </div>
+                                    <div class="paw-form-actions"><a asp-action="Index" class="paw-secondary-button">Hủy</a><button type="submit" class="paw-primary-button">✓ &nbsp; Tiếp nhận thú cưng</button></div>
+                                </form>
+                            }
+                        </section>
+                    }
+                    else if (ticket != null)
+                    {
+                        <section class="paw-panel">
+                            <div class="paw-panel-heading"><div><h2>Phiếu tiếp nhận</h2><p>Thông tin nhân viên và thời điểm tiếp nhận</p></div><span class="paw-section-number">02</span></div>
+                            <div class="paw-info-grid"><div><small>THỜI GIAN TIẾP NHẬN</small><b>@ticket.CheckInTime.ToString("HH:mm · dd/MM/yyyy")</b></div><div><small>NHÂN VIÊN TIẾP NHẬN</small><b>@ticket.Staff.FullName</b></div><div><small>CÂN NẶNG THỰC TẾ</small><b>@ticket.ActualWeight kg</b></div></div>
+                        </section>
+                        <section class="paw-panel">
+                            <div class="paw-panel-heading"><div><h2>Lịch sử chăm sóc</h2><p>Theo dõi các bước thực hiện và kết quả</p></div><span class="paw-section-number">03</span></div>
+                            @if (ticket.CareProgresses.Count == 0) { <div class="paw-empty compact"><b>Chưa có cập nhật chăm sóc</b><p>Các bước chăm sóc sẽ xuất hiện tại đây.</p></div> }
+                            @foreach (var progress in ticket.CareProgresses.OrderByDescending(p => p.UpdatedAt))
+                            {
+                                <div class="paw-care-entry"><div class="paw-care-marker">✓</div><div class="paw-care-body"><div class="paw-appointment-title"><b>@progress.StepDescription</b><span class="paw-status @(progress.ProgressStatus == "Completed" ? "is-completed" : "is-processing")">@(progress.ProgressStatus == "Completed" ? "Hoàn thành" : progress.ProgressStatus == "Pending" ? "Chờ xử lý" : "Đang thực hiện")</span></div><small>@progress.UpdatedAt.ToString("dd/MM/yyyy HH:mm") · @progress.Staff.FullName</small>@if (!string.IsNullOrWhiteSpace(progress.StaffNotes)) { <p>@progress.StaffNotes</p> }@if (!string.IsNullOrWhiteSpace(progress.ResultImageUrl)) { <a href="@progress.ResultImageUrl" target="_blank" rel="noopener"><img src="@progress.ResultImageUrl" class="care-result-image" alt="Ảnh kết quả chăm sóc" /></a> }</div></div>
+                            }
+                        </section>
+                        @if (appointment.Status == "Processing" && Model.StaffMembers.Count > 0)
+                        {
+                            <section class="paw-panel">
+                                <div class="paw-panel-heading"><div><h2>Cập nhật tiến trình chăm sóc</h2><p>Thêm công việc, trạng thái và hình ảnh kết quả</p></div><span class="paw-section-number">04</span></div>
+                                <form asp-action="AddProgress" method="post" enctype="multipart/form-data" class="paw-form">
+                                    @Html.AntiForgeryToken()<input type="hidden" name="TicketId" value="@ticket.TicketId" />
+                                    <div class="paw-form-grid">
+                                        <div class="paw-field"><label>Nhân viên thực hiện <em>*</em></label><select name="StaffId" required>@foreach (var staff in Model.StaffMembers) { <option value="@staff.Id">@staff.FullName</option> }</select></div>
+                                        <div class="paw-field"><label>Trạng thái <em>*</em></label><select name="ProgressStatus" required><option value="Pending">Chờ xử lý</option><option value="Processing" selected>Đang thực hiện</option><option value="Completed">Hoàn thành</option></select></div>
+                                        <div class="paw-field full"><label>Nội dung công việc <em>*</em></label><input name="StepDescription" maxlength="255" required placeholder="Ví dụ: Tắm và sấy lông" /></div>
+                                        <div class="paw-field full"><label>Ghi chú</label><textarea name="StaffNotes" rows="3" placeholder="Ghi chú về quá trình chăm sóc..."></textarea></div>
+                                        <div class="paw-field full"><label>Ảnh kết quả (JPG, PNG, WEBP - tối đa 5 MB)</label><input name="ResultImage" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" /></div>
+                                    </div>
+                                    <div class="paw-form-actions"><button type="submit" class="paw-primary-button">Lưu cập nhật chăm sóc</button></div>
+                                </form>
+                            </section>
+                        }
                     }
                 </div>
-            }
-        </section>
 
-        @if (appointment.Status != "Completed" && Model.StaffMembers.Count > 0)
-        {
-            <section class="info-card">
-                <h5>Cập nhật tiến trình chăm sóc</h5>
-                <form asp-action="AddProgress" method="post" enctype="multipart/form-data">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" name="TicketId" value="@ticket.TicketId" />
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Nhân viên thực hiện</label>
-                            <select name="StaffId" class="form-select" required>
-                                @foreach (var staff in Model.StaffMembers) { <option value="@staff.Id">@staff.FullName</option> }
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Trạng thái</label>
-                            <select name="ProgressStatus" class="form-select" required>
-                                <option value="Pending">Chờ xử lý</option>
-                                <option value="Processing" selected>Đang thực hiện</option>
-                                <option value="Completed">Hoàn thành</option>
-                            </select>
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label">Nội dung công việc</label>
-                            <input name="StepDescription" maxlength="255" class="form-control" required placeholder="Ví dụ: Tắm và sấy lông" />
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label">Ghi chú</label>
-                            <textarea name="StaffNotes" class="form-control" rows="2"></textarea>
-                        </div>
-                        <div class="col-md-7">
-                            <label class="form-label">Ảnh kết quả (JPG, PNG, WEBP - tối đa 5 MB)</label>
-                            <input name="ResultImage" type="file" class="form-control" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" />
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-primary mt-3">Lưu cập nhật</button>
-                </form>
-            </section>
-        }
-    }
+                <aside class="paw-detail-side">
+                    <section class="paw-panel">
+                        <div class="paw-panel-heading"><div><h2>Tóm tắt lịch hẹn</h2><p>Thông tin dịch vụ đã đặt</p></div></div>
+                        <div class="paw-side-pet"><span>🐾</span><div><b>@appointment.Pet.PetName</b><small>@appointment.Pet.Species · @appointment.Pet.Breed</small></div></div>
+                        <div class="paw-side-line"><span>Khách hàng</span><b>@appointment.Pet.Customer.CustomerName</b></div>
+                        <div class="paw-side-line"><span>Ngày hẹn</span><b>@appointment.AppointmentDate.ToString("dd/MM/yyyy")</b></div>
+                        <div class="paw-side-line"><span>Giờ hẹn</span><b>@appointment.AppointmentDate.ToString("HH:mm")</b></div>
+                        <div class="paw-side-line"><span>Trạng thái</span><b>@(appointment.Status == "Confirmed" ? "Chờ tiếp nhận" : appointment.Status == "Processing" ? "Đang chăm sóc" : "Hoàn thành")</b></div>
+                        <div class="paw-service-list"><b>DỊCH VỤ ĐÃ ĐẶT</b>@if (appointment.AppointmentServices.Count == 0) { <p>Chưa có dịch vụ.</p> } else { @foreach (var line in appointment.AppointmentServices) { <div><span>@line.Service.ServiceName × @line.Quantity</span></div> } }</div>
+                    </section>
+                    <div class="paw-side-note"><b>Quy trình tiếp nhận</b><p>1. Xác minh thông tin khách hàng và thú cưng.</p><p>2. Kiểm tra tiền sử bệnh, dị ứng.</p><p>3. Cập nhật cân nặng và tình trạng ban đầu.</p><p>4. Chỉ định kỹ thuật viên và xác nhận tiếp nhận.</p></div>
+                </aside>
+            </div>
+        </section>
+    </main>
 </div>
