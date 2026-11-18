@@ -48,6 +48,20 @@
             color: #ffffff;
         }
 
+    .paw-btn-walkin {
+        background-color: #ea580c;
+        color: #ffffff;
+        border-radius: 12px;
+        font-weight: 600;
+        padding: 9px 18px;
+        border: none;
+    }
+
+        .paw-btn-walkin:hover {
+            background-color: #c2410c;
+            color: #ffffff;
+        }
+
     .paw-btn-blue {
         background-color: #1d5bd6;
         color: #ffffff;
@@ -98,24 +112,40 @@
 </style>
 
 <div class="paw-dashboard my-2">
-    <!-- Header giống PawHaven -->
+    <!-- Thanh tiêu đề + Nút Tiếp nhận khách vãng lai (UC09) -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-2">
         <div>
             <h3 class="fw-bold mb-0" style="color: #111827;">Tiếp nhận thú cưng tại quầy</h3>
             <small class="text-muted">@DateTime.Now.ToString("dddd, dd/MM/yyyy") • Quầy Lễ tân & Chăm sóc</small>
         </div>
-        <div>
+        <div class="d-flex flex-wrap align-items-center gap-2">
             <span class="paw-shift-pill">
                 <span style="width:8px;height:8px;background:#16a34a;border-radius:50%;display:inline-block;"></span>
-                Đang hoạt động • Tiếp nhận trực tiếp
+                Đang hoạt động
             </span>
+            <button type="button" class="paw-btn-walkin shadow-sm" data-bs-toggle="modal" data-bs-target="#walkInModal">
+                <i class="bi bi-person-plus-fill me-1"></i> Tiếp nhận khách vãng lai
+            </button>
         </div>
     </div>
 
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show rounded-4 shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show rounded-4 shadow-sm" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
     <div class="row g-4">
-        <!-- CỘT TRÁI (7 PHẦN): TÌM KIẾM & TRẠNG THÁI SẴN SÀNG -->
         <div class="col-lg-7">
-            <!-- Box tìm lịch hẹn -->
             <div class="paw-card p-4 mb-4">
                 <label class="fw-bold mb-2 d-block" style="font-size: 0.95rem;">
                     Tìm lịch hẹn theo số điện thoại khách hàng hoặc tên thú cưng
@@ -142,7 +172,6 @@
                 </form>
             </div>
 
-            <!-- Thẻ hiển thị nhanh lịch hẹn đầu tiên tìm thấy hoặc hướng dẫn chọn -->
             @{
                 var firstItem = Model.Appointments.FirstOrDefault();
             }
@@ -218,9 +247,7 @@
             }
         </div>
 
-        <!-- CỘT PHẢI (5 PHẦN): 3 THẺ KPI & DANH SÁCH LỊCH HẸN HÔM NAY -->
         <div class="col-lg-5">
-            <!-- 3 Thẻ KPI -->
             <div class="row g-3 mb-4">
                 <div class="col-4">
                     <div class="paw-card p-3">
@@ -242,7 +269,6 @@
                 </div>
             </div>
 
-            <!-- Danh sách lịch hẹn đang chờ -->
             <div class="paw-card p-4">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <div>
@@ -297,6 +323,108 @@
                     </table>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL UC09: TIẾP NHẬN KHÁCH VÃNG LAI (WALK-IN) -->
+<div class="modal fade" id="walkInModal" tabindex="-1" aria-labelledby="walkInModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-header border-bottom px-4 py-3" style="background-color: #fff7ed; border-radius: 20px 20px 0 0;">
+                <h5 class="modal-title fw-bold text-dark" id="walkInModalLabel">
+                    <i class="bi bi-person-plus-fill text-warning me-2"></i>Tiếp nhận nhanh khách vãng lai tại quầy
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <form asp-action="WalkInCheckIn" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body p-4">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <div class="fw-bold text-primary small text-uppercase mb-1">1. Thông tin khách hàng</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Họ tên khách hàng <span class="text-danger">*</span></label>
+                            <input type="text" name="CustomerName" class="form-control" style="border-radius: 10px;" placeholder="VD: Nguyễn Văn A" required />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Số điện thoại <span class="text-danger">*</span></label>
+                            <input type="text" name="PhoneNumber" class="form-control" style="border-radius: 10px;" placeholder="VD: 0987654321" required />
+                        </div>
+
+                        <div class="col-12 mt-3">
+                            <div class="fw-bold text-primary small text-uppercase mb-1">2. Thông tin thú cưng & Cân nặng thực tế</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small">Tên thú cưng <span class="text-danger">*</span></label>
+                            <input type="text" name="PetName" class="form-control" style="border-radius: 10px;" placeholder="VD: Lu, Miu..." required />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small">Loài <span class="text-danger">*</span></label>
+                            <select name="Species" class="form-select" style="border-radius: 10px;">
+                                <option value="Chó">Chó</option>
+                                <option value="Mèo">Mèo</option>
+                                <option value="Khác">Khác</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small">Giống</label>
+                            <input type="text" name="Breed" class="form-control" style="border-radius: 10px;" placeholder="VD: Poodle, Corgi..." />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small">Giới tính</label>
+                            <select name="Gender" class="form-select" style="border-radius: 10px;">
+                                <option value="Đực">Đực</option>
+                                <option value="Cái">Cái</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small">Cân nặng thực tế (kg) <span class="text-danger">*</span></label>
+                            <input type="number" step="0.1" min="0.1" name="ActualWeight" value="3.0" class="form-control" style="border-radius: 10px;" required />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small">Kỹ thuật viên phụ trách <span class="text-danger">*</span></label>
+                            <select name="StaffId" class="form-select" style="border-radius: 10px;" required>
+                                <option value="">Chọn kỹ thuật viên...</option>
+                                @foreach (var staff in Model.StaffMembers)
+                                {
+                                    <option value="@staff.Id">@staff.FullName</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="col-12 mt-3">
+                            <label class="form-label fw-bold text-primary small text-uppercase">3. Chọn dịch vụ sử dụng <span class="text-danger">*</span></label>
+                            <div class="row g-2 border rounded-3 p-3 bg-light" style="max-height: 150px; overflow-y: auto;">
+                                @foreach (var svc in Model.AvailableServices)
+                                {
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="SelectedServiceIds" value="@svc.ServiceId" id="svc_@svc.ServiceId">
+                                            <label class="form-check-label small" for="svc_@svc.ServiceId">
+                                                <strong>@svc.ServiceName</strong> (@svc.BasePrice.ToString("N0")đ)
+                                            </label>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold small">Tình trạng ban đầu khi nhận</label>
+                            <input type="text" name="InitialCondition" class="form-control" style="border-radius: 10px;"
+                                   placeholder="VD: Khỏe mạnh, lông hơi rối..." />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top px-4 py-3">
+                    <button type="button" class="btn btn-light border" style="border-radius: 10px;" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="paw-btn-walkin">
+                        <i class="bi bi-check2-circle me-1"></i> Tạo lịch & Tiếp nhận ngay
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

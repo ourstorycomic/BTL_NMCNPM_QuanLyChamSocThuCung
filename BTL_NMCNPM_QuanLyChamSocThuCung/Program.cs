@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using BTL_NMCNPM_QuanLyChamSocThuCung.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +17,7 @@ if (app.Environment.IsDevelopment())
 {
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await db.Database.MigrateAsync();
     await ReceptionSeedData.InitializeAsync(db);
 }
 

@@ -102,7 +102,6 @@
 </style>
 
 <div class="paw-dashboard my-2">
-    <!-- Thanh tiêu đề trên cùng -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-2">
         <div class="d-flex align-items-center gap-3">
             <a asp-action="Index" class="btn btn-white bg-white border rounded-3 px-3 py-2 shadow-sm">
@@ -149,9 +148,7 @@
     }
 
     <div class="row g-4">
-        <!-- CỘT CHÍNH BÊN TRÁI (8 PHẦN): THÔNG TIN LỊCH HẸN + FORM TIẾP NHẬN / TIẾN TRÌNH -->
         <div class="col-lg-8">
-            <!-- Thẻ thông tin lịch hẹn giống PawHaven -->
             <div class="paw-card p-4 mb-4">
                 <div class="d-flex justify-content-between align-items-center pb-3 mb-3 border-bottom">
                     <span class="fw-bold text-success">
@@ -201,7 +198,6 @@
                     </div>
                 </div>
 
-                <!-- Dịch vụ đã đặt -->
                 <div class="mb-3">
                     <div class="text-muted mb-2" style="font-size:0.72rem;font-weight:700;">DỊCH VỤ ĐÃ ĐẶT</div>
                     <div class="d-flex flex-wrap gap-2">
@@ -221,17 +217,25 @@
                     </div>
                 </div>
 
-                <!-- Khung lưu ý sức khỏe giống ảnh mẫu -->
-                <div class="p-3 rounded-3" style="background-color: #fffbeb; border: 1px solid #fde68a; color: #92400e; font-size: 0.86rem;">
-                    <i class="bi bi-exclamation-triangle-fill text-warning me-1"></i>
-                    <strong>Lưu ý tiếp nhận:</strong> Kiểm tra kỹ tình trạng da, lông, tai và cân nặng thực tế trước khi bàn giao cho kỹ thuật viên.
-                </div>
+                @if (Model.Appointment.Invoice != null && Model.Appointment.Invoice.Surcharge > 0)
+                {
+                    <div class="p-3 rounded-3 mb-2" style="background-color: #fef2f2; border: 1px solid #fecaca; color: #991b1b; font-size: 0.86rem;">
+                        <i class="bi bi-receipt-cutoff me-1"></i>
+                        <strong>Phụ phí đã ghi nhận sang Hóa đơn:</strong> +@Model.Appointment.Invoice.Surcharge.ToString("N0")đ
+                        <span class="text-muted">(@Model.Appointment.Invoice.SurchargeReason)</span>
+                    </div>
+                }
+                else
+                {
+                    <div class="p-3 rounded-3" style="background-color: #fffbeb; border: 1px solid #fde68a; color: #92400e; font-size: 0.86rem;">
+                        <i class="bi bi-exclamation-triangle-fill text-warning me-1"></i>
+                        <strong>Lưu ý tiếp nhận:</strong> Kiểm tra kỹ tình trạng da, lông, tai và cân nặng thực tế trước khi bàn giao cho kỹ thuật viên.
+                    </div>
+                }
             </div>
 
-            <!-- KHU VỰC FORM XỬ LÝ -->
             @if (Model.Appointment.Status == "Confirmed" && Model.Ticket == null)
             {
-                <!-- FORM 1: THÔNG TIN TIẾP NHẬN (CHECK-IN) -->
                 <div class="paw-card p-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="fw-bold mb-0">
@@ -245,7 +249,6 @@
                         <input type="hidden" name="AppointmentId" value="@Model.Appointment.AppointmentId" />
 
                         <div class="row g-3 mb-3">
-                            <!-- Cân nặng thực tế có nút - + -->
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold small">Cân nặng thực tế <span class="text-danger">*</span></label>
                                 <div class="paw-weight-box">
@@ -259,7 +262,6 @@
                                 <small class="text-muted">Lần trước: <strong>@pet.Weight kg</strong></small>
                             </div>
 
-                            <!-- Phân công kỹ thuật viên -->
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold small">Phân công kỹ thuật viên <span class="text-danger">*</span></label>
                                 <select name="StaffId" class="form-select" style="height: 44px; border-radius: 12px;" required>
@@ -273,7 +275,6 @@
                             </div>
                         </div>
 
-                        <!-- Tình trạng sức khỏe ban đầu (Tag chọn nhanh) -->
                         <div class="mb-4">
                             <label class="form-label fw-semibold small">Tình trạng sức khỏe ban đầu <span class="text-danger">*</span></label>
                             <div class="d-flex flex-wrap gap-2 mb-2">
@@ -301,7 +302,6 @@
             }
             else if (Model.Ticket != null && Model.Appointment.Status == "Processing")
             {
-                <!-- FORM 2: CẬP NHẬT TIẾN TRÌNH CHĂM SÓC (SAU KHI CHECK-IN) -->
                 <div class="paw-card p-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="fw-bold mb-0">
@@ -324,10 +324,11 @@
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold small">Trạng thái tiến trình <span class="text-danger">*</span></label>
+                                <label class="form-label fw-semibold small">Trạng thái công đoạn này <span class="text-danger">*</span></label>
                                 <select name="ProgressStatus" class="form-select" style="border-radius:12px;height:44px;" required>
-                                    <option value="Processing">Đang thực hiện (Cập nhật bước)</option>
-                                    <option value="Completed">Hoàn thành toàn bộ dịch vụ</option>
+                                    <option value="Pending">Chờ thực hiện công đoạn</option>
+                                    <option value="Processing" selected>Đang thực hiện công đoạn</option>
+                                    <option value="Completed">Đã xong công đoạn này</option>
                                 </select>
                             </div>
 
@@ -346,10 +347,46 @@
                                 <input type="file" name="ResultImage" accept=".jpg,.jpeg,.png,.webp" class="form-control" style="border-radius:12px;padding-top:9px;" />
                             </div>
 
+                            <!-- UC10: PHỤ PHÍ PHÁT SINH ĐẨY SANG HÓA ĐƠN -->
+                            <div class="col-12">
+                                <div class="p-3 rounded-4 border" style="background-color: #fffaf5; border-color: #fed7aa !important;">
+                                    <div class="fw-bold text-warning-emphasis small mb-2">
+                                        <i class="bi bi-cash-coin me-1"></i> Phụ phí phát sinh (nếu có — tự động cộng vào Hóa đơn)
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mb-2">
+                                        <span class="paw-tag-chip" onclick="fillSurcharge(50000, 'Lông quá rối cần gỡ rối')">+50k Lông quá rối</span>
+                                        <span class="paw-tag-chip" onclick="fillSurcharge(30000, 'Bọ chét / ve nhiều cần tắm thuốc')">+30k Bọ chét nhiều</span>
+                                        
+                                    </div>
+                                    <div class="row g-2">
+                                        <div class="col-md-4">
+                                            <label class="form-label small text-muted mb-1">Số tiền phụ phí (VNĐ)</label>
+                                            <input type="number" step="1000" min="0" id="surchargeAmount" name="Surcharge" value="0"
+                                                   class="form-control" style="border-radius:10px;" />
+                                        </div>
+                                        <div class="col-md-8">
+                                            <label class="form-label small text-muted mb-1">Lý do phụ phí</label>
+                                            <input type="text" id="surchargeReason" name="SurchargeReason"
+                                                   class="form-control" style="border-radius:10px;"
+                                                   placeholder="VD: Lông bết rối nhiều, tắm trị ve..." />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="col-12">
                                 <label class="form-label fw-semibold small">Ghi chú chăm sóc</label>
                                 <textarea name="StaffNotes" rows="2" class="form-control" style="border-radius:12px;"
                                       placeholder="Ghi nhận phản ứng của thú cưng hoặc kết quả sau dịch vụ..."></textarea>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="form-check p-3 rounded-3 border bg-light">
+                                    <input class="form-check-input ms-0 me-2" type="checkbox" name="CompleteAppointment" value="true" id="completeApptCheck">
+                                    <label class="form-check-label fw-semibold text-dark" for="completeApptCheck">
+                                        Hoàn tất toàn bộ dịch vụ & Đóng lịch hẹn (Chuyển sang chờ bàn giao / thanh toán)
+                                    </label>
+                                </div>
                             </div>
                         </div>
 
@@ -363,7 +400,6 @@
             }
         </div>
 
-        <!-- CỘT PHẢI (4 PHẦN): NHẬT KÝ TIẾN TRÌNH & THÔNG TIN PHIẾU -->
         <div class="col-lg-4">
             <div class="paw-card p-4">
                 <h6 class="fw-bold mb-1">Nhật ký tiếp nhận & chăm sóc</h6>
@@ -401,7 +437,12 @@
                                 <div class="p-3 rounded-3 border bg-white">
                                     <div class="d-flex justify-content-between align-items-center mb-1">
                                         <span class="fw-bold text-primary small">@p.StepDescription</span>
-                                        <span class="text-muted" style="font-size:0.75rem;">@p.UpdatedAt.ToString("HH:mm")</span>
+                                        <span class="badge @(p.ProgressStatus == "Completed" ? "bg-success" : p.ProgressStatus == "Processing" ? "bg-warning text-dark" : "bg-secondary")">
+                                            @(p.ProgressStatus == "Completed" ? "Xong bước" : p.ProgressStatus == "Processing" ? "Đang làm" : "Chờ làm")
+                                        </span>
+                                    </div>
+                                    <div class="text-muted mb-1" style="font-size:0.74rem;">
+                                        <i class="bi bi-clock me-1"></i>@p.UpdatedAt.ToString("HH:mm dd/MM") • @(p.Staff?.FullName ?? "KTV")
                                     </div>
                                     @if (!string.IsNullOrWhiteSpace(p.StaffNotes))
                                     {
@@ -444,5 +485,12 @@
                 .filter(s => s && s !== text)
                 .join(', ');
         }
+    }
+
+    function fillSurcharge(amount, reason) {
+        const amountInput = document.getElementById('surchargeAmount');
+        const reasonInput = document.getElementById('surchargeReason');
+        if (amountInput) amountInput.value = amount;
+        if (reasonInput) reasonInput.value = reason;
     }
 </script>
