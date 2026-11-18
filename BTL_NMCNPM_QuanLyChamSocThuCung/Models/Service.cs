@@ -7,7 +7,9 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Models
     {
         public Guid ServiceId { get; set; } = Guid.NewGuid();
         public string ServiceName { get; set; } = string.Empty;
+        public string Category { get; set; } = string.Empty;
         public string? Description { get; set; }
+        public int DurationMinutes { get; set; } = 30;
         public decimal BasePrice { get; set; }
         public decimal WeightTierMin { get; set; } = 0;
         public decimal WeightTierMax { get; set; } = 999.99m;

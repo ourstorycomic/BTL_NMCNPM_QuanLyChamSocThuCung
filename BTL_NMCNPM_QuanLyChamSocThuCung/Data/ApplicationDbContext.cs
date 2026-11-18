@@ -41,6 +41,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Data
                 entity.Property(e => e.Username).HasMaxLength(50).IsUnicode(true).IsRequired();
                 entity.HasIndex(e => e.Username).IsUnique();
                 entity.Property(e => e.PasswordHash).HasMaxLength(255).IsUnicode(false).IsRequired();
+                entity.Property(e => e.FullName).HasMaxLength(100).IsUnicode(true).IsRequired();
                 entity.Property(e => e.Role).HasMaxLength(20).IsUnicode(false).IsRequired();
                 entity.Property(e => e.Status).HasDefaultValue(true).IsRequired();
                 entity.Property(e => e.CreatedAt).HasColumnType("datetime2").HasDefaultValueSql("SYSDATETIME()").IsRequired();
@@ -59,6 +60,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Data
                 entity.Property(e => e.PhoneNumber).HasMaxLength(15).IsUnicode(false).IsRequired();
                 entity.Property(e => e.Email).HasMaxLength(254).IsUnicode(true);
                 entity.Property(e => e.Address).HasMaxLength(255).IsUnicode(true);
+                entity.Property(e => e.IsActive).HasDefaultValue(true).IsRequired();
                 entity.Property(e => e.CreatedAt).HasColumnType("datetime2").HasDefaultValueSql("SYSDATETIME()").IsRequired();
 
                 entity.HasIndex(e => e.AccountId).IsUnique().HasFilter("[AccountId] IS NOT NULL");
@@ -90,6 +92,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Data
                 entity.Property(e => e.Weight).HasPrecision(5, 2).IsRequired();
                 entity.Property(e => e.MedicalHistory).HasColumnType("nvarchar(max)");
                 entity.Property(e => e.AllergyNote).HasMaxLength(255).IsUnicode(true);
+                entity.Property(e => e.ImageUrl).HasMaxLength(508).IsUnicode(false);
 
                 entity.HasOne(e => e.Customer)
                       .WithMany(c => c.Pets)
@@ -127,12 +130,15 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Data
                     t.HasCheckConstraint("CK_Service_BasePrice", "[BasePrice] >= 0");
                     t.HasCheckConstraint("CK_Service_WeightTierMin", "[WeightTierMin] >= 0");
                     t.HasCheckConstraint("CK_Service_WeightTierMax", "[WeightTierMax] >= [WeightTierMin]");
+                    t.HasCheckConstraint("CK_Service_DurationMinutes", "[DurationMinutes] > 0");
                 });
 
                 entity.HasKey(e => e.ServiceId);
                 entity.Property(e => e.ServiceId).HasDefaultValueSql("NEWID()");
                 entity.Property(e => e.ServiceName).HasMaxLength(100).IsUnicode(true).IsRequired();
+                entity.Property(e => e.Category).HasMaxLength(50).IsUnicode(true).IsRequired();
                 entity.Property(e => e.Description).HasMaxLength(255).IsUnicode(true);
+                entity.Property(e => e.DurationMinutes).HasDefaultValue(30).IsRequired();
                 entity.Property(e => e.BasePrice).HasPrecision(18, 2).IsRequired();
                 entity.Property(e => e.WeightTierMin).HasPrecision(5, 2).HasDefaultValue(0m).IsRequired();
                 entity.Property(e => e.WeightTierMax).HasPrecision(5, 2).HasDefaultValue(999.99m).IsRequired();
@@ -152,6 +158,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Data
                 entity.HasKey(e => e.AppointmentId);
                 entity.Property(e => e.AppointmentId).HasDefaultValueSql("NEWID()");
                 entity.Property(e => e.AppointmentDate).HasColumnType("datetime2").IsRequired();
+                entity.Property(e => e.EndTime).HasColumnType("datetime2");
                 entity.Property(e => e.Status).HasMaxLength(30).IsUnicode(false).HasDefaultValue("Pending").IsRequired();
                 entity.Property(e => e.Notes).HasMaxLength(255).IsUnicode(true);
 
@@ -259,11 +266,14 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Data
                 entity.HasKey(e => e.InvoiceId);
                 entity.Property(e => e.InvoiceId).HasDefaultValueSql("NEWID()");
                 entity.Property(e => e.Surcharge).HasPrecision(18, 2).HasDefaultValue(0m).IsRequired();
+                entity.Property(e => e.SurchargeReason).HasMaxLength(255).IsUnicode(true);
                 entity.Property(e => e.DiscountAmount).HasPrecision(18, 2).HasDefaultValue(0m).IsRequired();
+                entity.Property(e => e.DiscountCode).HasMaxLength(50).IsUnicode(false);
                 entity.Property(e => e.TotalAmount).HasPrecision(18, 2).IsRequired();
                 entity.Property(e => e.PaymentMethod).HasMaxLength(30).IsUnicode(false).IsRequired();
                 entity.Property(e => e.PaymentStatus).HasMaxLength(30).IsUnicode(false).HasDefaultValue("Unpaid").IsRequired();
                 entity.Property(e => e.PaymentTime).HasColumnType("datetime2");
+                entity.Property(e => e.CreatedAt).HasColumnType("datetime2").HasDefaultValueSql("SYSDATETIME()").IsRequired();
 
                 entity.HasIndex(e => e.AppointmentId).IsUnique();
 

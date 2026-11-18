@@ -15,6 +15,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Models
         public decimal Weight { get; set; }
         public string? MedicalHistory { get; set; }
         public string? AllergyNote { get; set; }
+        public string? ImageUrl { get; set; }
 
         // Navigation properties
         public virtual Customer Customer { get; set; } = null!;

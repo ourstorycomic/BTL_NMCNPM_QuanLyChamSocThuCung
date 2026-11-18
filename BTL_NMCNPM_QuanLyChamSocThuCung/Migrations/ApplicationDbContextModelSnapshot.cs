@@ -34,6 +34,12 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("SYSDATETIME()");
 
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -76,6 +82,9 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Migrations
                         .HasDefaultValueSql("NEWID()");
 
                     b.Property<DateTime>("AppointmentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("EndTime")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Notes")
@@ -210,6 +219,11 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Migrations
                         .IsUnicode(true)
                         .HasColumnType("nvarchar(254)");
 
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
                         .HasMaxLength(15)
@@ -235,11 +249,21 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Migrations
                     b.Property<Guid>("AppointmentId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("SYSDATETIME()");
+
                     b.Property<decimal>("DiscountAmount")
                         .ValueGeneratedOnAdd()
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)")
                         .HasDefaultValue(0m);
+
+                    b.Property<string>("DiscountCode")
+                        .HasMaxLength(50)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(50)");
 
                     b.Property<string>("PaymentMethod")
                         .IsRequired()
@@ -263,6 +287,11 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)")
                         .HasDefaultValue(0m);
+
+                    b.Property<string>("SurchargeReason")
+                        .HasMaxLength(255)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<decimal>("TotalAmount")
                         .HasPrecision(18, 2)
@@ -358,6 +387,11 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Migrations
                         .IsUnicode(true)
                         .HasColumnType("nvarchar(10)");
 
+                    b.Property<string>("ImageUrl")
+                        .HasMaxLength(508)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(508)");
+
                     b.Property<string>("MedicalHistory")
                         .HasColumnType("nvarchar(max)");
 
@@ -435,10 +469,21 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<string>("Description")
                         .HasMaxLength(255)
                         .IsUnicode(true)
                         .HasColumnType("nvarchar(255)");
+
+                    b.Property<int>("DurationMinutes")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(30);
 
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
@@ -468,6 +513,8 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Migrations
                     b.ToTable("Service", null, t =>
                         {
                             t.HasCheckConstraint("CK_Service_BasePrice", "[BasePrice] >= 0");
+
+                            t.HasCheckConstraint("CK_Service_DurationMinutes", "[DurationMinutes] > 0");
 
                             t.HasCheckConstraint("CK_Service_WeightTierMax", "[WeightTierMax] >= [WeightTierMin]");
 

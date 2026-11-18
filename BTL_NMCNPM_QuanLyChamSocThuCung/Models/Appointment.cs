@@ -8,6 +8,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Models
         public Guid AppointmentId { get; set; } = Guid.NewGuid();
         public Guid PetId { get; set; }
         public DateTime AppointmentDate { get; set; }
+        public DateTime? EndTime { get; set; }
         public string Status { get; set; } = "Pending"; // Pending, Confirmed, Processing, Completed, Cancelled
         public string? Notes { get; set; }
 
