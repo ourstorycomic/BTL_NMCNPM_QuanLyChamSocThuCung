@@ -1,0 +1,61 @@
+﻿@model BTL_NMCNPM_QuanLyChamSocThuCung.Models.Service
+@{
+    ViewData["Title"] = "Thêm Dịch Vụ";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow border-0">
+                <div class="card-header bg-success text-white py-3">
+                    <h4 class="mb-0 fw-bold"><i class="bi bi-plus-circle-fill me-2"></i>Thêm Dịch Vụ Mới</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Create">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="ServiceName" class="form-label fw-bold">Tên Dịch Vụ <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="bi bi-tag"></i></span>
+                                    <input asp-for="ServiceName" class="form-control" required placeholder="VD: Tắm vệ sinh..." />
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Category" class="form-label fw-bold">Phân Loại <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="bi bi-collection"></i></span>
+                                    <input asp-for="Category" class="form-control" required placeholder="VD: Grooming, Spa..." />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="BasePrice" class="form-label fw-bold">Giá Cơ Bản (VNĐ) <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="bi bi-cash-coin"></i></span>
+                                    <input asp-for="BasePrice" type="number" class="form-control" required placeholder="VD: 150000" />
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="DurationMinutes" class="form-label fw-bold">Thời Gian (Phút) <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="bi bi-clock-history"></i></span>
+                                    <input asp-for="DurationMinutes" type="number" class="form-control" value="30" required />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label asp-for="Description" class="form-label fw-bold">Mô tả chi tiết</label>
+                            <textarea asp-for="Description" class="form-control" rows="3" placeholder="Nhập mô tả cho dịch vụ này..."></textarea>
+                        </div>
+                        
+                        <div class="d-flex justify-content-end gap-2">
+                            <a asp-action="Index" class="btn btn-light border"><i class="bi bi-arrow-left"></i> Quay lại</a>
+                            <button type="submit" class="btn btn-success px-4"><i class="bi bi-save"></i> Lưu Dịch Vụ</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
