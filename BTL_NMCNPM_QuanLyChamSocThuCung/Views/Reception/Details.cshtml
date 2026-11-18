@@ -1,0 +1,150 @@
+@model BTL_NMCNPM_QuanLyChamSocThuCung.ViewModels.ReceptionDetailsViewModel
+@{
+    ViewData["Title"] = "Chi tiết tiếp nhận";
+    var appointment = Model.Appointment;
+    var ticket = Model.Ticket;
+}
+<link rel="stylesheet" href="~/css/reception.css" />
+
+<div class="reception-page">
+    <a asp-action="Index" class="btn btn-outline-secondary btn-sm mb-3">← Quay lại danh sách</a>
+    <div class="reception-heading">
+        <div><h2>Thông tin tiếp nhận</h2><p>Mã lịch hẹn: @appointment.AppointmentId</p></div>
+        <span class="status-pill">@appointment.Status</span>
+    </div>
+
+    @if (TempData["Success"] != null) { <div class="alert alert-success">@TempData["Success"]</div> }
+    @if (TempData["Error"] != null) { <div class="alert alert-danger">@TempData["Error"]</div> }
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <section class="info-card">
+                <h5>Thông tin thú cưng</h5>
+                <p><b>Tên:</b> @appointment.Pet.PetName</p>
+                <p><b>Loài:</b> @appointment.Pet.Species</p>
+                <p><b>Giống:</b> @appointment.Pet.Breed</p>
+                <p><b>Giới tính:</b> @appointment.Pet.Gender</p>
+                <p><b>Cân nặng hiện tại:</b> @appointment.Pet.Weight kg</p>
+                <p><b>Tiền sử bệnh:</b> @(appointment.Pet.MedicalHistory ?? "Chưa cập nhật")</p>
+                <p><b>Dị ứng:</b> @(appointment.Pet.AllergyNote ?? "Chưa ghi nhận")</p>
+            </section>
+        </div>
+        <div class="col-md-6">
+            <section class="info-card">
+                <h5>Thông tin khách hàng và lịch hẹn</h5>
+                <p><b>Khách hàng:</b> @appointment.Pet.Customer.CustomerName</p>
+                <p><b>Điện thoại:</b> @appointment.Pet.Customer.PhoneNumber</p>
+                <p><b>Email:</b> @(appointment.Pet.Customer.Email ?? "—")</p>
+                <p><b>Thời gian hẹn:</b> @appointment.AppointmentDate.ToString("dd/MM/yyyy HH:mm")</p>
+                <p><b>Ghi chú lịch hẹn:</b> @(appointment.Notes ?? "—")</p>
+                <h6 class="mt-3">Dịch vụ</h6>
+                @if (appointment.AppointmentServices.Count == 0) { <p>Chưa có dịch vụ.</p> }
+                else {
+                    <ul>@foreach (var line in appointment.AppointmentServices) { <li>@line.Service.ServiceName (x@line.Quantity)</li> }</ul>
+                }
+            </section>
+        </div>
+    </div>
+
+    @if (ticket == null && appointment.Status == "Confirmed")
+    {
+        <section class="info-card mb-4">
+            <h5>Tiếp nhận thú cưng</h5>
+            @if (Model.StaffMembers.Count == 0) { <div class="alert alert-warning">Chưa có tài khoản nhân viên có trạng thái hoạt động. Hãy thêm nhân viên có Role = Staff trước.</div> }
+            else
+            {
+                <form asp-action="CheckIn" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="AppointmentId" value="@appointment.AppointmentId" />
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Nhân viên tiếp nhận</label>
+                            <select name="StaffId" class="form-select" required>
+                                <option value="">-- Chọn nhân viên --</option>
+                                @foreach (var staff in Model.StaffMembers) { <option value="@staff.Id">@staff.FullName</option> }
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Cân nặng thực tế (kg)</label>
+                            <input name="ActualWeight" type="number" min="0.1" max="300" step="0.01" value="@appointment.Pet.Weight" class="form-control" required />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Tình trạng ban đầu / lưu ý</label>
+                            <textarea name="InitialCondition" class="form-control" rows="2" placeholder="Ví dụ: Thú cưng hơi mệt, cần chú ý vùng chân trước..."></textarea>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary mt-3" type="submit">Xác nhận tiếp nhận</button>
+                </form>
+            }
+        </section>
+    }
+    else if (ticket != null)
+    {
+        <section class="info-card mb-4">
+            <h5>Phiếu tiếp nhận</h5>
+            <p><b>Thời gian:</b> @ticket.CheckInTime.ToString("dd/MM/yyyy HH:mm")</p>
+            <p><b>Nhân viên:</b> @ticket.Staff.FullName</p>
+            <p><b>Cân nặng lúc tiếp nhận:</b> @ticket.ActualWeight kg</p>
+        </section>
+
+        <section class="info-card mb-4">
+            <h5>Lịch sử chăm sóc</h5>
+            @if (ticket.CareProgresses.Count == 0) { <p class="text-muted">Chưa có cập nhật chăm sóc.</p> }
+            @foreach (var progress in ticket.CareProgresses.OrderByDescending(p => p.UpdatedAt))
+            {
+                <div class="progress-entry">
+                    <div class="d-flex justify-content-between flex-wrap gap-2">
+                        <strong>@progress.StepDescription</strong>
+                        <span class="status-pill">@progress.ProgressStatus</span>
+                    </div>
+                    <div class="small text-muted">@progress.UpdatedAt.ToString("dd/MM/yyyy HH:mm") - @progress.Staff.FullName</div>
+                    @if (!string.IsNullOrWhiteSpace(progress.StaffNotes)) { <p class="mb-2">@progress.StaffNotes</p> }
+                    @if (!string.IsNullOrWhiteSpace(progress.ResultImageUrl))
+                    {
+                        <a href="@progress.ResultImageUrl" target="_blank" rel="noopener"><img src="@progress.ResultImageUrl" class="care-result-image" alt="Ảnh kết quả chăm sóc" /></a>
+                    }
+                </div>
+            }
+        </section>
+
+        @if (appointment.Status != "Completed" && Model.StaffMembers.Count > 0)
+        {
+            <section class="info-card">
+                <h5>Cập nhật tiến trình chăm sóc</h5>
+                <form asp-action="AddProgress" method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="TicketId" value="@ticket.TicketId" />
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Nhân viên thực hiện</label>
+                            <select name="StaffId" class="form-select" required>
+                                @foreach (var staff in Model.StaffMembers) { <option value="@staff.Id">@staff.FullName</option> }
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Trạng thái</label>
+                            <select name="ProgressStatus" class="form-select" required>
+                                <option value="Pending">Chờ xử lý</option>
+                                <option value="Processing" selected>Đang thực hiện</option>
+                                <option value="Completed">Hoàn thành</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Nội dung công việc</label>
+                            <input name="StepDescription" maxlength="255" class="form-control" required placeholder="Ví dụ: Tắm và sấy lông" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Ghi chú</label>
+                            <textarea name="StaffNotes" class="form-control" rows="2"></textarea>
+                        </div>
+                        <div class="col-md-7">
+                            <label class="form-label">Ảnh kết quả (JPG, PNG, WEBP - tối đa 5 MB)</label>
+                            <input name="ResultImage" type="file" class="form-control" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" />
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary mt-3">Lưu cập nhật</button>
+                </form>
+            </section>
+        }
+    }
+</div>
