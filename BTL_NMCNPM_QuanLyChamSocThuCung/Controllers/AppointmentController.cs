@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using BTL_NMCNPM_QuanLyChamSocThuCung.Data;
 using BTL_NMCNPM_QuanLyChamSocThuCung.Models;
 using BTL_NMCNPM_QuanLyChamSocThuCung.ViewModels;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -133,28 +135,83 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
 
             // ---- 2.2. Kiểm tra khách hàng và thú cưng ----
             Customer? customer = null;
+            Pet? pet = null;
+
             if (model.CustomerId.HasValue)
             {
                 customer = await _db.Customers
-                    .AsNoTracking()
                     .FirstOrDefaultAsync(c => c.Id == model.CustomerId.Value && c.IsActive);
 
                 if (customer == null)
                 {
                     ModelState.AddModelError(nameof(model.CustomerId), "Khách hàng không tồn tại hoặc đã ngừng hoạt động.");
                 }
-            }
-
-            Pet? pet = null;
-            if (model.PetId.HasValue && customer != null)
-            {
-                pet = await _db.Pets
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(p => p.PetId == model.PetId.Value && p.CustomerId == customer.Id);
-
-                if (pet == null)
+                else if (model.PetId.HasValue)
                 {
-                    ModelState.AddModelError(nameof(model.PetId), "Thú cưng không thuộc khách hàng đã chọn.");
+                    pet = await _db.Pets
+                        .FirstOrDefaultAsync(p => p.PetId == model.PetId.Value && p.CustomerId == customer.Id);
+
+                    if (pet == null)
+                    {
+                        ModelState.AddModelError(nameof(model.PetId), "Thú cưng không thuộc khách hàng đã chọn.");
+                    }
+                }
+                else
+                {
+                    ModelState.AddModelError(nameof(model.PetId), "Vui lòng chọn thú cưng.");
+                }
+            }
+            else
+            {
+                // Khách vãng lai đặt lịch nhanh (Guest Booking)
+                if (string.IsNullOrWhiteSpace(model.GuestCustomerName))
+                {
+                    ModelState.AddModelError(nameof(model.GuestCustomerName), "Vui lòng nhập họ và tên của bạn.");
+                }
+
+                if (string.IsNullOrWhiteSpace(model.GuestPhoneNumber))
+                {
+                    ModelState.AddModelError(nameof(model.GuestPhoneNumber), "Vui lòng nhập số điện thoại để chúng tôi liên hệ xác nhận.");
+                }
+
+                if (string.IsNullOrWhiteSpace(model.GuestPetName))
+                {
+                    ModelState.AddModelError(nameof(model.GuestPetName), "Vui lòng nhập tên bé cưng.");
+                }
+
+                if (ModelState.IsValid)
+                {
+                    var phone = model.GuestPhoneNumber!.Trim();
+                    customer = await _db.Customers.FirstOrDefaultAsync(c => c.PhoneNumber == phone);
+                    if (customer == null)
+                    {
+                        customer = new Customer
+                        {
+                            CustomerName = model.GuestCustomerName!.Trim(),
+                            PhoneNumber = phone,
+                            IsActive = true,
+                            CreatedAt = DateTime.UtcNow
+                        };
+                        _db.Customers.Add(customer);
+                        await _db.SaveChangesAsync();
+                    }
+
+                    var petName = model.GuestPetName!.Trim();
+                    pet = await _db.Pets.FirstOrDefaultAsync(p => p.CustomerId == customer.Id && p.PetName.ToLower() == petName.ToLower());
+                    if (pet == null)
+                    {
+                        pet = new Pet
+                        {
+                            CustomerId = customer.Id,
+                            PetName = petName,
+                            Species = string.IsNullOrWhiteSpace(model.GuestSpecies) ? "Chó" : model.GuestSpecies.Trim(),
+                            Breed = model.GuestBreed?.Trim(),
+                            Weight = model.GuestWeight ?? 3.5m,
+                            AllergyNote = model.GuestAllergyNote?.Trim()
+                        };
+                        _db.Pets.Add(pet);
+                        await _db.SaveChangesAsync();
+                    }
                 }
             }
 
@@ -365,23 +422,78 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
         /// <summary>Nạp danh sách khách hàng, thú cưng theo khách hàng và dịch vụ đang hoạt động.</summary>
         private async Task PopulateOptionsAsync(AppointmentCreateViewModel model)
         {
-            model.Customers = await _db.Customers
+            model.Services = await _db.Services
                 .AsNoTracking()
-                .Where(c => c.IsActive)
-                .OrderBy(c => c.CustomerName)
+                .Where(s => s.IsActive)
+                .OrderBy(s => s.Category)
+                .ThenBy(s => s.ServiceName)
                 .ToListAsync();
 
-            var pets = await _db.Pets
-                .AsNoTracking()
-                .Where(p => p.Customer.IsActive)
-                .OrderBy(p => p.PetName)
-                .ToListAsync();
+            var isAuth = User.Identity?.IsAuthenticated == true;
+            model.IsAuthenticated = isAuth;
 
-            model.PetsByCustomer = pets
-                .GroupBy(p => p.CustomerId.ToString())
-                .ToDictionary(
-                    g => g.Key,
-                    g => g.Select(p => new PetOptionViewModel
+            var role = User.FindFirstValue(ClaimTypes.Role) ?? HttpContext.Session.GetString("UserRole");
+            var isStaffOrAdmin = role == "Staff" || role == "Admin";
+            model.IsStaffOrAdmin = isStaffOrAdmin;
+
+            if (isStaffOrAdmin)
+            {
+                // Nhân viên / Admin: Được xem toàn bộ khách hàng để tạo lịch hộ
+                model.Customers = await _db.Customers
+                    .AsNoTracking()
+                    .Where(c => c.IsActive)
+                    .OrderBy(c => c.CustomerName)
+                    .ToListAsync();
+
+                var pets = await _db.Pets
+                    .AsNoTracking()
+                    .Where(p => p.Customer.IsActive)
+                    .OrderBy(p => p.PetName)
+                    .ToListAsync();
+
+                model.PetsByCustomer = pets
+                    .GroupBy(p => p.CustomerId.ToString())
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.Select(p => new PetOptionViewModel
+                        {
+                            PetId = p.PetId,
+                            PetName = p.PetName,
+                            Species = p.Species,
+                            Breed = p.Breed,
+                            Weight = p.Weight,
+                            AllergyNote = p.AllergyNote
+                        }).ToList());
+            }
+            else if (isAuth)
+            {
+                // Khách hàng đã đăng nhập: CHỈ NẠP DUY NHẤT HỒ SƠ VÀ THÚ CƯNG CỦA CHÍNH HỌ
+                var accountIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? HttpContext.Session.GetString("AccountId");
+                Customer? currentCust = null;
+
+                if (Guid.TryParse(accountIdStr, out var accountId))
+                {
+                    currentCust = await _db.Customers
+                        .Include(c => c.Pets)
+                        .FirstOrDefaultAsync(c => c.AccountId == accountId && c.IsActive);
+                }
+
+                if (currentCust == null)
+                {
+                    var username = User.FindFirstValue("Username") ?? HttpContext.Session.GetString("Username");
+                    currentCust = await _db.Customers
+                        .Include(c => c.Pets)
+                        .FirstOrDefaultAsync(c => (c.Account != null && c.Account.Username == username) || c.Email == username);
+                }
+
+                if (currentCust != null)
+                {
+                    model.CustomerId = currentCust.Id;
+                    model.LoggedInCustomerName = currentCust.CustomerName;
+                    model.LoggedInPhoneNumber = currentCust.PhoneNumber;
+                    model.Customers = new List<Customer> { currentCust };
+
+                    var petList = currentCust.Pets.Select(p => new PetOptionViewModel
                     {
                         PetId = p.PetId,
                         PetName = p.PetName,
@@ -389,14 +501,31 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
                         Breed = p.Breed,
                         Weight = p.Weight,
                         AllergyNote = p.AllergyNote
-                    }).ToList());
+                    }).ToList();
 
-            model.Services = await _db.Services
-                .AsNoTracking()
-                .Where(s => s.IsActive)
-                .OrderBy(s => s.Category)
-                .ThenBy(s => s.ServiceName)
-                .ToListAsync();
+                    model.PetsByCustomer = new Dictionary<string, List<PetOptionViewModel>>
+                    {
+                        { currentCust.Id.ToString(), petList }
+                    };
+
+                    if (petList.Any() && !model.PetId.HasValue)
+                    {
+                        model.PetId = petList.First().PetId;
+                    }
+                }
+                else
+                {
+                    model.Customers = new List<Customer>();
+                    model.PetsByCustomer = new Dictionary<string, List<PetOptionViewModel>>();
+                }
+            }
+            else
+            {
+                // Khách vãng lai (CHƯA ĐĂNG NHẬP):
+                // Tuyệt đối KHÔNG nạp bất kỳ danh sách khách hàng hay thú cưng nào khác để bảo mật dữ liệu!
+                model.Customers = new List<Customer>();
+                model.PetsByCustomer = new Dictionary<string, List<PetOptionViewModel>>();
+            }
         }
 
         /// <summary>
