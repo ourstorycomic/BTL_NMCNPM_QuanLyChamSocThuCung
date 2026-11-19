@@ -247,6 +247,8 @@
                               ?? sessionName
                               ?? Context.Request.Cookies["FullName"]
                               ?? (isStaffView ? "Hoàng Thu Trang" : "Nguyễn Minh Anh");
+
+        var currentCtrl = ViewContext.RouteData.Values["controller"]?.ToString();
     }
 
     @if (isStaffView)
@@ -290,18 +292,18 @@
                     <i class="bi bi-houses"></i>Khách sạn
                 </a>
 
-                <div class="sidebar-section-title mt-2">QUẢN LÝ</div>
+                <div class="sidebar-section-title mt-2">QUẢN LÝ & BÁO CÁO</div>
                 <a href="javascript:void(0)" class="sidebar-link text-muted">
                     <i class="bi bi-people"></i>Khách hàng
                 </a>
-                <a asp-controller="Pet" asp-action="Index" class="sidebar-link active">
+                <a asp-controller="Pet" asp-action="Index" class="sidebar-link @(currentCtrl == "Pet" ? "active" : "text-muted")">
                     <i class="bi bi-heart-pulse-fill"></i>Hồ sơ thú cưng
                 </a>
-                <a href="javascript:void(0)" class="sidebar-link text-muted">
-                    <i class="bi bi-person-gear"></i>Kỹ thuật viên
+                <a asp-controller="Billing" asp-action="Index" class="sidebar-link @(currentCtrl == "Billing" ? "active" : "text-muted")">
+                    <i class="bi bi-receipt"></i>Thanh toán & Hóa đơn
                 </a>
-                <a href="javascript:void(0)" class="sidebar-link text-muted">
-                    <i class="bi bi-receipt"></i>Thanh toán
+                <a asp-controller="Report" asp-action="Index" class="sidebar-link @(currentCtrl == "Report" ? "active" : "text-muted")">
+                    <i class="bi bi-graph-up-arrow"></i>Báo cáo doanh thu
                 </a>
                 <a href="javascript:void(0)" class="sidebar-link text-muted">
                     <i class="bi bi-gear"></i>Cài đặt
@@ -393,10 +395,10 @@
 
                     <!-- Nav Links -->
                     <nav class="d-flex align-items-center gap-1">
-                        <a asp-controller="Home" asp-action="Index" class="customer-nav-link">Trang chủ</a>
+                        <a asp-controller="Home" asp-action="Index" class="customer-nav-link @(currentCtrl == "Home" ? "active" : "")">Trang chủ</a>
                         <a href="javascript:void(0)" class="customer-nav-link">Đặt lịch</a>
                         <a href="javascript:void(0)" class="customer-nav-link">Lịch hẹn của tôi</a>
-                        <a asp-controller="Pet" asp-action="Index" class="customer-nav-link active">Thú cưng</a>
+                        <a asp-controller="Pet" asp-action="Index" class="customer-nav-link @(currentCtrl == "Pet" ? "active" : "")">Thú cưng</a>
                     </nav>
 
                     <!-- Right User Information -->

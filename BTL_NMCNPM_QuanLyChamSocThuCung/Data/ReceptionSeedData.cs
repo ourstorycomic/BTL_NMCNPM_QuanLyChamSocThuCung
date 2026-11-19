@@ -84,5 +84,107 @@ public static class ReceptionSeedData
         }
 
         await db.SaveChangesAsync();
+
+        // Seed hóa đơn mẫu cho Module Thanh toán & Báo cáo Doanh thu (Hà Phương - UC12, UC13)
+        if (!await db.Invoices.AnyAsync())
+        {
+            var pet = await db.Pets.OrderBy(p => p.PetName).FirstOrDefaultAsync();
+            var services = await db.Services.Take(3).ToListAsync();
+            if (pet != null && services.Any())
+            {
+                // Cuộc hẹn 1: Đang chăm sóc (Processing) -> Chờ thu ngân thanh toán
+                var apptPending = new Appointment
+                {
+                    PetId = pet.PetId,
+                    AppointmentDate = DateTime.Today.AddHours(8).AddMinutes(30),
+                    EndTime = DateTime.Today.AddHours(10),
+                    Status = "Processing",
+                    Notes = "Bé tắm spa và vệ sinh móng, sẵn sàng thanh toán."
+                };
+                apptPending.AppointmentServices.Add(new AppointmentService { ServiceId = services[0].ServiceId, Quantity = 1 });
+                if (services.Count > 1)
+                {
+                    apptPending.AppointmentServices.Add(new AppointmentService { ServiceId = services[1].ServiceId, Quantity = 1 });
+                }
+                db.Appointments.Add(apptPending);
+
+                // Cuộc hẹn 2: Đã thanh toán hôm nay bằng QRCode
+                var apptPaid1 = new Appointment
+                {
+                    PetId = pet.PetId,
+                    AppointmentDate = DateTime.Today.AddHours(9),
+                    EndTime = DateTime.Today.AddHours(10).AddMinutes(30),
+                    Status = "Completed",
+                    Notes = "Đã hoàn thành dịch vụ cắt tỉa tạo kiểu."
+                };
+                apptPaid1.AppointmentServices.Add(new AppointmentService { ServiceId = services[0].ServiceId, Quantity = 1 });
+                db.Appointments.Add(apptPaid1);
+                await db.SaveChangesAsync();
+
+                var invoice1 = new Invoice
+                {
+                    AppointmentId = apptPaid1.AppointmentId,
+                    Surcharge = 30000m,
+                    SurchargeReason = "Gỡ rối lông nhẹ",
+                    DiscountCode = "PAWHAVEN",
+                    DiscountAmount = 30000m,
+                    TotalAmount = services[0].BasePrice,
+                    PaymentMethod = "QRCode",
+                    PaymentStatus = "Paid",
+                    PaymentTime = DateTime.Today.AddHours(10).AddMinutes(35),
+                    CreatedAt = DateTime.Today.AddHours(9)
+                };
+                db.Invoices.Add(invoice1);
+                await db.SaveChangesAsync();
+
+                db.InvoiceDetails.Add(new InvoiceDetail
+                {
+                    InvoiceId = invoice1.InvoiceId,
+                    ServiceId = services[0].ServiceId,
+                    Quantity = 1,
+                    UnitPrice = services[0].BasePrice,
+                    Amount = services[0].BasePrice
+                });
+
+                // Cuộc hẹn 3: Đã thanh toán 2 ngày trước bằng Cash
+                var apptPaid2 = new Appointment
+                {
+                    PetId = pet.PetId,
+                    AppointmentDate = DateTime.Today.AddDays(-2).AddHours(14),
+                    EndTime = DateTime.Today.AddDays(-2).AddHours(15).AddMinutes(30),
+                    Status = "Completed",
+                    Notes = "Kiểm tra sức khỏe tổng quát định kỳ."
+                };
+                var svcHealth = services.Last();
+                apptPaid2.AppointmentServices.Add(new AppointmentService { ServiceId = svcHealth.ServiceId, Quantity = 1 });
+                db.Appointments.Add(apptPaid2);
+                await db.SaveChangesAsync();
+
+                var invoice2 = new Invoice
+                {
+                    AppointmentId = apptPaid2.AppointmentId,
+                    Surcharge = 0,
+                    DiscountAmount = 0,
+                    TotalAmount = svcHealth.BasePrice,
+                    PaymentMethod = "Cash",
+                    PaymentStatus = "Paid",
+                    PaymentTime = DateTime.Today.AddDays(-2).AddHours(15).AddMinutes(40),
+                    CreatedAt = DateTime.Today.AddDays(-2).AddHours(14)
+                };
+                db.Invoices.Add(invoice2);
+                await db.SaveChangesAsync();
+
+                db.InvoiceDetails.Add(new InvoiceDetail
+                {
+                    InvoiceId = invoice2.InvoiceId,
+                    ServiceId = svcHealth.ServiceId,
+                    Quantity = 1,
+                    UnitPrice = svcHealth.BasePrice,
+                    Amount = svcHealth.BasePrice
+                });
+
+                await db.SaveChangesAsync();
+            }
+        }
     }
 }
