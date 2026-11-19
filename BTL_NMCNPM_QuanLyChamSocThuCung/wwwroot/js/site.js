@@ -1,4 +1,4 @@
-﻿// ==========================================
+// ==========================================
 // PAWHAVEN CUSTOM UI DIALOG & NOTIFICATION
 // Thay thế hoàn toàn alert() và confirm() mặc định của trình duyệt
 // ==========================================
