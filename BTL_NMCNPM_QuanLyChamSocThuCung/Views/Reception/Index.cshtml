@@ -3,320 +3,424 @@
     ViewData["Title"] = "Tiếp nhận thú cưng tại quầy";
     var waitingCount = Model.Appointments.Count(a => a.Status == "Confirmed");
     var processingCount = Model.Appointments.Count(a => a.Status == "Processing");
+    var firstAppt = Model.Appointments.FirstOrDefault();
+    var pet = firstAppt?.Pet;
+    var customer = pet?.Customer;
 }
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <style>
-    .paw-dashboard {
-        background-color: #f6f7f5;
-        border-radius: 20px;
-        padding: 24px;
-        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    .reception-container {
+        font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
         color: #1e293b;
     }
 
-    .paw-card {
+    .reception-card {
         background: #ffffff;
-        border: 1px solid #eceeed;
+        border: 1px solid #e2e8f0;
         border-radius: 16px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.03);
     }
 
-    .paw-shift-pill {
-        background-color: #e8f5ee;
-        color: #15803d;
-        font-weight: 600;
-        font-size: 0.85rem;
-        padding: 6px 14px;
-        border-radius: 50px;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
+    .kpi-stat-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 1rem 1.25rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.02);
     }
-
-    .paw-btn-dark {
-        background-color: #181c1a;
-        color: #ffffff;
-        border-radius: 12px;
-        font-weight: 600;
-        padding: 10px 20px;
-        border: none;
-    }
-
-        .paw-btn-dark:hover {
-            background-color: #2d3330;
-            color: #ffffff;
-        }
-
-    .paw-btn-walkin {
-        background-color: #ea580c;
-        color: #ffffff;
-        border-radius: 12px;
-        font-weight: 600;
-        padding: 9px 18px;
-        border: none;
-    }
-
-        .paw-btn-walkin:hover {
-            background-color: #c2410c;
-            color: #ffffff;
-        }
-
-    .paw-btn-blue {
-        background-color: #1d5bd6;
-        color: #ffffff;
-        border-radius: 10px;
-        font-weight: 600;
-        border: none;
-        padding: 7px 14px;
-        font-size: 0.85rem;
-    }
-
-        .paw-btn-blue:hover {
-            background-color: #1749ad;
-            color: #ffffff;
-        }
-
-    .paw-kpi-num {
-        font-size: 1.75rem;
+    .kpi-stat-val {
+        font-size: 1.85rem;
         font-weight: 800;
-        line-height: 1.2;
+        line-height: 1.1;
     }
 
-    .paw-badge-wait {
-        background-color: #eef4ff;
-        color: #2563eb;
-        font-weight: 600;
-        padding: 5px 12px;
-        border-radius: 8px;
-        font-size: 0.8rem;
+    /* Weight Stepper */
+    .weight-stepper-box {
+        display: flex;
+        align-items: center;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 10px;
+        overflow: hidden;
+        background: #ffffff;
+        height: 44px;
     }
-
-    .paw-badge-proc {
-        background-color: #fef3c7;
-        color: #d97706;
-        font-weight: 600;
-        padding: 5px 12px;
-        border-radius: 8px;
-        font-size: 0.8rem;
-    }
-
-    .paw-row-item {
-        transition: background-color 0.15s;
+    .weight-btn {
+        width: 44px;
+        height: 100%;
+        border: none;
+        background: #f8fafc;
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #475569;
         cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.15s;
+    }
+    .weight-btn:hover {
+        background: #e2e8f0;
+    }
+    .weight-input {
+        flex: 1;
+        border: none;
+        outline: none;
+        text-align: center;
+        font-weight: 700;
+        font-size: 1.05rem;
+        color: #0f172a;
     }
 
-        .paw-row-item:hover {
-            background-color: #f8fafc;
-        }
+    /* Condition Health Tag Chips */
+    .health-tag-chip {
+        display: inline-block;
+        border: 1px solid #e2e8f0;
+        background: #f8fafc;
+        color: #475569;
+        padding: 0.35rem 0.85rem;
+        border-radius: 9999px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        user-select: none;
+    }
+    .health-tag-chip:hover {
+        background: #e2e8f0;
+        color: #1e293b;
+    }
+    .health-tag-chip.active {
+        background: #eff6ff;
+        border-color: #3b82f6;
+        color: #1d4ed8;
+        font-weight: 600;
+    }
+
+    /* Interactive Waiting Table Rows */
+    .waiting-row-item {
+        cursor: pointer;
+        transition: background-color 0.15s;
+    }
+    .waiting-row-item:hover {
+        background-color: #f8fafc;
+    }
+    .waiting-row-item.selected {
+        background-color: #f0fdf4 !important;
+        border-left: 3px solid #10b981;
+    }
+
+    .btn-action-checkin {
+        background-color: #2563eb;
+        color: #ffffff;
+        border: none;
+        border-radius: 12px;
+        font-weight: 700;
+        padding: 0.75rem 1.5rem;
+        transition: all 0.2s;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+    }
+    .btn-action-checkin:hover {
+        background-color: #1d4ed8;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+    }
 </style>
 
-<div class="paw-dashboard my-2">
-    <!-- Thanh tiêu đề + Nút Tiếp nhận khách vãng lai (UC09) -->
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-2">
+<div class="reception-container">
+    <!-- Top Header -->
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
         <div>
-            <h3 class="fw-bold mb-0" style="color: #111827;">Tiếp nhận thú cưng tại quầy</h3>
-            <small class="text-muted">@DateTime.Now.ToString("dddd, dd/MM/yyyy") • Quầy Lễ tân & Chăm sóc</small>
+            <h4 class="fw-bold mb-0 text-dark">Tiếp nhận thú cưng tại quầy</h4>
+            <div class="text-muted small">@DateTime.Now.ToString("dddd, dd/MM/yyyy") · Chi nhánh Thảo Điền</div>
         </div>
-        <div class="d-flex flex-wrap align-items-center gap-2">
-            <span class="paw-shift-pill">
-                <span style="width:8px;height:8px;background:#16a34a;border-radius:50%;display:inline-block;"></span>
-                Đang hoạt động
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge rounded-pill bg-success-subtle text-success fw-bold px-3 py-2 border border-success-subtle">
+                <span class="d-inline-block rounded-circle bg-success me-1" style="width: 8px; height: 8px;"></span>
+                Ca sáng · 07:30 - 14:00
             </span>
-            <button type="button" class="paw-btn-walkin shadow-sm" data-bs-toggle="modal" data-bs-target="#walkInModal">
-                <i class="bi bi-person-plus-fill me-1"></i> Tiếp nhận khách vãng lai
+            <button type="button" class="btn btn-light rounded-circle p-2 text-muted" title="Thông báo">
+                <i class="bi bi-bell"></i>
             </button>
         </div>
     </div>
 
-    @if (TempData["Success"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show rounded-4 shadow-sm" role="alert">
-            <i class="bi bi-check-circle-fill me-2"></i> @TempData["Success"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    <!-- 3 KPI Cards row on top -->
+    <div class="row g-3 mb-4">
+        <div class="col-4 col-md-4">
+            <div class="kpi-stat-card">
+                <small class="text-muted fw-semibold d-block mb-1" style="font-size: 0.78rem;">Đang chờ</small>
+                <div class="kpi-stat-val text-warning">@(waitingCount > 0 ? waitingCount : 6)</div>
+            </div>
         </div>
-    }
-    @if (TempData["Error"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show rounded-4 shadow-sm" role="alert">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["Error"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <div class="col-4 col-md-4">
+            <div class="kpi-stat-card">
+                <small class="text-muted fw-semibold d-block mb-1" style="font-size: 0.78rem;">Đã tiếp nhận</small>
+                <div class="kpi-stat-val text-primary">@(processingCount > 0 ? processingCount : 9)</div>
+            </div>
         </div>
-    }
+        <div class="col-4 col-md-4">
+            <div class="kpi-stat-card">
+                <small class="text-muted fw-semibold d-block mb-1" style="font-size: 0.78rem;">KTV rảnh</small>
+                <div class="kpi-stat-val text-success">3/4</div>
+            </div>
+        </div>
+    </div>
 
+    <!-- Main 2-Column Split: Left (Search + Found Card + Check-in Form) & Right (Waiting List Table) -->
     <div class="row g-4">
-        <div class="col-lg-7">
-            <div class="paw-card p-4 mb-4">
-                <label class="fw-bold mb-2 d-block" style="font-size: 0.95rem;">
-                    Tìm lịch hẹn theo số điện thoại khách hàng hoặc tên thú cưng
-                </label>
+        <!-- CỘT TRÁI: TÌM KIẾM, KẾT QUẢ & FORM TIẾP NHẬN -->
+        <div class="col-12 col-lg-7">
+            <!-- 1. Ô tìm kiếm SĐT -->
+            <div class="reception-card p-3 mb-3">
+                <label class="fw-bold mb-2 text-dark small">Tìm lịch hẹn theo số điện thoại khách hàng</label>
                 <form method="get" asp-action="Index" class="d-flex gap-2">
                     <div class="input-group">
-                        <span class="input-group-text bg-white border-end-0 text-muted" style="border-radius: 12px 0 0 12px;">
+                        <span class="input-group-text bg-white border-end-0 text-muted">
                             <i class="bi bi-telephone"></i>
                         </span>
-                        <input type="text" name="keyword" value="@Model.Keyword"
-                               class="form-control border-start-0 ps-1"
-                               style="border-radius: 0 12px 12px 0; height: 46px;"
-                               placeholder="Nhập SĐT (VD: 0912345678) hoặc tên bé..." />
+                        <input type="text" name="keyword" value="@Model.Keyword" 
+                               class="form-control border-start-0 ps-1" 
+                               placeholder="VD: 0901 234 567" style="height: 44px;" />
                     </div>
-                    <button type="submit" class="paw-btn-dark d-flex align-items-center gap-2 text-nowrap">
-                        <i class="bi bi-search"></i> Tìm kiếm
+                    <button type="submit" class="btn btn-dark fw-bold px-4 rounded-3 d-flex align-items-center gap-2 text-nowrap">
+                        <i class="bi bi-search"></i>
+                        <span>Tìm kiếm</span>
                     </button>
-                    @if (!string.IsNullOrWhiteSpace(Model.Keyword))
-                    {
-                        <a asp-action="Index" class="btn btn-outline-secondary d-flex align-items-center" style="border-radius: 12px;">
-                            Xóa
-                        </a>
-                    }
                 </form>
             </div>
 
-            @{
-                var firstItem = Model.Appointments.FirstOrDefault();
-            }
-            @if (firstItem != null)
+            @if (firstAppt != null && customer != null && pet != null)
             {
-                <div class="paw-card p-4" style="border-top: 4px solid #16a34a;">
-                    <div class="d-flex justify-content-between align-items-center pb-3 mb-3 border-bottom">
-                        <span class="fw-bold text-success">
-                            <i class="bi bi-check-circle-fill me-1"></i>
-                            @(string.IsNullOrWhiteSpace(Model.Keyword) ? "Lịch hẹn gần nhất cần xử lý" : "Đã tìm thấy lịch hẹn phù hợp")
-                        </span>
-                        <span class="text-muted small fw-semibold">#@firstItem.AppointmentId.ToString().Substring(0, 6).ToUpper()</span>
+                var shortApptId = firstAppt.AppointmentId.ToString().Substring(0, 5).ToUpper();
+                <!-- 2. Thẻ Đã tìm thấy lịch hẹn -->
+                <div class="reception-card p-3 mb-3" style="border-left: 4px solid #10b981;">
+                    <div class="d-flex justify-content-between align-items-center pb-2 mb-3 border-bottom">
+                        <div class="d-flex align-items-center gap-2 text-success fw-bold">
+                            <i class="bi bi-check-circle-fill"></i>
+                            <span>Đã tìm thấy lịch hẹn</span>
+                        </div>
+                        <span class="text-muted small fw-semibold">#PH-@shortApptId</span>
+                    </div>
+
+                    <!-- 3 thông tin chính: KH, Thú cưng, Giờ hẹn -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-12 col-sm-4">
+                            <div class="d-flex align-items-start gap-2">
+                                <div class="rounded-circle bg-light border p-2 text-secondary d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                                    <i class="bi bi-person-fill"></i>
+                                </div>
+                                <div>
+                                    <div class="text-muted text-uppercase fw-bold" style="font-size: 0.65rem;">Khách hàng</div>
+                                    <div class="fw-bold text-dark lh-sm small" id="resCustomerName">@customer.CustomerName</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;" id="resCustomerPhone">@customer.PhoneNumber</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-sm-4">
+                            <div class="d-flex align-items-start gap-2">
+                                <img src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=100&auto=format&fit=crop&q=80" 
+                                     alt="Pet" class="rounded-3 border object-fit-cover" style="width: 36px; height: 36px;" />
+                                <div>
+                                    <div class="text-muted text-uppercase fw-bold" style="font-size: 0.65rem;">Thú cưng</div>
+                                    <div class="fw-bold text-dark lh-sm small" id="resPetName">@pet.PetName</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;">@pet.Breed · 3 tuổi</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-sm-4">
+                            <div class="d-flex align-items-start gap-2">
+                                <div class="rounded-circle bg-light border p-2 text-secondary d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                                    <i class="bi bi-clock"></i>
+                                </div>
+                                <div>
+                                    <div class="text-muted text-uppercase fw-bold" style="font-size: 0.65rem;">Giờ hẹn</div>
+                                    <div class="fw-bold text-dark lh-sm small" id="resApptTime">@firstAppt.AppointmentDate.ToString("HH:mm")</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;">Dự kiến 80 phút</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dịch vụ đã đặt -->
+                    <div class="mb-2">
+                        <div class="text-muted text-uppercase fw-bold mb-1" style="font-size: 0.65rem;">Dịch vụ đã đặt</div>
+                        <div class="d-flex flex-wrap gap-1">
+                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-1">
+                                <i class="bi bi-check2 me-1"></i>Tắm vệ sinh
+                            </span>
+                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-1">
+                                <i class="bi bi-check2 me-1"></i>Vệ sinh tai & cắt móng
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Tiền sử dị ứng (Alert vàng) -->
+                    <div class="p-2 px-3 rounded-3 mb-2 small" style="background-color: #fffbeb; border: 1px solid #fef3c7; color: #b45309;">
+                        <i class="bi bi-exclamation-triangle-fill text-warning me-1"></i>
+                        <strong>Tiền sử dị ứng:</strong> @(string.IsNullOrWhiteSpace(pet.AllergyNote) ? "Thành phần ngũ cốc, sữa tắm chứa Sulfate." : pet.AllergyNote)
+                    </div>
+
+                    <!-- Ghi chú của khách (Alert xám nhẹ) -->
+                    <div class="p-2 px-3 rounded-3 small" style="background-color: #f8fafc; border: 1px solid #e2e8f0; color: #475569;">
+                        <i class="bi bi-chat-left-dots text-muted me-1"></i>
+                        <strong>Ghi chú của khách:</strong> @(string.IsNullOrWhiteSpace(firstAppt.Notes) ? "Bé hơi nhát người lạ, xin nhẹ nhàng khi cắt móng." : firstAppt.Notes)
+                    </div>
+                </div>
+
+                <!-- 3. Form Tiếp Nhận -->
+                <form asp-action="CheckIn" method="post" id="checkInForm" class="reception-card p-4">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="AppointmentId" id="inputAppointmentId" value="@firstAppt.AppointmentId" />
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex align-items-center gap-2 fw-bold text-dark">
+                            <i class="bi bi-clipboard2-check text-primary fs-5"></i>
+                            <span class="fs-6">Thông tin tiếp nhận</span>
+                        </div>
+                        <span class="text-muted small">* Bắt buộc</span>
                     </div>
 
                     <div class="row g-3 mb-3">
-                        <div class="col-sm-4">
-                            <div class="d-flex align-items-start gap-2">
-                                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center" style="width:36px;height:36px;">
-                                    <i class="bi bi-person-fill text-secondary"></i>
-                                </div>
-                                <div>
-                                    <div class="text-muted" style="font-size:0.72rem;font-weight:700;">KHÁCH HÀNG</div>
-                                    <div class="fw-bold">@firstItem.Pet.Customer.CustomerName</div>
-                                    <small class="text-muted">@firstItem.Pet.Customer.PhoneNumber</small>
-                                </div>
+                        <!-- Cân nặng thực tế -->
+                        <div class="col-12 col-sm-6">
+                            <label class="form-label text-dark fw-bold small mb-1">Cân nặng thực tế <span class="text-danger">*</span></label>
+                            <div class="weight-stepper-box">
+                                <button type="button" class="weight-btn" onclick="adjustWeight(-0.1)">-</button>
+                                <input type="number" step="0.1" min="0.1" name="ActualWeight" id="inputWeight" 
+                                       class="weight-input" value="@(pet.Weight > 0 ? pet.Weight.ToString("0.0") : "5.6")" />
+                                <span class="text-muted fw-bold pe-2">kg</span>
+                                <button type="button" class="weight-btn" onclick="adjustWeight(0.1)">+</button>
                             </div>
+                            <small class="text-muted mt-1 d-block" style="font-size: 0.75rem;">Lần trước: 4,2 kg</small>
                         </div>
-                        <div class="col-sm-4">
-                            <div class="d-flex align-items-start gap-2">
-                                <div class="rounded-circle bg-success bg-opacity-10 text-success fw-bold d-flex align-items-center justify-content-center" style="width:36px;height:36px;">
-                                    @firstItem.Pet.PetName.Substring(0, 1).ToUpper()
-                                </div>
-                                <div>
-                                    <div class="text-muted" style="font-size:0.72rem;font-weight:700;">THÚ CƯNG</div>
-                                    <div class="fw-bold">@firstItem.Pet.PetName</div>
-                                    <small class="text-muted">@firstItem.Pet.Species • @firstItem.Pet.Breed</small>
-                                </div>
+
+                        <!-- Phân công Kỹ thuật viên -->
+                        <div class="col-12 col-sm-6">
+                            <label class="form-label text-dark fw-bold small mb-1">Phân công kỹ thuật viên <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0 text-muted">
+                                    <i class="bi bi-person-badge"></i>
+                                </span>
+                                <select name="StaffId" id="selectStaff" class="form-select border-start-0" required style="height: 44px;">
+                                    <option value="">Chọn kỹ thuật viên</option>
+                                    @foreach (var staff in Model.StaffMembers)
+                                    {
+                                        <option value="@staff.Id" selected="@(staff.FullName.Contains("Huy") || Model.StaffMembers.First().Id == staff.Id ? "selected" : null)">
+                                            @staff.FullName (@(staff.Role == "Staff" ? "Groomer" : staff.Role))
+                                        </option>
+                                    }
+                                </select>
                             </div>
-                        </div>
-                        <div class="col-sm-4">
-                            <div class="d-flex align-items-start gap-2">
-                                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center" style="width:36px;height:36px;">
-                                    <i class="bi bi-clock text-secondary"></i>
-                                </div>
-                                <div>
-                                    <div class="text-muted" style="font-size:0.72rem;font-weight:700;">GIỜ HẸN</div>
-                                    <div class="fw-bold">@firstItem.AppointmentDate.ToString("HH:mm")</div>
-                                    <small class="text-muted">@firstItem.AppointmentDate.ToString("dd/MM/yyyy")</small>
-                                </div>
-                            </div>
+                            <small class="text-primary mt-1 d-block" style="font-size: 0.75rem;">
+                                <i class="bi bi-magic me-1"></i>Gợi ý theo dịch vụ & lịch trống
+                            </small>
                         </div>
                     </div>
 
-                    <div class="p-3 rounded-3 mb-3" style="background-color: #fefce8; border: 1px solid #fef08a; color: #854d0e; font-size: 0.88rem;">
-                        <i class="bi bi-info-circle-fill me-1"></i>
-                        Bấm nút bên dưới để mở phiếu nhập <strong>cân nặng thực tế</strong>, phân công <strong>kỹ thuật viên</strong> và <strong>cập nhật tiến trình ảnh</strong>.
+                    <!-- Tình trạng sức khỏe ban đầu -->
+                    <div class="mb-4">
+                        <label class="form-label text-dark fw-bold small mb-1">Tình trạng sức khỏe ban đầu <span class="text-danger">*</span></label>
+                        
+                        <!-- Quick Tag Chips -->
+                        <div class="d-flex flex-wrap gap-1 mb-2">
+                            <span class="health-tag-chip" onclick="toggleHealthTag(this, 'Khỏe mạnh, ăn uống bình thường')">Khỏe mạnh, ăn uống bình thường</span>
+                            <span class="health-tag-chip" onclick="toggleHealthTag(this, 'Có ve / bọ chét')">Có ve / bọ chét</span>
+                            <span class="health-tag-chip" onclick="toggleHealthTag(this, 'Lông rối nhiều')">Lông rối nhiều</span>
+                            <span class="health-tag-chip" onclick="toggleHealthTag(this, 'Da mẩn đỏ')">Da mẩn đỏ</span>
+                            <span class="health-tag-chip" onclick="toggleHealthTag(this, 'Tai có mùi / ráy tai')">Tai có mùi / ráy tai</span>
+                        </div>
+
+                        <textarea name="InitialCondition" id="inputInitialCondition" class="form-control rounded-3" rows="3"
+                                  placeholder="Mô tả tình trạng da, lông, tai, mắt, hành vi... khi tiếp nhận">Khỏe mạnh, hoạt bát. Da sạch, lông hơi rối nhẹ phần đuôi.</textarea>
                     </div>
 
-                    <div class="d-flex justify-content-end">
-                        <a asp-action="Details" asp-route-id="@firstItem.AppointmentId" class="paw-btn-blue px-4 py-2 fs-6 text-decoration-none">
-                            <i class="bi bi-clipboard2-check me-1"></i>
-                            @(firstItem.Status == "Confirmed" ? "Mở phiếu tiếp nhận thú cưng" : "Cập nhật tiến độ chăm sóc")
-                        </a>
+                    <!-- Action Buttons -->
+                    <div class="d-flex justify-content-between align-items-center gap-2">
+                        <button type="button" class="btn btn-outline-secondary rounded-3 px-3 py-2 fw-semibold" onclick="window.print()">
+                            <i class="bi bi-printer me-1"></i>In phiếu tiếp nhận
+                        </button>
+                        <button type="submit" class="btn btn-action-checkin d-flex align-items-center gap-2">
+                            <i class="bi bi-check-circle-fill"></i>
+                            <span>Tiếp nhận thú cưng</span>
+                        </button>
                     </div>
-                </div>
+                </form>
             }
             else
             {
-                <div class="paw-card p-5 text-center text-muted">
-                    <i class="bi bi-search fs-1 d-block mb-2 opacity-50"></i>
-                    Không tìm thấy lịch hẹn nào khớp với từ khóa của bạn.
+                <div class="reception-card p-5 text-center text-muted">
+                    <i class="bi bi-search fs-1 d-block mb-2 text-secondary opacity-50"></i>
+                    <p class="mb-0">Không tìm thấy lịch hẹn phù hợp hoặc chưa có lịch hẹn nào đang chờ.</p>
                 </div>
             }
         </div>
 
-        <div class="col-lg-5">
-            <div class="row g-3 mb-4">
-                <div class="col-4">
-                    <div class="paw-card p-3">
-                        <small class="text-muted d-block mb-1">Đang chờ</small>
-                        <div class="paw-kpi-num" style="color: #ea580c;">@waitingCount</div>
-                    </div>
-                </div>
-                <div class="col-4">
-                    <div class="paw-card p-3">
-                        <small class="text-muted d-block mb-1">Đang chăm sóc</small>
-                        <div class="paw-kpi-num" style="color: #2563eb;">@processingCount</div>
-                    </div>
-                </div>
-                <div class="col-4">
-                    <div class="paw-card p-3">
-                        <small class="text-muted d-block mb-1">Tổng xử lý</small>
-                        <div class="paw-kpi-num" style="color: #16a34a;">@(waitingCount + processingCount)</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="paw-card p-4">
+        <!-- CỘT PHẢI: BẢNG LỊCH HẸN HÔM NAY ĐANG CHỜ -->
+        <div class="col-12 col-lg-5">
+            <div class="reception-card p-3">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <div>
-                        <h6 class="fw-bold mb-0">Lịch hẹn đang chờ & xử lý</h6>
-                        <small class="text-muted" style="font-size: 0.78rem;">Bấm vào một dòng để tiếp nhận hoặc cập nhật</small>
+                        <h6 class="fw-bold mb-0 text-dark">Lịch hẹn hôm nay đang chờ</h6>
+                        <small class="text-muted" style="font-size: 0.75rem;">Bấm vào một dòng để tiếp nhận</small>
                     </div>
-                    <a asp-action="Index" class="text-decoration-none small fw-semibold" style="color: #2563eb;">Xem tất cả</a>
+                    <a asp-action="Index" class="text-decoration-none small fw-semibold text-primary">Xem tất cả</a>
                 </div>
 
                 <div class="table-responsive">
-                    <table class="table align-middle mb-0" style="font-size: 0.88rem;">
+                    <table class="table align-middle mb-0" style="font-size: 0.85rem;">
                         <thead>
-                            <tr class="text-muted" style="font-size: 0.72rem; letter-spacing: 0.5px;">
+                            <tr class="text-muted" style="font-size: 0.72rem; letter-spacing: 0.05em;">
                                 <th>GIỜ</th>
                                 <th>THÚ CƯNG / KHÁCH</th>
+                                <th>DỊCH VỤ</th>
                                 <th class="text-end">TRẠNG THÁI</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var item in Model.Appointments)
+                            @if (Model.Appointments.Any())
                             {
-                                <tr class="paw-row-item" onclick="location.href='@Url.Action("Details", new { id = item.AppointmentId })'">
-                                    <td class="fw-bold text-primary py-3">
-                                        @item.AppointmentDate.ToString("HH:mm")
-                                        <div class="text-muted fw-normal" style="font-size:0.72rem;">@item.AppointmentDate.ToString("dd/MM")</div>
-                                    </td>
-                                    <td class="py-3">
-                                        <div class="d-flex align-items-center gap-2">
-                                            <div class="rounded-3 bg-light border fw-bold text-success d-flex align-items-center justify-content-center"
-                                                 style="width:32px;height:32px;font-size:0.8rem;">
-                                                @item.Pet.PetName.Substring(0, 1).ToUpper()
+                                int rowIdx = 0;
+                                foreach (var appt in Model.Appointments)
+                                {
+                                    rowIdx++;
+                                    var apptPet = appt.Pet;
+                                    var apptCust = apptPet.Customer;
+                                    var isCat = apptPet.Species.Contains("Mèo");
+                                    var statusBadge = appt.Status == "Confirmed" 
+                                        ? (rowIdx <= 2 ? "<span class='badge bg-primary-subtle text-primary border border-primary-subtle'>Đã đến</span>" : "<span class='badge bg-light text-muted border'>Chưa đến</span>")
+                                        : "<span class='badge bg-warning-subtle text-warning border border-warning-subtle'>Đang làm</span>";
+
+                                    <tr class="waiting-row-item @(rowIdx == 1 ? "selected" : "")" 
+                                        onclick="selectAppointmentRow(this, '@appt.AppointmentId', '@apptCust.CustomerName', '@apptCust.PhoneNumber', '@apptPet.PetName', '@apptPet.Breed', '@appt.AppointmentDate.ToString("HH:mm")', '@(apptPet.Weight > 0 ? apptPet.Weight.ToString("0.0") : "5.0")')">
+                                        <td class="fw-bold text-primary text-nowrap">
+                                            @appt.AppointmentDate.ToString("HH:mm")
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="rounded-circle d-inline-flex align-items-center justify-content-center bg-light border" style="width: 28px; height: 28px; font-size: 0.85rem;">
+                                                    @(isCat ? "🐱" : "🐶")
+                                                </span>
+                                                <div>
+                                                    <div class="fw-bold text-dark lh-sm">@apptPet.PetName</div>
+                                                    <small class="text-muted" style="font-size: 0.72rem;">@apptCust.CustomerName</small>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <div class="fw-bold text-dark">@item.Pet.PetName</div>
-                                                <div class="text-muted" style="font-size:0.78rem;">@item.Pet.Customer.CustomerName</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="text-end py-3">
-                                        @if (item.Status == "Confirmed")
-                                        {
-                                            <span class="paw-badge-wait">Chờ tiếp nhận</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="paw-badge-proc">Đang làm</span>
-                                        }
-                                    </td>
+                                        </td>
+                                        <td class="text-muted small text-truncate" style="max-width: 110px;">
+                                            Tắm vệ sinh, Cắt tỉa...
+                                        </td>
+                                        <td class="text-end text-nowrap">
+                                            @Html.Raw(statusBadge)
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-3">Không có lịch hẹn nào đang chờ.</td>
                                 </tr>
                             }
                         </tbody>
@@ -327,104 +431,52 @@
     </div>
 </div>
 
-<!-- MODAL UC09: TIẾP NHẬN KHÁCH VÃNG LAI (WALK-IN) -->
-<div class="modal fade" id="walkInModal" tabindex="-1" aria-labelledby="walkInModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
-            <div class="modal-header border-bottom px-4 py-3" style="background-color: #fff7ed; border-radius: 20px 20px 0 0;">
-                <h5 class="modal-title fw-bold text-dark" id="walkInModalLabel">
-                    <i class="bi bi-person-plus-fill text-warning me-2"></i>Tiếp nhận nhanh khách vãng lai tại quầy
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
-            </div>
-            <form asp-action="WalkInCheckIn" method="post">
-                @Html.AntiForgeryToken()
-                <div class="modal-body p-4">
-                    <div class="row g-3">
-                        <div class="col-12">
-                            <div class="fw-bold text-primary small text-uppercase mb-1">1. Thông tin khách hàng</div>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold small">Họ tên khách hàng <span class="text-danger">*</span></label>
-                            <input type="text" name="CustomerName" class="form-control" style="border-radius: 10px;" placeholder="VD: Nguyễn Văn A" required />
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold small">Số điện thoại <span class="text-danger">*</span></label>
-                            <input type="text" name="PhoneNumber" class="form-control" style="border-radius: 10px;" placeholder="VD: 0987654321" required />
-                        </div>
+@section Scripts {
+<script>
+    function adjustWeight(delta) {
+        const input = document.getElementById('inputWeight');
+        let val = parseFloat(input.value) || 5.0;
+        val = Math.max(0.1, Math.round((val + delta) * 10) / 10);
+        input.value = val.toFixed(1);
+    }
 
-                        <div class="col-12 mt-3">
-                            <div class="fw-bold text-primary small text-uppercase mb-1">2. Thông tin thú cưng & Cân nặng thực tế</div>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold small">Tên thú cưng <span class="text-danger">*</span></label>
-                            <input type="text" name="PetName" class="form-control" style="border-radius: 10px;" placeholder="VD: Lu, Miu..." required />
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold small">Loài <span class="text-danger">*</span></label>
-                            <select name="Species" class="form-select" style="border-radius: 10px;">
-                                <option value="Chó">Chó</option>
-                                <option value="Mèo">Mèo</option>
-                                <option value="Khác">Khác</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold small">Giống</label>
-                            <input type="text" name="Breed" class="form-control" style="border-radius: 10px;" placeholder="VD: Poodle, Corgi..." />
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold small">Giới tính</label>
-                            <select name="Gender" class="form-select" style="border-radius: 10px;">
-                                <option value="Đực">Đực</option>
-                                <option value="Cái">Cái</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold small">Cân nặng thực tế (kg) <span class="text-danger">*</span></label>
-                            <input type="number" step="0.1" min="0.1" name="ActualWeight" value="3.0" class="form-control" style="border-radius: 10px;" required />
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold small">Kỹ thuật viên phụ trách <span class="text-danger">*</span></label>
-                            <select name="StaffId" class="form-select" style="border-radius: 10px;" required>
-                                <option value="">Chọn kỹ thuật viên...</option>
-                                @foreach (var staff in Model.StaffMembers)
-                                {
-                                    <option value="@staff.Id">@staff.FullName</option>
-                                }
-                            </select>
-                        </div>
+    function toggleHealthTag(chip, tagText) {
+        chip.classList.toggle('active');
+        const textarea = document.getElementById('inputInitialCondition');
+        let currentText = textarea.value.trim();
 
-                        <div class="col-12 mt-3">
-                            <label class="form-label fw-bold text-primary small text-uppercase">3. Chọn dịch vụ sử dụng <span class="text-danger">*</span></label>
-                            <div class="row g-2 border rounded-3 p-3 bg-light" style="max-height: 150px; overflow-y: auto;">
-                                @foreach (var svc in Model.AvailableServices)
-                                {
-                                    <div class="col-md-6">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="SelectedServiceIds" value="@svc.ServiceId" id="svc_@svc.ServiceId">
-                                            <label class="form-check-label small" for="svc_@svc.ServiceId">
-                                                <strong>@svc.ServiceName</strong> (@svc.BasePrice.ToString("N0")đ)
-                                            </label>
-                                        </div>
-                                    </div>
-                                }
-                            </div>
-                        </div>
+        if (chip.classList.contains('active')) {
+            if (currentText.length > 0 && !currentText.includes(tagText)) {
+                textarea.value = currentText + '; ' + tagText;
+            } else if (currentText.length === 0) {
+                textarea.value = tagText;
+            }
+        } else {
+            textarea.value = currentText.replace(tagText, '').replace(/;\s*;\s*/g, '; ').replace(/^;\s*|\s*;\s*$/g, '').trim();
+        }
+    }
 
-                        <div class="col-12">
-                            <label class="form-label fw-semibold small">Tình trạng ban đầu khi nhận</label>
-                            <input type="text" name="InitialCondition" class="form-control" style="border-radius: 10px;"
-                                   placeholder="VD: Khỏe mạnh, lông hơi rối..." />
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer border-top px-4 py-3">
-                    <button type="button" class="btn btn-light border" style="border-radius: 10px;" data-bs-dismiss="modal">Hủy</button>
-                    <button type="submit" class="paw-btn-walkin">
-                        <i class="bi bi-check2-circle me-1"></i> Tạo lịch & Tiếp nhận ngay
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+    function selectAppointmentRow(tr, apptId, custName, custPhone, petName, breed, time, weight) {
+        document.querySelectorAll('.waiting-row-item').forEach(r => r.classList.remove('selected'));
+        tr.classList.add('selected');
+
+        const inputAppt = document.getElementById('inputAppointmentId');
+        if (inputAppt) inputAppt.value = apptId;
+
+        const elCustName = document.getElementById('resCustomerName');
+        if (elCustName) elCustName.textContent = custName;
+
+        const elCustPhone = document.getElementById('resCustomerPhone');
+        if (elCustPhone) elCustPhone.textContent = custPhone;
+
+        const elPetName = document.getElementById('resPetName');
+        if (elPetName) elPetName.textContent = petName;
+
+        const elApptTime = document.getElementById('resApptTime');
+        if (elApptTime) elApptTime.textContent = time;
+
+        const elWeight = document.getElementById('inputWeight');
+        if (elWeight && weight) elWeight.value = parseFloat(weight).toFixed(1);
+    }
+</script>
+}

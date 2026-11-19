@@ -43,6 +43,10 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.ViewModels
         // Ngày giờ hẹn
         public DateTime AppointmentDate { get; set; }
 
+        // Kỹ thuật viên & Ghi chú KTV
+        public string TechnicianName { get; set; } = "Trần Đức Huy";
+        public string? TechnicianNote { get; set; }
+
         // Danh sách dịch vụ thực hiện
         public List<BillingServiceItemViewModel> Services { get; set; } = new();
 

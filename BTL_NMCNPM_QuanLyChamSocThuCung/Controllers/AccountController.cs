@@ -67,7 +67,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
             {
                 Account = account,
                 CustomerName = FullName.Trim(),
-                PhoneNumber = PhoneNumber?.Trim(),
+                PhoneNumber = PhoneNumber?.Trim() ?? string.Empty,
                 Email = Email?.Trim(),
                 Address = Address?.Trim(),
                 IsActive = true
