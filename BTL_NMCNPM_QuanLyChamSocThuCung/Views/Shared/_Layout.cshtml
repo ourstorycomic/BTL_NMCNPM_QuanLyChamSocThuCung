@@ -58,51 +58,47 @@
                     </span>
                     <span class="fs-5 fw-bold text-dark tracking-tight">PawHaven</span>
                 </a>
-                <span class="badge bg-light text-secondary border fw-bold" style="font-size: 0.68rem; letter-spacing: 0.05em;">STAFF</span>
+                <span class="badge @(currentRole == "Admin" ? "bg-danger text-white" : "bg-light text-secondary border") fw-bold" style="font-size: 0.68rem; letter-spacing: 0.05em;">@(currentRole == "Admin" ? "ADMIN" : "STAFF")</span>
             </div>
 
             <!-- Menu list -->
             <div class="flex-grow-1 overflow-auto py-2">
-                <div class="sidebar-section-title">VẬN HÀNH</div>
-                <a href="javascript:void(0)" class="sidebar-link text-muted">
-                    <i class="bi bi-grid"></i>Tổng quan
-                </a>
+                @if (currentRole == "Admin" || User.IsInRole("Admin"))
+                {
+                    <div class="sidebar-section-title">QUẢN TRỊ HỆ THỐNG</div>
+                    <a asp-controller="Report" asp-action="Index" class="sidebar-link @(currentCtrl == "Report" ? "active" : "text-muted")">
+                        <i class="bi bi-speedometer2 text-danger"></i>Báo cáo & Tổng quan
+                    </a>
+                    <a asp-controller="Service" asp-action="Index" class="sidebar-link @(currentCtrl == "Service" ? "active" : "text-muted")">
+                        <i class="bi bi-tags"></i>Quản lý Dịch vụ
+                    </a>
+                }
+
+                <div class="sidebar-section-title @(currentRole == "Admin" ? "mt-2" : "")">VẬN HÀNH & TIẾP NHẬN</div>
                 <a asp-controller="Reception" asp-action="Index" class="sidebar-link @(currentCtrl == "Reception" ? "active" : "text-muted") d-flex justify-content-between align-items-center">
                     <span><i class="bi bi-clipboard2-check"></i>Tiếp nhận tại quầy</span>
                     <span class="badge rounded-pill bg-success" style="font-size: 0.7rem;">6</span>
                 </a>
                 <a asp-controller="Appointment" asp-action="Index" class="sidebar-link @(currentCtrl == "Appointment" ? "active" : "text-muted")">
-                    <i class="bi bi-calendar3"></i>Lịch hẹn
-                </a>
-                <a href="javascript:void(0)" class="sidebar-link text-muted">
-                    <i class="bi bi-scissors"></i>Đang thực hiện
-                </a>
-                <a href="javascript:void(0)" class="sidebar-link text-muted">
-                    <i class="bi bi-houses"></i>Khách sạn
-                </a>
-
-                <div class="sidebar-section-title mt-2">QUẢN LÝ & BÁO CÁO</div>
-                <a asp-controller="Customer" asp-action="Index" class="sidebar-link @(currentCtrl == "Customer" ? "active" : "text-muted")">
-                    <i class="bi bi-people"></i>Khách hàng
-                </a>
-                <a asp-controller="Service" asp-action="Index" class="sidebar-link @(currentCtrl == "Service" ? "active" : "text-muted")">
-                    <i class="bi bi-tags"></i>Bảng giá dịch vụ
-                </a>
-                <a asp-controller="Pet" asp-action="Index" class="sidebar-link @(currentCtrl == "Pet" ? "active" : "text-muted")">
-                    <i class="bi bi-heart-pulse-fill"></i>Hồ sơ thú cưng
+                    <i class="bi bi-calendar3"></i>Lịch hẹn khách hàng
                 </a>
                 <a asp-controller="Billing" asp-action="Index" class="sidebar-link @(currentCtrl == "Billing" ? "active" : "text-muted")">
                     <i class="bi bi-receipt"></i>Thanh toán & Hóa đơn
                 </a>
-                @if (currentRole == "Admin" || User.IsInRole("Admin"))
+
+                <div class="sidebar-section-title mt-2">DỮ LIỆU CƠ SỞ</div>
+                <a asp-controller="Customer" asp-action="Index" class="sidebar-link @(currentCtrl == "Customer" ? "active" : "text-muted")">
+                    <i class="bi bi-people"></i>Danh sách Khách hàng
+                </a>
+                <a asp-controller="Pet" asp-action="Index" class="sidebar-link @(currentCtrl == "Pet" ? "active" : "text-muted")">
+                    <i class="bi bi-heart-pulse-fill"></i>Hồ sơ thú cưng
+                </a>
+                @if (currentRole != "Admin")
                 {
-                    <a asp-controller="Report" asp-action="Index" class="sidebar-link @(currentCtrl == "Report" ? "active" : "text-muted")">
-                        <i class="bi bi-graph-up-arrow"></i>Báo cáo doanh thu
+                    <a asp-controller="Service" asp-action="Index" class="sidebar-link @(currentCtrl == "Service" ? "active" : "text-muted")">
+                        <i class="bi bi-tags"></i>Bảng giá dịch vụ
                     </a>
                 }
-                <a href="javascript:void(0)" class="sidebar-link text-muted">
-                    <i class="bi bi-gear"></i>Cài đặt
-                </a>
             </div>
 
             <!-- Footer User Profile in Sidebar -->
@@ -112,7 +108,7 @@
                          alt="Staff Avatar" class="rounded-circle me-2 object-fit-cover shadow-sm" style="width: 36px; height: 36px;">
                     <div>
                         <div class="fw-bold small text-dark lh-sm">@currentUserName</div>
-                        <div class="text-muted" style="font-size: 0.72rem;">@(currentRole == "Admin" ? "Quản trị viên" : "Lễ tân · Ca sáng")</div>
+                        <div class="text-muted" style="font-size: 0.72rem;">@(currentRole == "Admin" ? "Quản trị viên hệ thống" : "Lễ tân · Ca sáng")</div>
                     </div>
                 </div>
                 <a asp-controller="Account" asp-action="DangXuat" class="btn btn-sm btn-light border text-danger rounded-circle p-1 d-inline-flex align-items-center justify-content-center" style="width: 32px; height: 32px;" title="Đăng xuất">
@@ -132,10 +128,12 @@
                     <button class="btn btn-light border d-lg-none p-1 px-2 rounded-3 me-1" type="button" onclick="toggleStaffSidebar()" title="Mở danh mục">
                         <i class="bi bi-list fs-5"></i>
                     </button>
-                    <span class="badge rounded-pill bg-success-subtle text-success fw-bold px-3 py-2 border border-success-subtle">
-                        <i class="bi bi-clock-fill me-1"></i>Ca sáng · 07:30 - 14:00
+                    <span class="badge rounded-pill @(currentRole == "Admin" ? "bg-danger-subtle text-danger border border-danger-subtle" : "bg-success-subtle text-success border border-success-subtle") fw-bold px-3 py-2">
+                        <i class="bi @(currentRole == "Admin" ? "bi-shield-lock-fill" : "bi-clock-fill") me-1"></i>@(currentRole == "Admin" ? "Chế độ Quản trị viên" : "Ca sáng · 07:30 - 14:00")
                     </span>
-                    <span class="text-muted small d-none d-sm-inline">Chi nhánh Thảo Điền</span>
+                    <a asp-controller="Home" asp-action="Index" class="btn btn-sm btn-light border rounded-pill px-3 py-1 text-muted text-decoration-none d-none d-sm-inline" title="Xem giao diện người dùng ngoài trang chủ">
+                        <i class="bi bi-shop me-1 text-success"></i>Xem Trang chủ
+                    </a>
                 </div>
 
                 <div class="d-flex align-items-center gap-3">
@@ -147,7 +145,7 @@
                              alt="Staff Avatar" class="rounded-circle object-fit-cover shadow-sm" style="width: 32px; height: 32px;">
                         <div class="text-start">
                             <div class="fw-bold small text-dark lh-1">@currentUserName</div>
-                            <span class="badge bg-success text-white p-0 px-1" style="font-size: 0.65rem;">Nhân viên</span>
+                            <span class="badge @(currentRole == "Admin" ? "bg-danger" : "bg-success") text-white p-0 px-1" style="font-size: 0.65rem;">@(currentRole == "Admin" ? "Quản trị viên" : "Nhân viên")</span>
                         </div>
                     </div>
                 </div>
@@ -227,6 +225,16 @@
                                     </div>
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3 mt-2" aria-labelledby="userMenuDropdown">
+                                    @if (currentRole == "Admin" || User.IsInRole("Admin"))
+                                    {
+                                        <li><a class="dropdown-item py-2 fw-bold text-danger" asp-controller="Report" asp-action="Index"><i class="bi bi-speedometer2 me-2"></i>Trang quản trị (Admin)</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                    }
+                                    else if (currentRole == "Staff" || User.IsInRole("Staff"))
+                                    {
+                                        <li><a class="dropdown-item py-2 fw-bold text-success" asp-controller="Reception" asp-action="Index"><i class="bi bi-clipboard2-check me-2"></i>Khu vực làm việc (Staff)</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                    }
                                     <li><a class="dropdown-item py-2" asp-controller="Pet" asp-action="Index"><i class="bi bi-heart-pulse-fill text-success me-2"></i>Hồ sơ thú cưng</a></li>
                                     <li><a class="dropdown-item py-2" asp-controller="Appointment" asp-action="Index"><i class="bi bi-calendar3 text-primary me-2"></i>Lịch hẹn của tôi</a></li>
                                     <li><hr class="dropdown-divider"></li>

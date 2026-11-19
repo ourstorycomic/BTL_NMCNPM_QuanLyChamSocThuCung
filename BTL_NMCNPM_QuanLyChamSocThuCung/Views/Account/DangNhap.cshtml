@@ -94,28 +94,16 @@
                     </div>
                 }
 
-                <!-- Role Selector Tabs -->
-                <div class="role-segment">
-                    <button type="button" class="role-tab-btn active" id="tabCustomer" onclick="selectRole('Customer')">
-                        <i class="bi bi-person"></i> Khách hàng
-                    </button>
-                    <button type="button" class="role-tab-btn" id="tabStaff" onclick="selectRole('Staff')">
-                        <i class="bi bi-person-badge"></i> Nhân viên
-                    </button>
-                    <button type="button" class="role-tab-btn" id="tabAdmin" onclick="selectRole('Admin')">
-                        <i class="bi bi-gear"></i> Quản trị
-                    </button>
-                </div>
-
                 <form asp-action="DangNhap" method="post" id="loginForm">
                     @Html.AntiForgeryToken()
+                    <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
 
                     <div class="paw-input-group">
                         <label for="usernameInput">Tên đăng nhập hoặc Email</label>
                         <div class="paw-input-wrapper">
                             <i class="bi bi-envelope paw-input-icon"></i>
                             <input type="text" name="username" id="usernameInput" class="paw-input" 
-                                   placeholder="VD: minhanh@gmail.com" required autocomplete="username" />
+                                   placeholder="Nhập tên đăng nhập hoặc email..." required autocomplete="username" />
                         </div>
                     </div>
 
@@ -165,9 +153,19 @@
                         </a>
                     </div>
 
-                    <div class="mt-4 pt-3 border-top text-center text-muted" style="font-size: 0.78rem;">
-                        <i class="bi bi-shield-check text-success me-1"></i>
-                        Đặt lịch, theo dõi hồ sơ và lịch sử chăm sóc của bé.
+                    <div class="mt-4 pt-3 border-top text-center">
+                        <div class="text-muted small mb-2">Tài khoản thử nghiệm (bấm để điền nhanh):</div>
+                        <div class="d-flex justify-content-center gap-2 flex-wrap">
+                            <button type="button" class="btn btn-sm btn-light border rounded-pill px-2 py-1 small" onclick="fillAccount('admin', '123456')">
+                                <i class="bi bi-shield-lock-fill text-danger me-1"></i>Quản trị (admin)
+                            </button>
+                            <button type="button" class="btn btn-sm btn-light border rounded-pill px-2 py-1 small" onclick="fillAccount('letan', '123456')">
+                                <i class="bi bi-person-badge-fill text-primary me-1"></i>Nhân viên (letan)
+                            </button>
+                            <button type="button" class="btn btn-sm btn-light border rounded-pill px-2 py-1 small" onclick="fillAccount('minhanh', '123456')">
+                                <i class="bi bi-person-fill text-success me-1"></i>Khách hàng (minhanh)
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -176,32 +174,13 @@
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        function selectRole(role) {
-            document.getElementById('tabCustomer').classList.remove('active');
-            document.getElementById('tabStaff').classList.remove('active');
-            document.getElementById('tabAdmin').classList.remove('active');
-
+        function fillAccount(username, password) {
             const userInput = document.getElementById('usernameInput');
             const passInput = document.getElementById('passwordInput');
-
-            if (role === 'Customer') {
-                document.getElementById('tabCustomer').classList.add('active');
-                userInput.value = 'minhanh';
-                passInput.value = '123456';
-            } else if (role === 'Staff') {
-                document.getElementById('tabStaff').classList.add('active');
-                userInput.value = 'letan';
-                passInput.value = '123456';
-            } else if (role === 'Admin') {
-                document.getElementById('tabAdmin').classList.add('active');
-                userInput.value = 'admin';
-                passInput.value = '123456';
-            }
+            userInput.value = username;
+            passInput.value = password;
+            userInput.focus();
         }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            selectRole('Customer');
-        });
 
         function togglePasswordVisibility() {
             const passInput = document.getElementById('passwordInput');

@@ -85,11 +85,15 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
         }
 
         [HttpGet]
-        public IActionResult DangNhap() => View();
+        public IActionResult DangNhap(string? returnUrl)
+        {
+            ViewBag.ReturnUrl = returnUrl;
+            return View();
+        }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DangNhap(string username, string password)
+        public async Task<IActionResult> DangNhap(string username, string password, string? returnUrl)
         {
             var user = _context.Accounts.FirstOrDefault(x => x.Username == username);
 
@@ -97,12 +101,14 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
                 !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
             {
                 ViewBag.Loi = "Tên đăng nhập hoặc mật khẩu không chính xác!";
+                ViewBag.ReturnUrl = returnUrl;
                 return View();
             }
 
             if (!user.Status)
             {
                 ViewBag.Loi = "Tài khoản của bạn đã bị khóa!";
+                ViewBag.ReturnUrl = returnUrl;
                 return View();
             }
 
@@ -155,14 +161,21 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
 
             TempData["SuccessMessage"] = $"Chào mừng {user.FullName} đã đăng nhập thành công!";
 
-            // 4. Điều hướng theo phân quyền
-            if (user.Role == "Staff")
+            // 4. Điều hướng theo phân quyền:
+            // Nếu có returnUrl hợp lệ (ví dụ đang truy cập trang quản trị), chuyển đến thẳng returnUrl
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
             {
-                return RedirectToAction("Index", "Reception");
+                return Redirect(returnUrl);
             }
+
+            // Mặc định: Tài khoản Quản trị vào thẳng Dashboard Quản trị, Nhân viên vào Tiếp nhận, Khách vào Trang chủ
             if (user.Role == "Admin")
             {
                 return RedirectToAction("Index", "Report");
+            }
+            if (user.Role == "Staff")
+            {
+                return RedirectToAction("Index", "Reception");
             }
 
             return RedirectToAction("Index", "Home");
