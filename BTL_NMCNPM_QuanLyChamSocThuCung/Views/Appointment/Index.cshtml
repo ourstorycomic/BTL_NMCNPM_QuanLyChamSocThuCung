@@ -1,0 +1,147 @@
+@model BTL_NMCNPM_QuanLyChamSocThuCung.ViewModels.AppointmentIndexViewModel
+@using System.Globalization
+@{
+    ViewData["Title"] = "Quản lý lịch hẹn";
+}
+<link rel="stylesheet" href="~/css/appointment.css" />
+
+@functions {
+    static string StatusText(string status) => status switch
+    {
+        "Pending" => "Chờ xác nhận",
+        "Confirmed" => "Đã xác nhận",
+        "Processing" => "Đang chăm sóc",
+        "Completed" => "Hoàn thành",
+        "Cancelled" => "Đã hủy",
+        _ => status
+    };
+
+    static string StatusClass(string status) => status switch
+    {
+        "Pending" => "status-pending",
+        "Confirmed" => "status-confirmed",
+        "Processing" => "status-processing",
+        "Completed" => "status-completed",
+        "Cancelled" => "status-cancelled",
+        _ => "status-pending"
+    };
+
+    static string TimeRange(BTL_NMCNPM_QuanLyChamSocThuCung.Models.Appointment item)
+    {
+        var end = item.EndTime;
+        if (end == null)
+        {
+            var minutes = item.AppointmentServices.Sum(x => x.Service.DurationMinutes);
+            if (minutes <= 0) minutes = 30;
+            end = item.AppointmentDate.AddMinutes(minutes);
+        }
+
+        return $"{item.AppointmentDate:dd/MM/yyyy HH:mm} - {end:HH:mm}";
+    }
+
+    static decimal TotalOf(BTL_NMCNPM_QuanLyChamSocThuCung.Models.Appointment item)
+        => item.AppointmentServices.Sum(x => x.Service.BasePrice * x.Quantity);
+}
+
+<div class="appointment-page">
+    <div class="appointment-heading">
+        <div>
+            <h2>Quản lý lịch hẹn</h2>
+            <p>Theo dõi lịch hẹn, xác nhận và hủy lịch cho khách hàng.</p>
+        </div>
+        <a asp-action="Create" class="btn btn-primary">Đặt lịch mới</a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    <form method="get" class="appointment-filter">
+        <input type="text" name="keyword" value="@Model.Keyword" class="form-control"
+               placeholder="Tìm theo tên thú cưng, khách hàng hoặc số điện thoại..." />
+        <input type="date" name="date" value="@(Model.Date?.ToString("yyyy-MM-dd"))" class="form-control" />
+        <select name="status" class="form-select">
+            @{
+                var statusOptions = new (string Value, string Text)[]
+                {
+                    ("", "Tất cả trạng thái"),
+                    ("Pending", "Chờ xác nhận"),
+                    ("Confirmed", "Đã xác nhận"),
+                    ("Processing", "Đang chăm sóc"),
+                    ("Completed", "Hoàn thành"),
+                    ("Cancelled", "Đã hủy")
+                };
+            }
+            @foreach (var option in statusOptions)
+            {
+                if (string.Equals(Model.Status ?? string.Empty, option.Value, StringComparison.OrdinalIgnoreCase))
+                {
+                    <option value="@option.Value" selected>@option.Text</option>
+                }
+                else
+                {
+                    <option value="@option.Value">@option.Text</option>
+                }
+            }
+        </select>
+        <button type="submit" class="btn btn-primary">Lọc</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Xóa lọc</a>
+    </form>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle appointment-table">
+            <thead>
+                <tr>
+                    <th>Thú cưng</th>
+                    <th>Khách hàng</th>
+                    <th>Thời gian</th>
+                    <th>Dịch vụ</th>
+                    <th class="text-end">Tạm tính</th>
+                    <th>Trạng thái</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Appointments.Count == 0)
+                {
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">Không có lịch hẹn phù hợp.</td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var item in Model.Appointments)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@item.Pet.PetName</strong>
+                                <div class="small text-muted">@item.Pet.Species@(string.IsNullOrWhiteSpace(item.Pet.Breed) ? "" : $" - {item.Pet.Breed}")</div>
+                            </td>
+                            <td>
+                                @item.Pet.Customer.CustomerName
+                                <div class="small text-muted">@item.Pet.Customer.PhoneNumber</div>
+                            </td>
+                            <td>@TimeRange(item)</td>
+                            <td>
+                                @foreach (var line in item.AppointmentServices)
+                                {
+                                    <div class="small">@line.Service.ServiceName</div>
+                                }
+                            </td>
+                            <td class="text-end">@TotalOf(item).ToString("N0", CultureInfo.GetCultureInfo("vi-VN")) đ</td>
+                            <td><span class="status-pill @StatusClass(item.Status)">@StatusText(item.Status)</span></td>
+                            <td class="text-end">
+                                <a asp-action="Details" asp-route-id="@item.AppointmentId" class="btn btn-sm btn-outline-primary">Chi tiết</a>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
