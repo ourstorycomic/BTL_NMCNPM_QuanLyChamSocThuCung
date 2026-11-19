@@ -2,6 +2,10 @@
 @using System.Globalization
 @{
     ViewData["Title"] = "Chi tiết lịch hẹn";
+    var userRole = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Role)?.Value
+                   ?? Context.Session.GetString("UserRole")
+                   ?? Context.Request.Cookies["UserRole"];
+    var isStaffOrAdmin = userRole == "Staff" || userRole == "Admin";
     var vn = CultureInfo.GetCultureInfo("vi-VN");
 
     var statusText = Model.Status switch
@@ -50,15 +54,6 @@
             <a asp-action="Index" class="btn btn-outline-secondary">Quay lại danh sách</a>
         </div>
     </div>
-
-    @if (TempData["Success"] != null)
-    {
-        <div class="alert alert-success">@TempData["Success"]</div>
-    }
-    @if (TempData["Error"] != null)
-    {
-        <div class="alert alert-danger">@TempData["Error"]</div>
-    }
 
     <div class="row g-4">
         <div class="col-lg-8">
@@ -175,16 +170,42 @@
                 <div class="d-grid gap-2 mt-3">
                     @if (Model.Status == "Pending")
                     {
-                        <form method="post" asp-action="Confirm" asp-route-id="@Model.AppointmentId">
-                            <button type="submit" class="btn btn-primary w-100">Xác nhận lịch hẹn</button>
-                        </form>
+                        @if (isStaffOrAdmin)
+                        {
+                            <form method="post" asp-action="Confirm" asp-route-id="@Model.AppointmentId">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-success w-100 py-2 fw-bold shadow-sm"
+                                        data-paw-confirm="Xác nhận duyệt lịch hẹn cho bé @Model.Pet.PetName lúc @Model.AppointmentDate.ToString("HH:mm dd/MM/yyyy")?"
+                                        data-paw-title="Xác nhận lịch hẹn"
+                                        data-paw-type="success"
+                                        data-paw-ok="Xác nhận ngay">
+                                    <i class="bi bi-check-circle-fill me-1"></i>Xác nhận lịch hẹn
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning border-0 rounded-3 p-3 mb-1 small text-dark d-flex align-items-center gap-2" style="background-color: #fffbeb;">
+                                <i class="bi bi-hourglass-split text-warning fs-5"></i>
+                                <div>
+                                    <div class="fw-bold">Đang chờ nhân viên duyệt</div>
+                                    <div class="text-muted" style="font-size: 0.8rem;">Cửa hàng sẽ xác nhận lịch hẹn của bạn trong vòng 15 phút.</div>
+                                </div>
+                            </div>
+                        }
                     }
 
                     @if (Model.Status is "Pending" or "Confirmed")
                     {
-                        <form method="post" asp-action="Cancel" asp-route-id="@Model.AppointmentId"
-                              onsubmit="return confirm('Bạn chắc chắn muốn hủy lịch hẹn này?');">
-                            <button type="submit" class="btn btn-outline-danger w-100">Hủy lịch hẹn</button>
+                        <form method="post" asp-action="Cancel" asp-route-id="@Model.AppointmentId">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-outline-danger w-100 py-2"
+                                    data-paw-confirm="Bạn có chắc chắn muốn hủy lịch hẹn này không? Hành động này sẽ hoàn lại khung giờ trống cho khách hàng khác."
+                                    data-paw-title="Hủy lịch hẹn"
+                                    data-paw-type="danger"
+                                    data-paw-ok="Hủy lịch ngay">
+                                <i class="bi bi-x-circle me-1"></i>Hủy lịch hẹn
+                            </button>
                         </form>
                     }
                 </div>

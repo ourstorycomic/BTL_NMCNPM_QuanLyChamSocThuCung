@@ -2,10 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using BTL_NMCNPM_QuanLyChamSocThuCung.Data;
 using BTL_NMCNPM_QuanLyChamSocThuCung.Models;
 using BTL_NMCNPM_QuanLyChamSocThuCung.ViewModels;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -38,6 +41,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
         // 1. DANH SÁCH LỊCH HẸN
         // ==========================================
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> Index(string? keyword, string? status, DateTime? date)
         {
             var query = _db.Appointments
@@ -47,6 +51,26 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
                 .Include(a => a.AppointmentServices)
                     .ThenInclude(x => x.Service)
                 .AsQueryable();
+
+            var role = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value
+                       ?? HttpContext.Session.GetString("UserRole")
+                       ?? Request.Cookies["UserRole"];
+
+            // Nếu vai trò là Khách hàng, chỉ hiển thị lịch hẹn thuộc về chính mình
+            if (role != "Staff" && role != "Admin")
+            {
+                var accountIdStr = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value
+                                   ?? HttpContext.Session.GetString("AccountId");
+                var customerIdStr = User.Claims.FirstOrDefault(c => c.Type == "CustomerId")?.Value
+                                    ?? HttpContext.Session.GetString("CustomerId");
+
+                Guid.TryParse(accountIdStr, out var accId);
+                Guid.TryParse(customerIdStr, out var custId);
+
+                query = query.Where(a =>
+                    (custId != Guid.Empty && a.Pet.CustomerId == custId) ||
+                    (accId != Guid.Empty && a.Pet.Customer.AccountId == accId));
+            }
 
             if (!string.IsNullOrWhiteSpace(keyword))
             {
@@ -88,12 +112,25 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
         [HttpGet]
         public async Task<IActionResult> Create()
         {
+            var now = DateTime.Now;
+            // Nếu ngoài giờ hoạt động (sau 18:00), mặc định đặt cho ngày mai lúc 09:00
+            var defaultDate = now.Hour >= 18 ? DateTime.Today.AddDays(1) : DateTime.Today;
+            var defaultTime = now.Hour >= 18 ? "09:00" : (now.Hour < 8 ? "09:00" : $"{now.AddHours(1).Hour:D2}:00");
+
             var model = new AppointmentCreateViewModel
             {
-                AppointmentDate = DateTime.Today
+                AppointmentDate = defaultDate,
+                StartTime = defaultTime
             };
 
             await PopulateOptionsAsync(model);
+
+            // Tự động chọn thú cưng đầu tiên nếu khách đã có thú cưng
+            if (model.CustomerId.HasValue && model.PetsByCustomer.TryGetValue(model.CustomerId.Value.ToString(), out var pets) && pets.Any())
+            {
+                model.PetId = pets.First().PetId;
+            }
+
             return View(model);
         }
 
@@ -133,28 +170,83 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
 
             // ---- 2.2. Kiểm tra khách hàng và thú cưng ----
             Customer? customer = null;
+            Pet? pet = null;
+
             if (model.CustomerId.HasValue)
             {
                 customer = await _db.Customers
-                    .AsNoTracking()
                     .FirstOrDefaultAsync(c => c.Id == model.CustomerId.Value && c.IsActive);
 
                 if (customer == null)
                 {
                     ModelState.AddModelError(nameof(model.CustomerId), "Khách hàng không tồn tại hoặc đã ngừng hoạt động.");
                 }
-            }
-
-            Pet? pet = null;
-            if (model.PetId.HasValue && customer != null)
-            {
-                pet = await _db.Pets
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(p => p.PetId == model.PetId.Value && p.CustomerId == customer.Id);
-
-                if (pet == null)
+                else if (model.PetId.HasValue)
                 {
-                    ModelState.AddModelError(nameof(model.PetId), "Thú cưng không thuộc khách hàng đã chọn.");
+                    pet = await _db.Pets
+                        .FirstOrDefaultAsync(p => p.PetId == model.PetId.Value && p.CustomerId == customer.Id);
+
+                    if (pet == null)
+                    {
+                        ModelState.AddModelError(nameof(model.PetId), "Thú cưng không thuộc khách hàng đã chọn.");
+                    }
+                }
+                else
+                {
+                    ModelState.AddModelError(nameof(model.PetId), "Vui lòng chọn thú cưng.");
+                }
+            }
+            else
+            {
+                // Khách vãng lai đặt lịch nhanh (Guest Booking)
+                if (string.IsNullOrWhiteSpace(model.GuestCustomerName))
+                {
+                    ModelState.AddModelError(nameof(model.GuestCustomerName), "Vui lòng nhập họ và tên của bạn.");
+                }
+
+                if (string.IsNullOrWhiteSpace(model.GuestPhoneNumber))
+                {
+                    ModelState.AddModelError(nameof(model.GuestPhoneNumber), "Vui lòng nhập số điện thoại để chúng tôi liên hệ xác nhận.");
+                }
+
+                if (string.IsNullOrWhiteSpace(model.GuestPetName))
+                {
+                    ModelState.AddModelError(nameof(model.GuestPetName), "Vui lòng nhập tên bé cưng.");
+                }
+
+                if (ModelState.IsValid)
+                {
+                    var phone = model.GuestPhoneNumber!.Trim();
+                    customer = await _db.Customers.FirstOrDefaultAsync(c => c.PhoneNumber == phone);
+                    if (customer == null)
+                    {
+                        customer = new Customer
+                        {
+                            CustomerName = model.GuestCustomerName!.Trim(),
+                            PhoneNumber = phone,
+                            IsActive = true,
+                            CreatedAt = DateTime.UtcNow
+                        };
+                        _db.Customers.Add(customer);
+                        await _db.SaveChangesAsync();
+                    }
+
+                    var petName = model.GuestPetName!.Trim();
+                    pet = await _db.Pets.FirstOrDefaultAsync(p => p.CustomerId == customer.Id && p.PetName.ToLower() == petName.ToLower());
+                    if (pet == null)
+                    {
+                        pet = new Pet
+                        {
+                            CustomerId = customer.Id,
+                            PetName = petName,
+                            Species = string.IsNullOrWhiteSpace(model.GuestSpecies) ? "Chó" : model.GuestSpecies.Trim(),
+                            Breed = model.GuestBreed?.Trim(),
+                            Weight = model.GuestWeight ?? 3.5m,
+                            AllergyNote = model.GuestAllergyNote?.Trim()
+                        };
+                        _db.Pets.Add(pet);
+                        await _db.SaveChangesAsync();
+                    }
                 }
             }
 
@@ -175,24 +267,48 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
                 var opening = start.Value.Date.Add(OpeningTime);
                 var closing = start.Value.Date.Add(ClosingTime);
 
-                if (start.Value < opening || end > closing)
+                // Dịch vụ lưu trú (Khách sạn thú cưng 24h) không bị ràng buộc phải trả bé trước 20:00 cùng ngày
+                var isBoarding = services.Any(s => s.Category == "Lưu trú" || s.DurationMinutes >= 720);
+
+                if (start.Value < opening || start.Value > closing || (!isBoarding && end > closing))
                 {
                     ModelState.AddModelError(nameof(model.StartTime),
-                        "Giờ hẹn phải nằm trong khung 07:00 - 20:00 và kết thúc trước 20:00.");
+                        "Giờ hẹn nhận bé phải nằm trong khung 07:00 - 20:00 và dịch vụ làm đẹp trong ngày cần kết thúc trước 20:00.");
                 }
                 else if (start.Value < DateTime.Now)
                 {
-                    ModelState.AddModelError(nameof(model.StartTime), "Không thể đặt lịch ở thời điểm đã qua.");
+                    ModelState.AddModelError(nameof(model.StartTime), 
+                        $"Khung giờ {start.Value:dd/MM/yyyy HH:mm} đã ở trong quá khứ. Vui lòng chọn ngày hoặc giờ tiếp theo.");
                 }
-                else if (await HasConflictAsync(start.Value, end))
+                else if (!isBoarding && await HasConflictAsync(start.Value, end))
                 {
                     ModelState.AddModelError(nameof(model.StartTime),
                         $"Khung giờ {start.Value:HH:mm} - {end:HH:mm} đã có lịch hẹn khác. Vui lòng chọn giờ khác.");
                 }
             }
+            else
+            {
+                ModelState.AddModelError(nameof(model.StartTime), "Vui lòng chọn ngày và giờ hẹn hợp lệ.");
+            }
 
             if (!ModelState.IsValid || start == null || customer == null || pet == null)
             {
+                if (customer == null) ModelState.AddModelError(nameof(model.CustomerId), "Vui lòng chọn hoặc nhập thông tin khách hàng.");
+                if (pet == null) ModelState.AddModelError(nameof(model.PetId), "Vui lòng chọn thú cưng.");
+                if (start == null) ModelState.AddModelError(nameof(model.StartTime), "Thời gian đặt lịch không hợp lệ.");
+
+                var errorList = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .Where(msg => !string.IsNullOrWhiteSpace(msg))
+                    .Distinct()
+                    .ToList();
+
+                TempData["Error"] = errorList.Count > 0
+                    ? string.Join(" ", errorList)
+                    : "Thông tin đặt lịch chưa hợp lệ. Vui lòng kiểm tra lại.";
+
+                await PopulateOptionsAsync(model);
                 return View(model);
             }
 
@@ -313,9 +429,13 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
         // ==========================================
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Staff,Admin")]
         public async Task<IActionResult> Confirm(Guid id)
         {
-            var appointment = await _db.Appointments.FirstOrDefaultAsync(a => a.AppointmentId == id);
+            var appointment = await _db.Appointments
+                .Include(a => a.Pet)
+                    .ThenInclude(p => p.Customer)
+                .FirstOrDefaultAsync(a => a.AppointmentId == id);
             if (appointment == null) return NotFound();
 
             if (appointment.Status != "Pending")
@@ -327,16 +447,44 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
             appointment.Status = "Confirmed";
             await _db.SaveChangesAsync();
 
-            TempData["Success"] = "Đã xác nhận lịch hẹn.";
+            TempData["Success"] = $"Đã xác nhận lịch hẹn của khách hàng {appointment.Pet?.Customer?.CustomerName ?? ""} (bé {appointment.Pet?.PetName ?? ""}) thành công! Lịch hẹn đã sẵn sàng để tiếp nhận tại quầy.";
             return RedirectToAction(nameof(Details), new { id });
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<IActionResult> Cancel(Guid id)
         {
-            var appointment = await _db.Appointments.FirstOrDefaultAsync(a => a.AppointmentId == id);
+            var appointment = await _db.Appointments
+                .Include(a => a.Pet)
+                    .ThenInclude(p => p.Customer)
+                .FirstOrDefaultAsync(a => a.AppointmentId == id);
             if (appointment == null) return NotFound();
+
+            var role = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value
+                       ?? HttpContext.Session.GetString("UserRole")
+                       ?? Request.Cookies["UserRole"];
+
+            if (role != "Staff" && role != "Admin")
+            {
+                var accountIdStr = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value
+                                   ?? HttpContext.Session.GetString("AccountId");
+                var customerIdStr = User.Claims.FirstOrDefault(c => c.Type == "CustomerId")?.Value
+                                    ?? HttpContext.Session.GetString("CustomerId");
+
+                Guid.TryParse(accountIdStr, out var accId);
+                Guid.TryParse(customerIdStr, out var custId);
+
+                bool isOwner = (custId != Guid.Empty && appointment.Pet.CustomerId == custId) ||
+                               (accId != Guid.Empty && appointment.Pet.Customer.AccountId == accId);
+
+                if (!isOwner)
+                {
+                    TempData["Error"] = "Bạn không có quyền thao tác trên lịch hẹn của khách hàng khác.";
+                    return RedirectToAction(nameof(Index));
+                }
+            }
 
             if (appointment.Status is not ("Pending" or "Confirmed"))
             {
@@ -354,7 +502,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
             appointment.Status = "Cancelled";
             await _db.SaveChangesAsync();
 
-            TempData["Success"] = "Đã hủy lịch hẹn.";
+            TempData["Success"] = $"Đã hủy lịch hẹn của bé {appointment.Pet?.PetName ?? ""} thành công.";
             return RedirectToAction(nameof(Details), new { id });
         }
 
@@ -365,23 +513,78 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
         /// <summary>Nạp danh sách khách hàng, thú cưng theo khách hàng và dịch vụ đang hoạt động.</summary>
         private async Task PopulateOptionsAsync(AppointmentCreateViewModel model)
         {
-            model.Customers = await _db.Customers
+            model.Services = await _db.Services
                 .AsNoTracking()
-                .Where(c => c.IsActive)
-                .OrderBy(c => c.CustomerName)
+                .Where(s => s.IsActive)
+                .OrderBy(s => s.Category)
+                .ThenBy(s => s.ServiceName)
                 .ToListAsync();
 
-            var pets = await _db.Pets
-                .AsNoTracking()
-                .Where(p => p.Customer.IsActive)
-                .OrderBy(p => p.PetName)
-                .ToListAsync();
+            var isAuth = User.Identity?.IsAuthenticated == true;
+            model.IsAuthenticated = isAuth;
 
-            model.PetsByCustomer = pets
-                .GroupBy(p => p.CustomerId.ToString())
-                .ToDictionary(
-                    g => g.Key,
-                    g => g.Select(p => new PetOptionViewModel
+            var role = User.FindFirstValue(ClaimTypes.Role) ?? HttpContext.Session.GetString("UserRole");
+            var isStaffOrAdmin = role == "Staff" || role == "Admin";
+            model.IsStaffOrAdmin = isStaffOrAdmin;
+
+            if (isStaffOrAdmin)
+            {
+                // Nhân viên / Admin: Được xem toàn bộ khách hàng để tạo lịch hộ
+                model.Customers = await _db.Customers
+                    .AsNoTracking()
+                    .Where(c => c.IsActive)
+                    .OrderBy(c => c.CustomerName)
+                    .ToListAsync();
+
+                var pets = await _db.Pets
+                    .AsNoTracking()
+                    .Where(p => p.Customer.IsActive)
+                    .OrderBy(p => p.PetName)
+                    .ToListAsync();
+
+                model.PetsByCustomer = pets
+                    .GroupBy(p => p.CustomerId.ToString())
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.Select(p => new PetOptionViewModel
+                        {
+                            PetId = p.PetId,
+                            PetName = p.PetName,
+                            Species = p.Species,
+                            Breed = p.Breed,
+                            Weight = p.Weight,
+                            AllergyNote = p.AllergyNote
+                        }).ToList());
+            }
+            else if (isAuth)
+            {
+                // Khách hàng đã đăng nhập: CHỈ NẠP DUY NHẤT HỒ SƠ VÀ THÚ CƯNG CỦA CHÍNH HỌ
+                var accountIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? HttpContext.Session.GetString("AccountId");
+                Customer? currentCust = null;
+
+                if (Guid.TryParse(accountIdStr, out var accountId))
+                {
+                    currentCust = await _db.Customers
+                        .Include(c => c.Pets)
+                        .FirstOrDefaultAsync(c => c.AccountId == accountId && c.IsActive);
+                }
+
+                if (currentCust == null)
+                {
+                    var username = User.FindFirstValue("Username") ?? HttpContext.Session.GetString("Username");
+                    currentCust = await _db.Customers
+                        .Include(c => c.Pets)
+                        .FirstOrDefaultAsync(c => (c.Account != null && c.Account.Username == username) || c.Email == username);
+                }
+
+                if (currentCust != null)
+                {
+                    model.CustomerId = currentCust.Id;
+                    model.LoggedInCustomerName = currentCust.CustomerName;
+                    model.LoggedInPhoneNumber = currentCust.PhoneNumber;
+                    model.Customers = new List<Customer> { currentCust };
+
+                    var petList = currentCust.Pets.Select(p => new PetOptionViewModel
                     {
                         PetId = p.PetId,
                         PetName = p.PetName,
@@ -389,14 +592,31 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
                         Breed = p.Breed,
                         Weight = p.Weight,
                         AllergyNote = p.AllergyNote
-                    }).ToList());
+                    }).ToList();
 
-            model.Services = await _db.Services
-                .AsNoTracking()
-                .Where(s => s.IsActive)
-                .OrderBy(s => s.Category)
-                .ThenBy(s => s.ServiceName)
-                .ToListAsync();
+                    model.PetsByCustomer = new Dictionary<string, List<PetOptionViewModel>>
+                    {
+                        { currentCust.Id.ToString(), petList }
+                    };
+
+                    if (petList.Any() && !model.PetId.HasValue)
+                    {
+                        model.PetId = petList.First().PetId;
+                    }
+                }
+                else
+                {
+                    model.Customers = new List<Customer>();
+                    model.PetsByCustomer = new Dictionary<string, List<PetOptionViewModel>>();
+                }
+            }
+            else
+            {
+                // Khách vãng lai (CHƯA ĐĂNG NHẬP):
+                // Tuyệt đối KHÔNG nạp bất kỳ danh sách khách hàng hay thú cưng nào khác để bảo mật dữ liệu!
+                model.Customers = new List<Customer>();
+                model.PetsByCustomer = new Dictionary<string, List<PetOptionViewModel>>();
+            }
         }
 
         /// <summary>

@@ -1,6 +1,10 @@
-﻿@model IEnumerable<BTL_NMCNPM_QuanLyChamSocThuCung.Models.Service>
+@model IEnumerable<BTL_NMCNPM_QuanLyChamSocThuCung.Models.Service>
 @{
     ViewData["Title"] = "Quản lý Dịch Vụ";
+    var userRole = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Role)?.Value
+                   ?? Context.Session.GetString("UserRole")
+                   ?? Context.Request.Cookies["UserRole"];
+    var isAdmin = userRole == "Admin";
 }
 
 <div class="container-fluid py-4">
@@ -11,9 +15,12 @@
             </h2>
             <p class="text-muted small mb-0">Quản lý các gói dịch vụ chăm sóc thú cưng</p>
         </div>
-        <a asp-action="Create" class="btn btn-paw rounded-pill px-4 shadow-sm">
-            <i class="bi bi-plus-circle-fill me-1"></i> Thêm Dịch Vụ
-        </a>
+        @if (isAdmin)
+        {
+            <a asp-action="Create" class="btn btn-paw rounded-pill px-4 shadow-sm">
+                <i class="bi bi-plus-circle-fill me-1"></i> Thêm Dịch Vụ
+            </a>
+        }
     </div>
 
     @if (TempData["SuccessMessage"] != null)
@@ -67,7 +74,10 @@
                             <th class="text-uppercase text-muted small fw-bold">Thời Gian</th>
                             <th class="text-uppercase text-muted small fw-bold">Cân Nặng (kg)</th>
                             <th class="text-uppercase text-muted small fw-bold">Giá Cơ Bản</th>
-                            <th class="text-center pe-4 text-uppercase text-muted small fw-bold">Thao tác</th>
+                            @if (isAdmin)
+                            {
+                                <th class="text-center pe-4 text-uppercase text-muted small fw-bold">Thao tác</th>
+                            }
                         </tr>
                     </thead>
                     <tbody>
@@ -86,12 +96,19 @@
                                     </span>
                                 </td>
                                 <td class="text-danger fw-bold fs-6">@item.BasePrice.ToString("N0") <small class="fw-normal">VNĐ</small></td>
-                                <td class="text-center pe-4">
-                                    <a asp-action="Edit" asp-route-id="@item.ServiceId" class="btn btn-sm btn-light border rounded-circle me-1" title="Sửa" style="width: 35px; height: 35px;"><i class="bi bi-pencil-square text-primary"></i></a>
-                                    <form asp-action="Delete" asp-route-id="@item.ServiceId" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn ngừng cung cấp dịch vụ này?');">
-                                        <button type="submit" class="btn btn-sm btn-light border rounded-circle" title="Xóa" style="width: 35px; height: 35px;"><i class="bi bi-trash text-danger"></i></button>
-                                    </form>
-                                </td>
+                                @if (isAdmin)
+                                {
+                                    <td class="text-center pe-4">
+                                        <a asp-action="Edit" asp-route-id="@item.ServiceId" class="btn btn-sm btn-light border rounded-circle me-1" title="Sửa" style="width: 35px; height: 35px;"><i class="bi bi-pencil-square text-primary"></i></a>
+                                        <form asp-action="Delete" asp-route-id="@item.ServiceId" method="post" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-light border rounded-circle" title="Xóa" style="width: 35px; height: 35px;"
+                                                    data-paw-confirm="Bạn có chắc chắn muốn ngừng cung cấp dịch vụ @item.ServiceName?"
+                                                    data-paw-title="Ngừng cung cấp dịch vụ"
+                                                    data-paw-type="danger"
+                                                    data-paw-ok="Ngừng cung cấp"><i class="bi bi-trash text-danger"></i></button>
+                                        </form>
+                                    </td>
+                                }
                             </tr>
                         }
                     </tbody>

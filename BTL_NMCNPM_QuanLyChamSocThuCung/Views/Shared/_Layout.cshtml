@@ -10,219 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-
-    <style>
-        :root {
-            --paw-primary: #10b981;
-            --paw-primary-dark: #059669;
-            --paw-primary-light: #ecfdf5;
-            --paw-text-dark: #0f172a;
-            --paw-text-muted: #64748b;
-            --paw-bg: #f8fafc;
-            --paw-card-bg: #ffffff;
-            --paw-border: #e2e8f0;
-            --paw-radius: 18px;
-        }
-
-        body {
-            font-family: 'Plus Jakarta Sans', 'Be Vietnam Pro', system-ui, -apple-system, sans-serif;
-            background-color: var(--paw-bg);
-            color: var(--paw-text-dark);
-            -webkit-font-smoothing: antialiased;
-        }
-
-        .paw-main-container {
-            max-width: 1240px;
-            margin: 0 auto;
-        }
-
-        /* PawHaven Brand Utilities */
-        .btn-paw-primary {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            border: none;
-            color: #ffffff;
-            font-weight: 600;
-            border-radius: 9999px;
-            padding: 0.55rem 1.35rem;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.28);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .btn-paw-primary:hover {
-            background: linear-gradient(135deg, #059669 0%, #047857 100%);
-            color: #ffffff;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.38);
-        }
-
-        .btn-paw-outline {
-            border: 1.5px solid var(--paw-border);
-            color: #334155;
-            background: #ffffff;
-            font-weight: 600;
-            border-radius: 9999px;
-            padding: 0.5rem 1.25rem;
-            transition: all 0.2s ease;
-        }
-        .btn-paw-outline:hover {
-            border-color: var(--paw-primary);
-            color: var(--paw-primary-dark);
-            background: var(--paw-primary-light);
-            transform: translateY(-1px);
-        }
-
-        /* Sidebar Styling (Staff View) */
-        .staff-sidebar {
-            width: 250px;
-            background: #ffffff;
-            border-right: 1px solid var(--paw-border);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            position: fixed;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            z-index: 1000;
-        }
-        .staff-main-content {
-            margin-left: 250px;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        .sidebar-section-title {
-            font-size: 0.72rem;
-            font-weight: 700;
-            letter-spacing: 0.05em;
-            color: #94a3b8;
-            padding: 0.75rem 1.25rem 0.25rem;
-            text-transform: uppercase;
-        }
-        .sidebar-link {
-            display: flex;
-            align-items: center;
-            padding: 0.625rem 1.25rem;
-            color: #475569;
-            font-weight: 600;
-            font-size: 0.9rem;
-            text-decoration: none;
-            border-radius: 10px;
-            margin: 0.15rem 0.75rem;
-            transition: all 0.15s ease;
-        }
-        .sidebar-link i {
-            font-size: 1.1rem;
-            margin-right: 0.75rem;
-            width: 20px;
-            text-align: center;
-        }
-        .sidebar-link:hover {
-            background-color: #f1f5f9;
-            color: var(--paw-text-dark);
-        }
-        .sidebar-link.active {
-            background-color: var(--paw-primary-light);
-            color: var(--paw-primary-dark);
-            font-weight: 700;
-        }
-        .sidebar-link.active i {
-            color: var(--paw-primary);
-        }
-
-        /* Customer Header */
-        .customer-header {
-            background: #ffffff;
-            border-bottom: 1px solid var(--paw-border);
-        }
-        .customer-nav-link {
-            font-weight: 600;
-            color: #475569;
-            padding: 0.5rem 1rem !important;
-            border-radius: 9999px;
-            text-decoration: none;
-            transition: all 0.2s;
-        }
-        .customer-nav-link:hover {
-            color: var(--paw-primary);
-            background-color: var(--paw-primary-light);
-        }
-        .customer-nav-link.active {
-            background-color: var(--paw-primary-light);
-            color: var(--paw-primary-dark);
-            font-weight: 700;
-        }
-
-        /* Card System */
-        .paw-card {
-            background: var(--paw-card-bg);
-            border-radius: var(--paw-radius);
-            border: 1px solid #f1f5f9;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.02);
-            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.25s ease;
-        }
-        .paw-card:hover {
-            transform: translateY(-4px);
-            border-color: #d1fae5;
-            box-shadow: 0 16px 32px -4px rgba(16, 185, 129, 0.12), 0 4px 12px -2px rgba(0, 0, 0, 0.04);
-        }
-
-        /* Alert Box FR-09 */
-        .paw-health-alert {
-            background-color: #fffdf0;
-            border: 1px solid #fde68a;
-            border-radius: 14px;
-            padding: 0.85rem 1rem;
-        }
-
-        .pet-avatar-box {
-            border-radius: 18px;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-        }
-
-        /* Biological Chips */
-        .paw-meta-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.35rem;
-            padding: 0.25rem 0.65rem;
-            border-radius: 8px;
-            background-color: #f8fafc;
-            border: 1px solid #e2e8f0;
-            font-size: 0.78rem;
-            font-weight: 600;
-            color: #334155;
-        }
-
-        /* Status Pills for Vaccination */
-        .vaccine-status-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            font-size: 0.75rem;
-            font-weight: 600;
-            padding: 0.3rem 0.75rem;
-            border-radius: 9999px;
-        }
-        .vaccine-status-pill.overdue {
-            background-color: #fef2f2;
-            color: #dc2626;
-            border: 1px solid #fee2e2;
-        }
-        .vaccine-status-pill.warning {
-            background-color: #fffbeb;
-            color: #b45309;
-            border: 1px solid #fef3c7;
-        }
-        .vaccine-status-pill.good {
-            background-color: #ecfdf5;
-            color: #059669;
-            border: 1px solid #d1fae5;
-        }
-    </style>
+    <link rel="stylesheet" href="~/css/style.css" asp-append-version="true" />
 </head>
 <body>
     @{
@@ -238,15 +26,16 @@
 
         var currentRole = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Role)?.Value
                           ?? sessionRole
-                          ?? Context.Request.Cookies["UserRole"]
-                          ?? "Customer";
+                          ?? Context.Request.Cookies["UserRole"];
 
-        bool isStaffView = currentRole == "Staff" || currentRole == "Admin" || User.IsInRole("Staff") || User.IsInRole("Admin");
+        bool isAuthenticated = User.Identity?.IsAuthenticated == true || !string.IsNullOrEmpty(sessionRole) || !string.IsNullOrEmpty(Context.Request.Cookies["UserRole"]);
+
+        bool isStaffView = isAuthenticated && (currentRole == "Staff" || currentRole == "Admin" || User.IsInRole("Staff") || User.IsInRole("Admin"));
 
         var currentUserName = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Name)?.Value
                               ?? sessionName
                               ?? Context.Request.Cookies["FullName"]
-                              ?? (isStaffView ? "Hoàng Thu Trang" : "Nguyễn Minh Anh");
+                              ?? (isAuthenticated ? (isStaffView ? "Hoàng Thu Trang" : "Nguyễn Minh Anh") : "Khách");
 
         var currentCtrl = ViewContext.RouteData.Values["controller"]?.ToString();
     }
@@ -269,48 +58,47 @@
                     </span>
                     <span class="fs-5 fw-bold text-dark tracking-tight">PawHaven</span>
                 </a>
-                <span class="badge bg-light text-secondary border fw-bold" style="font-size: 0.68rem; letter-spacing: 0.05em;">STAFF</span>
+                <span class="badge @(currentRole == "Admin" ? "bg-danger text-white" : "bg-light text-secondary border") fw-bold" style="font-size: 0.68rem; letter-spacing: 0.05em;">@(currentRole == "Admin" ? "ADMIN" : "STAFF")</span>
             </div>
 
             <!-- Menu list -->
             <div class="flex-grow-1 overflow-auto py-2">
-                <div class="sidebar-section-title">VẬN HÀNH</div>
-                <a href="javascript:void(0)" class="sidebar-link text-muted">
-                    <i class="bi bi-grid"></i>Tổng quan
-                </a>
+                @if (currentRole == "Admin" || User.IsInRole("Admin"))
+                {
+                    <div class="sidebar-section-title">QUẢN TRỊ HỆ THỐNG</div>
+                    <a asp-controller="Report" asp-action="Index" class="sidebar-link @(currentCtrl == "Report" ? "active" : "text-muted")">
+                        <i class="bi bi-speedometer2 text-danger"></i>Báo cáo & Tổng quan
+                    </a>
+                    <a asp-controller="Service" asp-action="Index" class="sidebar-link @(currentCtrl == "Service" ? "active" : "text-muted")">
+                        <i class="bi bi-tags"></i>Quản lý Dịch vụ
+                    </a>
+                }
+
+                <div class="sidebar-section-title @(currentRole == "Admin" ? "mt-2" : "")">VẬN HÀNH & TIẾP NHẬN</div>
                 <a asp-controller="Reception" asp-action="Index" class="sidebar-link @(currentCtrl == "Reception" ? "active" : "text-muted") d-flex justify-content-between align-items-center">
                     <span><i class="bi bi-clipboard2-check"></i>Tiếp nhận tại quầy</span>
                     <span class="badge rounded-pill bg-success" style="font-size: 0.7rem;">6</span>
                 </a>
                 <a asp-controller="Appointment" asp-action="Index" class="sidebar-link @(currentCtrl == "Appointment" ? "active" : "text-muted")">
-                    <i class="bi bi-calendar3"></i>Lịch hẹn
-                </a>
-                <a href="javascript:void(0)" class="sidebar-link text-muted">
-                    <i class="bi bi-scissors"></i>Đang thực hiện
-                </a>
-                <a href="javascript:void(0)" class="sidebar-link text-muted">
-                    <i class="bi bi-houses"></i>Khách sạn
-                </a>
-
-                <div class="sidebar-section-title mt-2">QUẢN LÝ & BÁO CÁO</div>
-                <a asp-controller="Customer" asp-action="Index" class="sidebar-link @(currentCtrl == "Customer" ? "active" : "text-muted")">
-                    <i class="bi bi-people"></i>Khách hàng
-                </a>
-                <a asp-controller="Service" asp-action="Index" class="sidebar-link @(currentCtrl == "Service" ? "active" : "text-muted")">
-                    <i class="bi bi-tags"></i>Bảng giá dịch vụ
-                </a>
-                <a asp-controller="Pet" asp-action="Index" class="sidebar-link @(currentCtrl == "Pet" ? "active" : "text-muted")">
-                    <i class="bi bi-heart-pulse-fill"></i>Hồ sơ thú cưng
+                    <i class="bi bi-calendar3"></i>Lịch hẹn khách hàng
                 </a>
                 <a asp-controller="Billing" asp-action="Index" class="sidebar-link @(currentCtrl == "Billing" ? "active" : "text-muted")">
                     <i class="bi bi-receipt"></i>Thanh toán & Hóa đơn
                 </a>
-                <a asp-controller="Report" asp-action="Index" class="sidebar-link @(currentCtrl == "Report" ? "active" : "text-muted")">
-                    <i class="bi bi-graph-up-arrow"></i>Báo cáo doanh thu
+
+                <div class="sidebar-section-title mt-2">DỮ LIỆU CƠ SỞ</div>
+                <a asp-controller="Customer" asp-action="Index" class="sidebar-link @(currentCtrl == "Customer" ? "active" : "text-muted")">
+                    <i class="bi bi-people"></i>Danh sách Khách hàng
                 </a>
-                <a href="javascript:void(0)" class="sidebar-link text-muted">
-                    <i class="bi bi-gear"></i>Cài đặt
+                <a asp-controller="Pet" asp-action="Index" class="sidebar-link @(currentCtrl == "Pet" ? "active" : "text-muted")">
+                    <i class="bi bi-heart-pulse-fill"></i>Hồ sơ thú cưng
                 </a>
+                @if (currentRole != "Admin")
+                {
+                    <a asp-controller="Service" asp-action="Index" class="sidebar-link @(currentCtrl == "Service" ? "active" : "text-muted")">
+                        <i class="bi bi-tags"></i>Bảng giá dịch vụ
+                    </a>
+                }
             </div>
 
             <!-- Footer User Profile in Sidebar -->
@@ -320,21 +108,32 @@
                          alt="Staff Avatar" class="rounded-circle me-2 object-fit-cover shadow-sm" style="width: 36px; height: 36px;">
                     <div>
                         <div class="fw-bold small text-dark lh-sm">@currentUserName</div>
-                        <div class="text-muted" style="font-size: 0.72rem;">Lễ tân · Ca sáng</div>
+                        <div class="text-muted" style="font-size: 0.72rem;">@(currentRole == "Admin" ? "Quản trị viên hệ thống" : "Lễ tân · Ca sáng")</div>
                     </div>
                 </div>
+                <a asp-controller="Account" asp-action="DangXuat" class="btn btn-sm btn-light border text-danger rounded-circle p-1 d-inline-flex align-items-center justify-content-center" style="width: 32px; height: 32px;" title="Đăng xuất">
+                    <i class="bi bi-box-arrow-right"></i>
+                </a>
             </div>
         </aside>
+
+        <!-- Backdrop for mobile sidebar -->
+        <div class="staff-sidebar-backdrop" id="staffBackdrop" onclick="toggleStaffSidebar()"></div>
 
         <!-- Main Content Area (Staff) -->
         <div class="staff-main-content">
             <!-- Top Navbar for Staff -->
-            <header class="bg-white border-bottom py-2 px-4 d-flex justify-content-between align-items-center sticky-top">
+            <header class="bg-white border-bottom py-2 px-3 px-md-4 d-flex justify-content-between align-items-center sticky-top">
                 <div class="d-flex align-items-center gap-2">
-                    <span class="badge rounded-pill bg-success-subtle text-success fw-bold px-3 py-2 border border-success-subtle">
-                        <i class="bi bi-clock-fill me-1"></i>Ca sáng · 07:30 - 14:00
+                    <button class="btn btn-light border d-lg-none p-1 px-2 rounded-3 me-1" type="button" onclick="toggleStaffSidebar()" title="Mở danh mục">
+                        <i class="bi bi-list fs-5"></i>
+                    </button>
+                    <span class="badge rounded-pill @(currentRole == "Admin" ? "bg-danger-subtle text-danger border border-danger-subtle" : "bg-success-subtle text-success border border-success-subtle") fw-bold px-3 py-2">
+                        <i class="bi @(currentRole == "Admin" ? "bi-shield-lock-fill" : "bi-clock-fill") me-1"></i>@(currentRole == "Admin" ? "Chế độ Quản trị viên" : "Ca sáng · 07:30 - 14:00")
                     </span>
-                    <span class="text-muted small">Chi nhánh Thảo Điền</span>
+                    <a asp-controller="Home" asp-action="Index" class="btn btn-sm btn-light border rounded-pill px-3 py-1 text-muted text-decoration-none d-none d-sm-inline" title="Xem giao diện người dùng ngoài trang chủ">
+                        <i class="bi bi-shop me-1 text-success"></i>Xem Trang chủ
+                    </a>
                 </div>
 
                 <div class="d-flex align-items-center gap-3">
@@ -346,27 +145,75 @@
                              alt="Staff Avatar" class="rounded-circle object-fit-cover shadow-sm" style="width: 32px; height: 32px;">
                         <div class="text-start">
                             <div class="fw-bold small text-dark lh-1">@currentUserName</div>
-                            <span class="badge bg-success text-white p-0 px-1" style="font-size: 0.65rem;">Nhân viên</span>
+                            <span class="badge @(currentRole == "Admin" ? "bg-danger" : "bg-success") text-white p-0 px-1" style="font-size: 0.65rem;">@(currentRole == "Admin" ? "Quản trị viên" : "Nhân viên")</span>
                         </div>
                     </div>
                 </div>
             </header>
 
             <main role="main" class="p-4 flex-grow-1">
-                @if (TempData["SuccessMessage"] != null)
+                @{
+                    var flashSuccessStaff = TempData["Success"] ?? TempData["SuccessMessage"];
+                    var flashErrorStaff = TempData["Error"] ?? TempData["ErrorMessage"];
+                    var flashWarningStaff = TempData["Warning"] ?? TempData["WarningMessage"];
+                    var flashInfoStaff = TempData["Info"] ?? TempData["InfoMessage"];
+                }
+
+                @if (flashSuccessStaff != null)
                 {
-                    <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 rounded-3 mb-4" role="alert">
-                        <i class="bi bi-check-circle-fill text-success me-2"></i>@TempData["SuccessMessage"]
+                    <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 rounded-4 mb-4 d-flex align-items-center" role="alert">
+                        <span class="rounded-circle bg-success text-white p-2 d-inline-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 36px; height: 36px;">
+                            <i class="bi bi-check2-circle fs-5"></i>
+                        </span>
+                        <div class="flex-grow-1">
+                            <div class="fw-bold text-success-emphasis">Xác nhận thành công!</div>
+                            <div class="small text-dark">@flashSuccessStaff</div>
+                        </div>
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 }
-                @if (TempData["ErrorMessage"] != null)
+
+                @if (flashErrorStaff != null)
                 {
-                    <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 rounded-3 mb-4" role="alert">
-                        <i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>@TempData["ErrorMessage"]
+                    <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 rounded-4 mb-4 d-flex align-items-center" role="alert">
+                        <span class="rounded-circle bg-danger text-white p-2 d-inline-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 36px; height: 36px;">
+                            <i class="bi bi-exclamation-triangle-fill fs-6"></i>
+                        </span>
+                        <div class="flex-grow-1">
+                            <div class="fw-bold text-danger-emphasis">Không thể hoàn tất thao tác:</div>
+                            <div class="small text-dark">@flashErrorStaff</div>
+                        </div>
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 }
+
+                @if (flashWarningStaff != null)
+                {
+                    <div class="alert alert-warning alert-dismissible fade show shadow-sm border-0 rounded-4 mb-4 d-flex align-items-center" role="alert">
+                        <span class="rounded-circle bg-warning text-dark p-2 d-inline-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 36px; height: 36px;">
+                            <i class="bi bi-exclamation-circle-fill fs-6"></i>
+                        </span>
+                        <div class="flex-grow-1">
+                            <div class="fw-bold text-warning-emphasis">Lưu ý quan trọng:</div>
+                            <div class="small text-dark">@flashWarningStaff</div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                @if (flashInfoStaff != null)
+                {
+                    <div class="alert alert-info alert-dismissible fade show shadow-sm border-0 rounded-4 mb-4 d-flex align-items-center" role="alert">
+                        <span class="rounded-circle bg-info text-white p-2 d-inline-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 36px; height: 36px;">
+                            <i class="bi bi-info-circle-fill fs-6"></i>
+                        </span>
+                        <div class="flex-grow-1">
+                            <div class="small text-dark">@flashInfoStaff</div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
                 @RenderBody()
             </main>
 
@@ -401,44 +248,125 @@
                         <a asp-controller="Home" asp-action="Index" class="customer-nav-link @(currentCtrl == "Home" ? "active" : "")">Trang chủ</a>
                         <a asp-controller="Service" asp-action="Index" class="customer-nav-link @(currentCtrl == "Service" ? "active" : "")">Dịch vụ</a>
                         <a asp-controller="Appointment" asp-action="Create" class="customer-nav-link @(currentCtrl == "Appointment" && ViewContext.RouteData.Values["action"]?.ToString() == "Create" ? "active" : "")">Đặt lịch</a>
-                        <a asp-controller="Appointment" asp-action="Index" class="customer-nav-link @(currentCtrl == "Appointment" && ViewContext.RouteData.Values["action"]?.ToString() != "Create" ? "active" : "")">Lịch hẹn của tôi</a>
-                        <a asp-controller="Pet" asp-action="Index" class="customer-nav-link @(currentCtrl == "Pet" ? "active" : "")">Thú cưng</a>
+                        @if (isAuthenticated)
+                        {
+                            <a asp-controller="Appointment" asp-action="Index" class="customer-nav-link @(currentCtrl == "Appointment" && ViewContext.RouteData.Values["action"]?.ToString() != "Create" ? "active" : "")">Lịch hẹn của tôi</a>
+                            <a asp-controller="Pet" asp-action="Index" class="customer-nav-link @(currentCtrl == "Pet" ? "active" : "")">Thú cưng</a>
+                        }
                     </nav>
 
-                    <!-- Right User Information -->
-                    <div class="d-flex align-items-center gap-3">
-                        <button class="btn btn-light rounded-circle p-2 text-muted" type="button">
-                            <i class="bi bi-bell"></i>
-                        </button>
+                    <!-- Right User Information or Login/Register -->
+                    <div class="d-flex align-items-center gap-2">
+                        @if (isAuthenticated)
+                        {
+                            <button class="btn btn-light rounded-circle p-2 text-muted" type="button" title="Thông báo">
+                                <i class="bi bi-bell"></i>
+                            </button>
 
-                        <div class="d-flex align-items-center gap-2 bg-light rounded-pill p-1 pe-3 border">
-                            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80" 
-                                 alt="Customer Avatar" class="rounded-circle object-fit-cover shadow-sm" style="width: 32px; height: 32px;">
-                            <div class="text-start">
-                                <div class="fw-bold small text-dark lh-1">@currentUserName</div>
-                                <span class="badge bg-warning text-dark p-0 px-1" style="font-size: 0.65rem;">Khách thân thiết</span>
+                            <div class="dropdown">
+                                <button class="btn btn-light d-flex align-items-center gap-2 rounded-pill p-1 pe-3 border dropdown-toggle" type="button" id="userMenuDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80" 
+                                         alt="Customer Avatar" class="rounded-circle object-fit-cover shadow-sm" style="width: 32px; height: 32px;">
+                                    <div class="text-start">
+                                        <div class="fw-bold small text-dark lh-1">@currentUserName</div>
+                                        <span class="badge bg-warning text-dark p-0 px-1" style="font-size: 0.65rem;">Khách thân thiết</span>
+                                    </div>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3 mt-2" aria-labelledby="userMenuDropdown">
+                                    @if (currentRole == "Admin" || User.IsInRole("Admin"))
+                                    {
+                                        <li><a class="dropdown-item py-2 fw-bold text-danger" asp-controller="Report" asp-action="Index"><i class="bi bi-speedometer2 me-2"></i>Trang quản trị (Admin)</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                    }
+                                    else if (currentRole == "Staff" || User.IsInRole("Staff"))
+                                    {
+                                        <li><a class="dropdown-item py-2 fw-bold text-success" asp-controller="Reception" asp-action="Index"><i class="bi bi-clipboard2-check me-2"></i>Khu vực làm việc (Staff)</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                    }
+                                    <li><a class="dropdown-item py-2" asp-controller="Pet" asp-action="Index"><i class="bi bi-heart-pulse-fill text-success me-2"></i>Hồ sơ thú cưng</a></li>
+                                    <li><a class="dropdown-item py-2" asp-controller="Appointment" asp-action="Index"><i class="bi bi-calendar3 text-primary me-2"></i>Lịch hẹn của tôi</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item py-2 text-danger fw-semibold" asp-controller="Account" asp-action="DangXuat"><i class="bi bi-box-arrow-right me-2"></i>Đăng xuất</a></li>
+                                </ul>
                             </div>
-                        </div>
+                        }
+                        else
+                        {
+                            <a asp-controller="Account" asp-action="DangNhap" class="btn btn-paw-outline text-nowrap px-3 py-1">
+                                <i class="bi bi-box-arrow-in-right me-1"></i>Đăng nhập
+                            </a>
+                            <a asp-controller="Account" asp-action="DangKy" class="btn btn-paw-primary text-nowrap px-3 py-1">
+                                <i class="bi bi-person-plus-fill me-1"></i>Đăng ký
+                            </a>
+                        }
                     </div>
                 </div>
             </div>
         </header>
 
         <div class="paw-main-container px-3 px-md-4 py-4">
-            @if (TempData["SuccessMessage"] != null)
+            @{
+                var flashSuccessCust = TempData["Success"] ?? TempData["SuccessMessage"];
+                var flashErrorCust = TempData["Error"] ?? TempData["ErrorMessage"];
+                var flashWarningCust = TempData["Warning"] ?? TempData["WarningMessage"];
+                var flashInfoCust = TempData["Info"] ?? TempData["InfoMessage"];
+            }
+
+            @if (flashSuccessCust != null)
             {
-                <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 rounded-3 mb-4" role="alert">
-                    <i class="bi bi-check-circle-fill text-success me-2"></i>@TempData["SuccessMessage"]
+                <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 rounded-4 mb-4 d-flex align-items-center" role="alert">
+                    <span class="rounded-circle bg-success text-white p-2 d-inline-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 36px; height: 36px;">
+                        <i class="bi bi-check2-circle fs-5"></i>
+                    </span>
+                    <div class="flex-grow-1">
+                        <div class="fw-bold text-success-emphasis">Xác nhận thành công!</div>
+                        <div class="small text-dark">@flashSuccessCust</div>
+                    </div>
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             }
-            @if (TempData["ErrorMessage"] != null)
+
+            @if (flashErrorCust != null)
             {
-                <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 rounded-3 mb-4" role="alert">
-                    <i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>@TempData["ErrorMessage"]
+                <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 rounded-4 mb-4 d-flex align-items-center" role="alert">
+                    <span class="rounded-circle bg-danger text-white p-2 d-inline-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 36px; height: 36px;">
+                        <i class="bi bi-exclamation-triangle-fill fs-6"></i>
+                    </span>
+                    <div class="flex-grow-1">
+                        <div class="fw-bold text-danger-emphasis">Không thể hoàn tất thao tác:</div>
+                        <div class="small text-dark">@flashErrorCust</div>
+                    </div>
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             }
+
+            @if (flashWarningCust != null)
+            {
+                <div class="alert alert-warning alert-dismissible fade show shadow-sm border-0 rounded-4 mb-4 d-flex align-items-center" role="alert">
+                    <span class="rounded-circle bg-warning text-dark p-2 d-inline-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 36px; height: 36px;">
+                        <i class="bi bi-exclamation-circle-fill fs-6"></i>
+                    </span>
+                    <div class="flex-grow-1">
+                        <div class="fw-bold text-warning-emphasis">Lưu ý quan trọng:</div>
+                        <div class="small text-dark">@flashWarningCust</div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            @if (flashInfoCust != null)
+            {
+                <div class="alert alert-info alert-dismissible fade show shadow-sm border-0 rounded-4 mb-4 d-flex align-items-center" role="alert">
+                    <span class="rounded-circle bg-info text-white p-2 d-inline-flex align-items-center justify-content-center me-3 flex-shrink-0" style="width: 36px; height: 36px;">
+                        <i class="bi bi-info-circle-fill fs-6"></i>
+                    </span>
+                    <div class="flex-grow-1">
+                        <div class="small text-dark">@flashInfoCust</div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
             <main role="main" class="pb-3">
                 @RenderBody()
             </main>
@@ -457,8 +385,40 @@
         </footer>
     }
 
+    <!-- Modal Thông báo & Xác nhận Hiện đại chuẩn PawHaven (Thay thế alert/confirm trình duyệt) -->
+    <div class="modal fade" id="pawConfirmModal" tabindex="-1" aria-labelledby="pawConfirmModalLabel" aria-hidden="true" style="backdrop-filter: blur(4px); background-color: rgba(15, 23, 42, 0.45);">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 420px;">
+            <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+                <div class="modal-body p-4 text-center">
+                    <div id="pawConfirmIconBox" class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3 shadow-sm" style="width: 60px; height: 60px;">
+                        <i id="pawConfirmIcon" class="fs-2"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-2" id="pawConfirmTitle">Xác nhận thao tác</h5>
+                    <p class="text-muted small mb-4 px-2 lh-base" id="pawConfirmMessage">Bạn có chắc chắn muốn thực hiện hành động này?</p>
+                    
+                    <div class="d-flex gap-2 justify-content-center">
+                        <button type="button" class="btn btn-light rounded-pill px-4 py-2 fw-semibold text-secondary border flex-grow-1" data-bs-dismiss="modal" id="pawConfirmCancelBtn">
+                            Hủy bỏ
+                        </button>
+                        <button type="button" class="btn btn-success rounded-pill px-4 py-2 fw-bold flex-grow-1 shadow-sm" id="pawConfirmOkBtn">
+                            Xác nhận
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleStaffSidebar() {
+            const sidebar = document.querySelector('.staff-sidebar');
+            const backdrop = document.getElementById('staffBackdrop');
+            if (sidebar) sidebar.classList.toggle('show');
+            if (backdrop) backdrop.classList.toggle('show');
+        }
+    </script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

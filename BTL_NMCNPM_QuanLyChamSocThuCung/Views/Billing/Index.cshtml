@@ -124,7 +124,7 @@
                             </td>
                             <td>
                                 <span class="badge bg-light text-dark border">
-                                    @(appt.Pet.Species == "Mèo" ? "🐱" : "🐶") @appt.Pet.PetName
+                                    <i class="bi bi-paw me-1 text-success"></i>@appt.Pet.PetName
                                 </span>
                                 <small class="text-muted d-block">@(appt.ReceptionTicket?.ActualWeight ?? appt.Pet.Weight) kg</small>
                             </td>
@@ -231,7 +231,7 @@
                             </td>
                             <td>
                                 <span class="badge bg-light text-dark border">
-                                    @(inv.Appointment.Pet.Species == "Mèo" ? "🐱" : "🐶") @inv.Appointment.Pet.PetName
+                                    <i class="bi bi-paw me-1 text-success"></i>@inv.Appointment.Pet.PetName
                                 </span>
                             </td>
                             <td>

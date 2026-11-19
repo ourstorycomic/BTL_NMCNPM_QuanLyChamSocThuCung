@@ -1,11 +1,13 @@
-﻿using BTL_NMCNPM_QuanLyChamSocThuCung.Data;
+using BTL_NMCNPM_QuanLyChamSocThuCung.Data;
 using BTL_NMCNPM_QuanLyChamSocThuCung.Models;
 using BTL_NMCNPM_QuanLyChamSocThuCung.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers;
 
+[Authorize(Roles = "Staff,Admin")]
 public class ReceptionController : Controller
 {
     private readonly ApplicationDbContext _db;

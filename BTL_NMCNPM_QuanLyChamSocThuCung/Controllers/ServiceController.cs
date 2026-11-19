@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using BTL_NMCNPM_QuanLyChamSocThuCung.Models;
 using BTL_NMCNPM_QuanLyChamSocThuCung.Data;
@@ -25,10 +26,12 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
             return View(await services.ToListAsync());
         }
 
+        [Authorize(Roles = "Admin")]
         public IActionResult Create() => View();
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create(Service service)
         {
             // Validate logic to avoid SQL crash
@@ -48,6 +51,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
             return View(service);
         }
 
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(Guid? id)
         {
             if (id == null) return NotFound();
@@ -58,6 +62,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(Guid id, Service service)
         {
             if (id != service.ServiceId) return NotFound();
@@ -99,6 +104,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(Guid id)
         {
             var service = await _context.Services.FindAsync(id);

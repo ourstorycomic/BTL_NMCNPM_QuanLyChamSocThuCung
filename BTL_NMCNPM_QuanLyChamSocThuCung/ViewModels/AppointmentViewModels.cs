@@ -21,11 +21,39 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.ViewModels
     /// </summary>
     public class AppointmentCreateViewModel
     {
-        [Required(ErrorMessage = "Vui lòng chọn khách hàng.")]
-        public Guid? CustomerId { get; set; }
+        // Phân quyền & trạng thái người dùng
+        public bool IsAuthenticated { get; set; }
+        public bool IsStaffOrAdmin { get; set; }
+        public string? LoggedInCustomerName { get; set; }
+        public string? LoggedInPhoneNumber { get; set; }
 
-        [Required(ErrorMessage = "Vui lòng chọn thú cưng.")]
+        // Khách hàng & Thú cưng (áp dụng cho thành viên đã đăng nhập hoặc Staff)
+        public Guid? CustomerId { get; set; }
         public Guid? PetId { get; set; }
+
+        // Dành cho khách vãng lai đặt lịch nhanh (Guest Booking)
+        [Display(Name = "Họ và tên")]
+        public string? GuestCustomerName { get; set; }
+
+        [Display(Name = "Số điện thoại")]
+        [RegularExpression(@"^(0[3|5|7|8|9])+([0-9]{8})$", ErrorMessage = "Số điện thoại không hợp lệ (10 số).")]
+        public string? GuestPhoneNumber { get; set; }
+
+        [Display(Name = "Tên bé cưng")]
+        public string? GuestPetName { get; set; }
+
+        [Display(Name = "Loài")]
+        public string? GuestSpecies { get; set; } = "Chó";
+
+        [Display(Name = "Giống loài")]
+        public string? GuestBreed { get; set; }
+
+        [Display(Name = "Cân nặng (kg)")]
+        [Range(0.1, 100, ErrorMessage = "Cân nặng từ 0.1 đến 100 kg.")]
+        public decimal? GuestWeight { get; set; }
+
+        [Display(Name = "Tiền sử dị ứng / Lưu ý")]
+        public string? GuestAllergyNote { get; set; }
 
         [Required(ErrorMessage = "Vui lòng chọn ngày hẹn.")]
         [DataType(DataType.Date)]

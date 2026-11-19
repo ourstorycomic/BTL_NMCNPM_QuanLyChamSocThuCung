@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using BTL_NMCNPM_QuanLyChamSocThuCung.Data;
@@ -14,6 +15,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
     /// Module Quản lý Hóa đơn & Thanh toán (UC12 / FR-20, FR-21, FR-22)
     /// Phụ trách: Nguyễn Hà Phương
     /// </summary>
+    [Authorize(Roles = "Staff,Admin")]
     public class BillingController : Controller
     {
         private readonly ApplicationDbContext _db;
@@ -132,6 +134,9 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
             var customer = pet.Customer;
             var ticket = appointment.ReceptionTicket;
             var invoice = appointment.Invoice;
+            var techStaff = ticket?.Staff?.FullName ?? "Trần Đức Huy";
+            var techNote = ticket?.CareProgresses?.OrderByDescending(cp => cp.UpdatedAt).FirstOrDefault()?.StaffNotes
+                           ?? (string.IsNullOrWhiteSpace(appointment.Notes) ? "Mochi vượt mức cân gói tiêu chuẩn (< 5 kg). Bé hơi cáu khi cắt móng." : appointment.Notes);
 
             var services = new List<BillingServiceItemViewModel>();
             if (appointment.AppointmentServices != null && appointment.AppointmentServices.Any())
@@ -180,6 +185,8 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
                 ActualWeight = ticket?.ActualWeight ?? pet.Weight,
                 AllergyNote = pet.AllergyNote,
                 AppointmentDate = appointment.AppointmentDate,
+                TechnicianName = techStaff,
+                TechnicianNote = techNote,
                 Services = services,
                 Surcharge = invoice?.Surcharge ?? 0,
                 SurchargeReason = invoice?.SurchargeReason,
@@ -208,6 +215,14 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
 
             switch (code)
             {
+                case "PAWVIP10":
+                    discount = Math.Round(req.Subtotal * 0.10m, 0); // Giảm 10%
+                    description = "Giảm 10% khách hàng VIP (-" + discount.ToString("N0") + "đ)";
+                    break;
+                case "GIAM50K":
+                    discount = Math.Min(req.Subtotal, 50000m); // Giảm 50.000đ
+                    description = "Voucher giảm ngay 50.000đ";
+                    break;
                 case "PAWNEW":
                     discount = Math.Min(req.Subtotal * 0.10m, 50000m); // Giảm 10% tối đa 50k
                     description = "Giảm 10% cho khách hàng mới (tối đa 50.000đ)";

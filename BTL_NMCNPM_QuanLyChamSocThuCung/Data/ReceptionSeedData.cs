@@ -7,184 +7,267 @@ public static class ReceptionSeedData
 {
     public static async Task InitializeAsync(ApplicationDbContext db)
     {
-        // Seed một nhân viên mẫu nếu CSDL chưa có nhân viên hoạt động.
-        var staff = await db.Accounts.FirstOrDefaultAsync(a => a.Role == "Staff" && a.Status);
+        var defaultPasswordHash = BCrypt.Net.BCrypt.HashPassword("123456");
+
+        // 1. Seed tài khoản Admin (Quản trị viên)
+        var admin = await db.Accounts.FirstOrDefaultAsync(a => a.Username == "admin");
+        if (admin == null)
+        {
+            admin = new Account
+            {
+                Username = "admin",
+                PasswordHash = defaultPasswordHash,
+                FullName = "Quản trị viên hệ thống",
+                Role = "Admin",
+                Status = true
+            };
+            db.Accounts.Add(admin);
+        }
+        else
+        {
+            admin.PasswordHash = defaultPasswordHash;
+            admin.Status = true;
+        }
+
+        // 2. Seed tài khoản Staff (Lễ tân & Kỹ thuật viên)
+        var staff = await db.Accounts.FirstOrDefaultAsync(a => a.Username == "letan");
         if (staff == null)
         {
             staff = new Account
             {
-                Username = "staff.demo",
-                // Chỉ là dữ liệu mẫu; chưa dùng để đăng nhập. Khi có chức năng tài khoản,
-                // hãy thay bằng BCrypt hash được tạo từ quy trình đăng ký/tạo tài khoản.
-                PasswordHash = "SEED_ONLY_NOT_A_LOGIN_HASH",
-                FullName = "Nhân viên tiếp nhận mẫu",
+                Username = "letan",
+                PasswordHash = defaultPasswordHash,
+                FullName = "Hoàng Thu Trang",
                 Role = "Staff",
                 Status = true
             };
             db.Accounts.Add(staff);
         }
-
-        if (!await db.Services.AnyAsync())
+        else
         {
-            db.Services.AddRange(
-                new Service { ServiceName = "Tắm vệ sinh", Category = "Vệ sinh", Description = "Tắm và vệ sinh cơ bản", DurationMinutes = 60, BasePrice = 150000m, WeightTierMin = 0m, WeightTierMax = 20m },
-                new Service { ServiceName = "Cắt tỉa lông", Category = "Làm đẹp", Description = "Cắt tỉa và tạo kiểu lông", DurationMinutes = 90, BasePrice = 200000m, WeightTierMin = 0m, WeightTierMax = 30m },
-                new Service { ServiceName = "Kiểm tra sức khỏe", Category = "Sức khỏe", Description = "Kiểm tra tình trạng tổng quát", DurationMinutes = 30, BasePrice = 100000m, WeightTierMin = 0m, WeightTierMax = 50m }
-            );
+            staff.PasswordHash = defaultPasswordHash;
+            staff.Status = true;
         }
 
-        if (!await db.Customers.AnyAsync())
+        // Kỹ thuật viên Groomer Trần Đức Huy
+        var groomer = await db.Accounts.FirstOrDefaultAsync(a => a.Username == "groomer.huy");
+        if (groomer == null)
+        {
+            groomer = new Account
+            {
+                Username = "groomer.huy",
+                PasswordHash = defaultPasswordHash,
+                FullName = "Trần Đức Huy",
+                Role = "Staff",
+                Status = true
+            };
+            db.Accounts.Add(groomer);
+        }
+        else
+        {
+            groomer.PasswordHash = defaultPasswordHash;
+            groomer.Status = true;
+        }
+
+        // 3. Seed tài khoản Khách hàng (Nguyễn Minh Anh)
+        var custAcc = await db.Accounts.FirstOrDefaultAsync(a => a.Username == "minhanh");
+        if (custAcc == null)
+        {
+            custAcc = new Account
+            {
+                Username = "minhanh",
+                PasswordHash = defaultPasswordHash,
+                FullName = "Nguyễn Minh Anh",
+                Role = "Customer",
+                Status = true
+            };
+            db.Accounts.Add(custAcc);
+        }
+        else
+        {
+            custAcc.PasswordHash = defaultPasswordHash;
+            custAcc.Status = true;
+        }
+
+        await db.SaveChangesAsync();
+
+        // 4. Seed Khách hàng Hồ sơ
+        var customer = await db.Customers.FirstOrDefaultAsync(c => c.PhoneNumber == "0901234567");
+        if (customer == null)
+        {
+            customer = new Customer
+            {
+                AccountId = custAcc.Id,
+                CustomerName = "Nguyễn Minh Anh",
+                PhoneNumber = "0901234567",
+                Email = "minhanh@gmail.com",
+                Address = "42 Xuân Thủy, Thảo Điền, TP. Thủ Đức",
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+            db.Customers.Add(customer);
+            await db.SaveChangesAsync();
+        }
+        else if (customer.AccountId == null)
+        {
+            customer.AccountId = custAcc.Id;
+            await db.SaveChangesAsync();
+        }
+
+        // Khách hàng phụ: Trần Quốc Bảo
+        if (!await db.Customers.AnyAsync(c => c.PhoneNumber == "0912345678"))
         {
             db.Customers.Add(new Customer
             {
-                CustomerName = "Nguyễn Minh Anh",
+                CustomerName = "Trần Quốc Bảo",
                 PhoneNumber = "0912345678",
-                Email = "minhanh.demo@example.com",
-                Address = "Hà Nội",
-                IsActive = true
+                Email = "quocbao@gmail.com",
+                Address = "Quận 1, TP. Hồ Chí Minh",
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
             });
+            await db.SaveChangesAsync();
         }
 
-        await db.SaveChangesAsync();
-
-        if (!await db.Pets.AnyAsync())
+        // 5. Seed Danh mục Dịch vụ chuẩn 6 dịch vụ
+        var services = await db.Services.ToListAsync();
+        if (services.Count < 6)
         {
-            var customer = await db.Customers.OrderBy(c => c.CreatedAt).FirstAsync();
-            db.Pets.Add(new Pet
+            var requiredServices = new List<Service>
+            {
+                new() { ServiceName = "Tắm vệ sinh", Category = "Vệ sinh", Description = "Tắm sấy, chải lông, vắt tuyến hôi", DurationMinutes = 60, BasePrice = 150000m, WeightTierMin = 0m, WeightTierMax = 30m, IsActive = true },
+                new() { ServiceName = "Cắt tỉa lông", Category = "Làm đẹp", Description = "Tạo kiểu nghệ thuật theo yêu cầu", DurationMinutes = 90, BasePrice = 250000m, WeightTierMin = 0m, WeightTierMax = 30m, IsActive = true },
+                new() { ServiceName = "Khách sạn thú cưng", Category = "Lưu trú", Description = "Phòng riêng máy lạnh, camera 24/7", DurationMinutes = 1440, BasePrice = 200000m, WeightTierMin = 0m, WeightTierMax = 50m, IsActive = true },
+                new() { ServiceName = "Vệ sinh tai & cắt móng", Category = "Chăm sóc", Description = "Làm sạch tai sinh học, mài móng êm", DurationMinutes = 20, BasePrice = 80000m, WeightTierMin = 0m, WeightTierMax = 30m, IsActive = true },
+                new() { ServiceName = "Khám sức khỏe tổng quát", Category = "Y tế", Description = "Bác sĩ thú y thăm khám tim phổi da", DurationMinutes = 30, BasePrice = 200000m, WeightTierMin = 0m, WeightTierMax = 50m, IsActive = true },
+                new() { ServiceName = "Spa thư giãn thảo mộc", Category = "Spa", Description = "Massage tinh dầu thảo mộc phục hồi lông", DurationMinutes = 45, BasePrice = 350000m, WeightTierMin = 0m, WeightTierMax = 30m, IsActive = true }
+            };
+
+            foreach (var req in requiredServices)
+            {
+                if (!services.Any(s => s.ServiceName == req.ServiceName))
+                {
+                    db.Services.Add(req);
+                }
+            }
+            await db.SaveChangesAsync();
+            services = await db.Services.ToListAsync();
+        }
+
+        // 6. Seed Thú cưng Mochi
+        var mochi = await db.Pets.FirstOrDefaultAsync(p => p.CustomerId == customer.Id && p.PetName == "Mochi");
+        if (mochi == null)
+        {
+            mochi = new Pet
             {
                 CustomerId = customer.Id,
-                PetName = "Milu",
+                PetName = "Mochi",
+                Species = "Mèo",
+                Breed = "Mèo Anh lông ngắn",
+                Gender = "Đực",
+                BirthDate = new DateOnly(2023, 3, 15),
+                Weight = 5.6m,
+                MedicalHistory = "Khỏe mạnh, đã tiêm ngừa 3 mũi",
+                AllergyNote = "Thành phần ngũ cốc, sữa tắm chứa Sulfate. Bé hơi nhát người lạ.",
+                ImageUrl = "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=200&auto=format&fit=crop&q=80"
+            };
+            db.Pets.Add(mochi);
+            await db.SaveChangesAsync();
+        }
+
+        // Bé cún Lucky của khách Bảo
+        var custBao = await db.Customers.FirstOrDefaultAsync(c => c.PhoneNumber == "0912345678");
+        if (custBao != null && !await db.Pets.AnyAsync(p => p.CustomerId == custBao.Id && p.PetName == "Lucky"))
+        {
+            db.Pets.Add(new Pet
+            {
+                CustomerId = custBao.Id,
+                PetName = "Lucky",
                 Species = "Chó",
                 Breed = "Poodle",
                 Gender = "Đực",
-                BirthDate = new DateOnly(2023, 5, 10),
-                Weight = 5.5m,
-                MedicalHistory = "Chưa ghi nhận bệnh lý.",
-                AllergyNote = "Chưa ghi nhận dị ứng."
+                BirthDate = new DateOnly(2023, 8, 20),
+                Weight = 4.5m,
+                MedicalHistory = "Tiêm ngừa đầy đủ",
+                AllergyNote = "Không ghi nhận",
+                ImageUrl = "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=200&auto=format&fit=crop&q=80"
             });
+            await db.SaveChangesAsync();
         }
 
-        await db.SaveChangesAsync();
+        // 7. Seed Lịch hẹn chờ tiếp nhận (Confirmed) cho bé Mochi hôm nay
+        var apptConfirmed = await db.Appointments
+            .FirstOrDefaultAsync(a => a.PetId == mochi.PetId && a.Status == "Confirmed");
 
-        if (!await db.Appointments.AnyAsync())
+        if (apptConfirmed == null)
         {
-            var pet = await db.Pets.OrderBy(p => p.PetName).FirstAsync();
-            var service = await db.Services.OrderBy(s => s.ServiceName).FirstOrDefaultAsync();
-            var appointment = new Appointment
+            var svcs = services.Take(2).ToList();
+            apptConfirmed = new Appointment
             {
-                PetId = pet.PetId,
-                AppointmentDate = DateTime.Today.AddDays(1).AddHours(9),
-                EndTime = DateTime.Today.AddDays(1).AddHours(10),
+                PetId = mochi.PetId,
+                AppointmentDate = DateTime.Today.AddHours(10),
+                EndTime = DateTime.Today.AddHours(11).AddMinutes(20),
                 Status = "Confirmed",
-                Notes = "Lịch hẹn mẫu để kiểm tra chức năng tiếp nhận."
+                Notes = "Bé hơi nhát người lạ, xin nhẹ nhàng khi cắt móng."
             };
-            if (service != null)
-                appointment.AppointmentServices.Add(new AppointmentService { ServiceId = service.ServiceId, Quantity = 1 });
-            db.Appointments.Add(appointment);
+            foreach (var s in svcs)
+            {
+                apptConfirmed.AppointmentServices.Add(new AppointmentService
+                {
+                    ServiceId = s.ServiceId,
+                    Quantity = 1
+                });
+            }
+            db.Appointments.Add(apptConfirmed);
+            await db.SaveChangesAsync();
         }
 
-        await db.SaveChangesAsync();
+        // 8. Seed Cuộc hẹn đã tiếp nhận (Processing) sẵn sàng vào thanh toán hóa đơn
+        var apptProcessing = await db.Appointments
+            .Include(a => a.ReceptionTicket)
+            .FirstOrDefaultAsync(a => a.PetId == mochi.PetId && a.Status == "Processing");
 
-        // Seed hóa đơn mẫu cho Module Thanh toán & Báo cáo Doanh thu (Hà Phương - UC12, UC13)
-        if (!await db.Invoices.AnyAsync())
+        if (apptProcessing == null)
         {
-            var pet = await db.Pets.OrderBy(p => p.PetName).FirstOrDefaultAsync();
-            var services = await db.Services.Take(3).ToListAsync();
-            if (pet != null && services.Any())
+            apptProcessing = new Appointment
             {
-                // Cuộc hẹn 1: Đang chăm sóc (Processing) -> Chờ thu ngân thanh toán
-                var apptPending = new Appointment
+                PetId = mochi.PetId,
+                AppointmentDate = DateTime.Today.AddHours(8).AddMinutes(30),
+                EndTime = DateTime.Today.AddHours(9).AddMinutes(50),
+                Status = "Processing",
+                Notes = "Mochi vượt mức cân gói tiêu chuẩn (< 5 kg). Bé hơi cáu khi cắt móng."
+            };
+            foreach (var s in services.Take(3))
+            {
+                apptProcessing.AppointmentServices.Add(new AppointmentService
                 {
-                    PetId = pet.PetId,
-                    AppointmentDate = DateTime.Today.AddHours(8).AddMinutes(30),
-                    EndTime = DateTime.Today.AddHours(10),
-                    Status = "Processing",
-                    Notes = "Bé tắm spa và vệ sinh móng, sẵn sàng thanh toán."
-                };
-                apptPending.AppointmentServices.Add(new AppointmentService { ServiceId = services[0].ServiceId, Quantity = 1 });
-                if (services.Count > 1)
-                {
-                    apptPending.AppointmentServices.Add(new AppointmentService { ServiceId = services[1].ServiceId, Quantity = 1 });
-                }
-                db.Appointments.Add(apptPending);
-
-                // Cuộc hẹn 2: Đã thanh toán hôm nay bằng QRCode
-                var apptPaid1 = new Appointment
-                {
-                    PetId = pet.PetId,
-                    AppointmentDate = DateTime.Today.AddHours(9),
-                    EndTime = DateTime.Today.AddHours(10).AddMinutes(30),
-                    Status = "Completed",
-                    Notes = "Đã hoàn thành dịch vụ cắt tỉa tạo kiểu."
-                };
-                apptPaid1.AppointmentServices.Add(new AppointmentService { ServiceId = services[0].ServiceId, Quantity = 1 });
-                db.Appointments.Add(apptPaid1);
-                await db.SaveChangesAsync();
-
-                var invoice1 = new Invoice
-                {
-                    AppointmentId = apptPaid1.AppointmentId,
-                    Surcharge = 30000m,
-                    SurchargeReason = "Gỡ rối lông nhẹ",
-                    DiscountCode = "PAWHAVEN",
-                    DiscountAmount = 30000m,
-                    TotalAmount = services[0].BasePrice,
-                    PaymentMethod = "QRCode",
-                    PaymentStatus = "Paid",
-                    PaymentTime = DateTime.Today.AddHours(10).AddMinutes(35),
-                    CreatedAt = DateTime.Today.AddHours(9)
-                };
-                db.Invoices.Add(invoice1);
-                await db.SaveChangesAsync();
-
-                db.InvoiceDetails.Add(new InvoiceDetail
-                {
-                    InvoiceId = invoice1.InvoiceId,
-                    ServiceId = services[0].ServiceId,
-                    Quantity = 1,
-                    UnitPrice = services[0].BasePrice,
-                    Amount = services[0].BasePrice
+                    ServiceId = s.ServiceId,
+                    Quantity = 1
                 });
-
-                // Cuộc hẹn 3: Đã thanh toán 2 ngày trước bằng Cash
-                var apptPaid2 = new Appointment
-                {
-                    PetId = pet.PetId,
-                    AppointmentDate = DateTime.Today.AddDays(-2).AddHours(14),
-                    EndTime = DateTime.Today.AddDays(-2).AddHours(15).AddMinutes(30),
-                    Status = "Completed",
-                    Notes = "Kiểm tra sức khỏe tổng quát định kỳ."
-                };
-                var svcHealth = services.Last();
-                apptPaid2.AppointmentServices.Add(new AppointmentService { ServiceId = svcHealth.ServiceId, Quantity = 1 });
-                db.Appointments.Add(apptPaid2);
-                await db.SaveChangesAsync();
-
-                var invoice2 = new Invoice
-                {
-                    AppointmentId = apptPaid2.AppointmentId,
-                    Surcharge = 0,
-                    DiscountAmount = 0,
-                    TotalAmount = svcHealth.BasePrice,
-                    PaymentMethod = "Cash",
-                    PaymentStatus = "Paid",
-                    PaymentTime = DateTime.Today.AddDays(-2).AddHours(15).AddMinutes(40),
-                    CreatedAt = DateTime.Today.AddDays(-2).AddHours(14)
-                };
-                db.Invoices.Add(invoice2);
-                await db.SaveChangesAsync();
-
-                db.InvoiceDetails.Add(new InvoiceDetail
-                {
-                    InvoiceId = invoice2.InvoiceId,
-                    ServiceId = svcHealth.ServiceId,
-                    Quantity = 1,
-                    UnitPrice = svcHealth.BasePrice,
-                    Amount = svcHealth.BasePrice
-                });
-
-                await db.SaveChangesAsync();
             }
+            db.Appointments.Add(apptProcessing);
+            await db.SaveChangesAsync();
+
+            var ticket = new ReceptionTicket
+            {
+                AppointmentId = apptProcessing.AppointmentId,
+                ActualWeight = 5.6m,
+                StaffId = groomer.Id,
+                CheckInTime = DateTime.Now.AddHours(-1)
+            };
+            db.ReceptionTickets.Add(ticket);
+            await db.SaveChangesAsync();
+
+            db.CareProgresses.Add(new CareProgress
+            {
+                TicketId = ticket.TicketId,
+                StaffId = groomer.Id,
+                StepDescription = "Grooming & Vệ sinh tai móng",
+                ProgressStatus = "Processing",
+                StaffNotes = "Đã tắm bằng sữa tắm không Sulfate. Phát hiện ráy tai nhẹ bên trái, đã vệ sinh.",
+                UpdatedAt = DateTime.Now
+            });
+            await db.SaveChangesAsync();
         }
     }
 }

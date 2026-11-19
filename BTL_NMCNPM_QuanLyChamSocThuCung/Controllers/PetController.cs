@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using BTL_NMCNPM_QuanLyChamSocThuCung.Models.ViewModels;
@@ -8,6 +9,7 @@ using BTL_NMCNPM_QuanLyChamSocThuCung.Services;
 
 namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
 {
+    [Authorize]
     public class PetController : Controller
     {
         private readonly IPetService _petService;
