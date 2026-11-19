@@ -1,4 +1,4 @@
-﻿@model IEnumerable<BTL_NMCNPM_QuanLyChamSocThuCung.Models.Service>
+@model IEnumerable<BTL_NMCNPM_QuanLyChamSocThuCung.Models.Service>
 @{
     ViewData["Title"] = "Quản lý Dịch Vụ";
     var userRole = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Role)?.Value

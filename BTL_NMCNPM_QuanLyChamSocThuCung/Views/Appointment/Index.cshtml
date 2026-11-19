@@ -2,6 +2,10 @@
 @using System.Globalization
 @{
     ViewData["Title"] = "Quản lý lịch hẹn";
+    var userRole = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Role)?.Value
+                   ?? Context.Session.GetString("UserRole")
+                   ?? Context.Request.Cookies["UserRole"];
+    var isStaffOrAdmin = userRole == "Staff" || userRole == "Admin";
 }
 <link rel="stylesheet" href="~/css/appointment.css" />
 
@@ -51,15 +55,6 @@
         </div>
         <a asp-action="Create" class="btn btn-primary">Đặt lịch mới</a>
     </div>
-
-    @if (TempData["Success"] != null)
-    {
-        <div class="alert alert-success">@TempData["Success"]</div>
-    }
-    @if (TempData["Error"] != null)
-    {
-        <div class="alert alert-danger">@TempData["Error"]</div>
-    }
 
     <form method="get" class="appointment-filter">
         <input type="text" name="keyword" value="@Model.Keyword" class="form-control"
@@ -135,8 +130,17 @@
                             </td>
                             <td class="text-end">@TotalOf(item).ToString("N0", CultureInfo.GetCultureInfo("vi-VN")) đ</td>
                             <td><span class="status-pill @StatusClass(item.Status)">@StatusText(item.Status)</span></td>
-                            <td class="text-end">
+                            <td class="text-end text-nowrap">
                                 <a asp-action="Details" asp-route-id="@item.AppointmentId" class="btn btn-sm btn-outline-primary">Chi tiết</a>
+                                @if (isStaffOrAdmin && item.Status == "Pending")
+                                {
+                                    <form method="post" asp-action="Confirm" asp-route-id="@item.AppointmentId" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xác nhận lịch hẹn này?');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-success ms-1" title="Xác nhận lịch hẹn">
+                                            <i class="bi bi-check-lg me-1"></i>Xác nhận
+                                        </button>
+                                    </form>
+                                }
                             </td>
                         </tr>
                     }

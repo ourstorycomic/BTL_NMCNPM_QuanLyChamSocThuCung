@@ -395,7 +395,10 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
         [Authorize(Roles = "Staff,Admin")]
         public async Task<IActionResult> Confirm(Guid id)
         {
-            var appointment = await _db.Appointments.FirstOrDefaultAsync(a => a.AppointmentId == id);
+            var appointment = await _db.Appointments
+                .Include(a => a.Pet)
+                    .ThenInclude(p => p.Customer)
+                .FirstOrDefaultAsync(a => a.AppointmentId == id);
             if (appointment == null) return NotFound();
 
             if (appointment.Status != "Pending")
@@ -407,7 +410,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
             appointment.Status = "Confirmed";
             await _db.SaveChangesAsync();
 
-            TempData["Success"] = "Đã xác nhận lịch hẹn.";
+            TempData["Success"] = $"Đã xác nhận lịch hẹn của khách hàng {appointment.Pet?.Customer?.CustomerName ?? ""} (bé {appointment.Pet?.PetName ?? ""}) thành công! Lịch hẹn đã sẵn sàng để tiếp nhận tại quầy.";
             return RedirectToAction(nameof(Details), new { id });
         }
 
@@ -462,7 +465,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
             appointment.Status = "Cancelled";
             await _db.SaveChangesAsync();
 
-            TempData["Success"] = "Đã hủy lịch hẹn.";
+            TempData["Success"] = $"Đã hủy lịch hẹn của bé {appointment.Pet?.PetName ?? ""} thành công.";
             return RedirectToAction(nameof(Details), new { id });
         }
 

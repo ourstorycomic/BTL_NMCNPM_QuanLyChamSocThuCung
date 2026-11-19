@@ -51,15 +51,6 @@
         </div>
     </div>
 
-    @if (TempData["Success"] != null)
-    {
-        <div class="alert alert-success">@TempData["Success"]</div>
-    }
-    @if (TempData["Error"] != null)
-    {
-        <div class="alert alert-danger">@TempData["Error"]</div>
-    }
-
     <div class="row g-4">
         <div class="col-lg-8">
             <div class="appointment-card">
@@ -175,16 +166,22 @@
                 <div class="d-grid gap-2 mt-3">
                     @if (Model.Status == "Pending")
                     {
-                        <form method="post" asp-action="Confirm" asp-route-id="@Model.AppointmentId">
-                            <button type="submit" class="btn btn-primary w-100">Xác nhận lịch hẹn</button>
+                        <form method="post" asp-action="Confirm" asp-route-id="@Model.AppointmentId" onsubmit="return confirm('Bạn có chắc chắn muốn xác nhận lịch hẹn này?');">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-success w-100 py-2 fw-bold shadow-sm">
+                                <i class="bi bi-check-circle-fill me-1"></i>Xác nhận lịch hẹn
+                            </button>
                         </form>
                     }
 
                     @if (Model.Status is "Pending" or "Confirmed")
                     {
                         <form method="post" asp-action="Cancel" asp-route-id="@Model.AppointmentId"
-                              onsubmit="return confirm('Bạn chắc chắn muốn hủy lịch hẹn này?');">
-                            <button type="submit" class="btn btn-outline-danger w-100">Hủy lịch hẹn</button>
+                              onsubmit="return confirm('Bạn có chắc chắn muốn hủy lịch hẹn này?');">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-outline-danger w-100 py-2">
+                                <i class="bi bi-x-circle me-1"></i>Hủy lịch hẹn
+                            </button>
                         </form>
                     }
                 </div>
