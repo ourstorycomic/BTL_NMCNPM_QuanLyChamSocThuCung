@@ -3,55 +3,74 @@
     ViewData["Title"] = "Thêm Dịch Vụ";
 }
 
-<div class="container mt-4">
+<div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="card shadow border-0">
-                <div class="card-header bg-success text-white py-3">
-                    <h4 class="mb-0 fw-bold"><i class="bi bi-plus-circle-fill me-2"></i>Thêm Dịch Vụ Mới</h4>
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="card-header border-0 py-4" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                    <h4 class="mb-0 fw-bold text-white text-center"><i class="bi bi-plus-circle-fill me-2"></i>Thêm Dịch Vụ Mới</h4>
                 </div>
-                <div class="card-body p-4">
+                <div class="card-body p-5">
                     <form asp-action="Create">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="ServiceName" class="form-label fw-bold">Tên Dịch Vụ <span class="text-danger">*</span></label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-light"><i class="bi bi-tag"></i></span>
-                                    <input asp-for="ServiceName" class="form-control" required placeholder="VD: Tắm vệ sinh..." />
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="Category" class="form-label fw-bold">Phân Loại <span class="text-danger">*</span></label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-light"><i class="bi bi-collection"></i></span>
-                                    <input asp-for="Category" class="form-control" required placeholder="VD: Grooming, Spa..." />
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="BasePrice" class="form-label fw-bold">Giá Cơ Bản (VNĐ) <span class="text-danger">*</span></label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-light"><i class="bi bi-cash-coin"></i></span>
-                                    <input asp-for="BasePrice" type="number" class="form-control" required placeholder="VD: 150000" />
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="DurationMinutes" class="form-label fw-bold">Thời Gian (Phút) <span class="text-danger">*</span></label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-light"><i class="bi bi-clock-history"></i></span>
-                                    <input asp-for="DurationMinutes" type="number" class="form-control" value="30" required />
-                                </div>
-                            </div>
-                        </div>
                         <div class="mb-4">
-                            <label asp-for="Description" class="form-label fw-bold">Mô tả chi tiết</label>
-                            <textarea asp-for="Description" class="form-control" rows="3" placeholder="Nhập mô tả cho dịch vụ này..."></textarea>
+                            <label asp-for="ServiceName" class="form-label fw-bold text-muted small">TÊN DỊCH VỤ <span class="text-danger">*</span></label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text bg-light border-0"><i class="bi bi-tag text-secondary"></i></span>
+                                <input asp-for="ServiceName" class="form-control border-0 bg-light" required placeholder="VD: Tắm vệ sinh..." />
+                            </div>
                         </div>
                         
-                        <div class="d-flex justify-content-end gap-2">
-                            <a asp-action="Index" class="btn btn-light border"><i class="bi bi-arrow-left"></i> Quay lại</a>
-                            <button type="submit" class="btn btn-success px-4"><i class="bi bi-save"></i> Lưu Dịch Vụ</button>
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label asp-for="Category" class="form-label fw-bold text-muted small">PHÂN LOẠI <span class="text-danger">*</span></label>
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-text bg-light border-0"><i class="bi bi-collection text-secondary"></i></span>
+                                    <input asp-for="Category" class="form-control border-0 bg-light" required placeholder="Grooming, Spa..." />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="DurationMinutes" class="form-label fw-bold text-muted small">THỜI GIAN (PHÚT) <span class="text-danger">*</span></label>
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-text bg-light border-0"><i class="bi bi-clock-history text-secondary"></i></span>
+                                    <input asp-for="DurationMinutes" type="number" class="form-control border-0 bg-light" value="30" required />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- THÊM MỚI: Khoảng cân nặng -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label asp-for="WeightTierMin" class="form-label fw-bold text-muted small">CÂN NẶNG TỐI THIỂU (KG)</label>
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-text bg-light border-0"><i class="bi bi-arrow-down-circle text-secondary"></i></span>
+                                    <input asp-for="WeightTierMin" type="number" step="0.01" class="form-control border-0 bg-light" value="0" required />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="WeightTierMax" class="form-label fw-bold text-muted small">CÂN NẶNG TỐI ĐA (KG)</label>
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-text bg-light border-0"><i class="bi bi-arrow-up-circle text-secondary"></i></span>
+                                    <input asp-for="WeightTierMax" type="number" step="0.01" class="form-control border-0 bg-light" value="999.99" required />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="BasePrice" class="form-label fw-bold text-muted small">GIÁ CƠ BẢN (VNĐ) <span class="text-danger">*</span></label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text bg-light border-0"><i class="bi bi-cash-coin text-secondary"></i></span>
+                                <input asp-for="BasePrice" type="number" class="form-control border-0 bg-light" required placeholder="VD: 150000" />
+                            </div>
+                        </div>
+                        
+                        <div class="mb-5">
+                            <label asp-for="Description" class="form-label fw-bold text-muted small">MÔ TẢ CHI TIẾT</label>
+                            <textarea asp-for="Description" class="form-control border-0 bg-light p-3" rows="3" placeholder="Nhập mô tả..."></textarea>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a asp-action="Index" class="btn btn-light btn-lg px-4 rounded-pill text-muted"><i class="bi bi-arrow-left me-1"></i> Quay lại</a>
+                            <button type="submit" class="btn btn-gradient-success btn-lg px-5 rounded-pill shadow"><i class="bi bi-save me-1"></i> Lưu Lại</button>
                         </div>
                     </form>
                 </div>
