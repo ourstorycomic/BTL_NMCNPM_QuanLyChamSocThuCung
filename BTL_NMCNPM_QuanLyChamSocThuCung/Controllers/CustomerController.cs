@@ -76,6 +76,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
             {
                 try
                 {
+                    // FIX THEO FEEDBACK: Lấy bản ghi gốc, chỉ cập nhật các trường cho phép
                     var existingCustomer = await _context.Customers.FindAsync(id);
                     if (existingCustomer == null) return NotFound();
 
@@ -83,6 +84,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
                     existingCustomer.PhoneNumber = customer.PhoneNumber;
                     existingCustomer.Email = customer.Email;
                     existingCustomer.Address = customer.Address;
+                    // Giữ nguyên CreatedAt và AccountId
 
                     _context.Update(existingCustomer);
                     await _context.SaveChangesAsync();

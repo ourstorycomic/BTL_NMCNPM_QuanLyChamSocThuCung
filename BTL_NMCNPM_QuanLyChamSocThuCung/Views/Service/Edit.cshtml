@@ -12,6 +12,7 @@
                 </div>
                 <div class="card-body p-5">
                     <form asp-action="Edit">
+                        <!-- Bắt buộc phải có dòng này để giữ lại ID khi cập nhật -->
                         <input type="hidden" asp-for="ServiceId" />
                         
                         <!-- HIỂN THỊ LỖI (Bao gồm cả lỗi Validate từ Controller) -->
@@ -45,6 +46,7 @@
                             </div>
                         </div>
 
+                        <!-- Phần Cân nặng theo Feedback của Leader -->
                         <div class="row mb-4">
                             <div class="col-md-6">
                                 <label asp-for="WeightTierMin" class="form-label fw-bold text-muted small">CÂN NẶNG TỐI THIỂU (KG)</label>

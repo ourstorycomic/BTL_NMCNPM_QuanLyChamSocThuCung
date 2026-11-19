@@ -71,6 +71,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
             {
                 try
                 {
+                    // FIX THEO FEEDBACK: Lấy bản ghi gốc
                     var existingService = await _context.Services.FindAsync(id);
                     if (existingService == null) return NotFound();
 
