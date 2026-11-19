@@ -1,23 +1,35 @@
 .appointment-page { max-width: 1180px; margin: 32px auto; padding: 0 16px; }
 
+/* Bootstrap trong project đặt màu trực tiếp (không dùng biến --bs-btn-*),
+   nên phải ghi đè thẳng background-color/border-color để theo màu PawHaven. */
 .appointment-page .btn-primary {
-    --bs-btn-bg: #10b981;
-    --bs-btn-border-color: #10b981;
-    --bs-btn-hover-bg: #059669;
-    --bs-btn-hover-border-color: #059669;
-    --bs-btn-active-bg: #047857;
-    --bs-btn-active-border-color: #047857;
-    --bs-btn-disabled-bg: #10b981;
-    --bs-btn-disabled-border-color: #10b981;
+    background-color: #10b981;
+    border-color: #10b981;
+    color: #fff;
+    box-shadow: none;
+}
+
+.appointment-page .btn-primary:hover,
+.appointment-page .btn-primary:focus,
+.appointment-page .btn-primary:not(:disabled):not(.disabled):active {
+    background-color: #059669;
+    border-color: #059669;
+    color: #fff;
+    box-shadow: none;
 }
 
 .appointment-page .btn-outline-primary {
-    --bs-btn-color: #059669;
-    --bs-btn-border-color: #10b981;
-    --bs-btn-hover-bg: #10b981;
-    --bs-btn-hover-border-color: #10b981;
-    --bs-btn-active-bg: #059669;
-    --bs-btn-active-border-color: #059669;
+    color: #059669;
+    border-color: #10b981;
+}
+
+.appointment-page .btn-outline-primary:hover,
+.appointment-page .btn-outline-primary:focus,
+.appointment-page .btn-outline-primary:not(:disabled):not(.disabled):active {
+    background-color: #10b981;
+    border-color: #10b981;
+    color: #fff;
+    box-shadow: none;
 }
 
 .appointment-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 22px; }
