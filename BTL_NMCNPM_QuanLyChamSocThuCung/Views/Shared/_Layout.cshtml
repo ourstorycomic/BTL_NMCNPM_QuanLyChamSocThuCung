@@ -280,7 +280,7 @@
                     <span><i class="bi bi-clipboard2-check"></i>Tiếp nhận tại quầy</span>
                     <span class="badge rounded-pill bg-success" style="font-size: 0.7rem;">6</span>
                 </a>
-                <a href="javascript:void(0)" class="sidebar-link text-muted">
+                <a asp-controller="Appointment" asp-action="Index" class="sidebar-link text-muted">
                     <i class="bi bi-calendar3"></i>Lịch hẹn
                 </a>
                 <a href="javascript:void(0)" class="sidebar-link text-muted">
@@ -394,8 +394,8 @@
                     <!-- Nav Links -->
                     <nav class="d-flex align-items-center gap-1">
                         <a asp-controller="Home" asp-action="Index" class="customer-nav-link">Trang chủ</a>
-                        <a href="javascript:void(0)" class="customer-nav-link">Đặt lịch</a>
-                        <a href="javascript:void(0)" class="customer-nav-link">Lịch hẹn của tôi</a>
+                        <a asp-controller="Appointment" asp-action="Create" class="customer-nav-link">Đặt lịch</a>
+                        <a asp-controller="Appointment" asp-action="Index" class="customer-nav-link">Lịch hẹn của tôi</a>
                         <a asp-controller="Pet" asp-action="Index" class="customer-nav-link active">Thú cưng</a>
                     </nav>
 
