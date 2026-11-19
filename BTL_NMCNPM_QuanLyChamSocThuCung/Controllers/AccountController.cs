@@ -1,15 +1,16 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using BTL_NMCNPM_QuanLyChamSocThuCung.Models;
-using BTL_NMCNPM_QuanLyChamSocThuCung.Data;
+using BTL_NMCNPM_QuanLyChamSocThuCung.Data; // Đã đổi sang gọi thư mục Data của nhóm
+using Microsoft.EntityFrameworkCore; // Cần cho các hàm Async
 
 namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly AppDbContext _context;
+        // SỬA LỖI 2: Dùng ApplicationDbContext thay vì AppDbContext
+        private readonly ApplicationDbContext _context;
 
-        // Inject DbContext vào Controller
-        public AccountController(AppDbContext context)
+        public AccountController(ApplicationDbContext context)
         {
             _context = context;
         }
@@ -24,47 +25,46 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
         }
 
         [HttpPost]
-        public IActionResult DangKy(string Username, string Password, string ConfirmPassword,
+        [ValidateAntiForgeryToken] // BỔ SUNG BẢO MẬT
+        public async Task<IActionResult> DangKy(string Username, string Password, string ConfirmPassword,
                                     string CustomerName, string PhoneNumber, string Email, string Address)
         {
-            // Kiểm tra mật khẩu nhập lại có khớp không
             if (Password != ConfirmPassword)
             {
                 ViewBag.Loi = "Mật khẩu nhập lại không khớp!";
                 return View();
             }
 
-            // Kiểm tra tên đăng nhập đã tồn tại chưa
-            if (_context.Accounts.Any(x => x.Username == Username))
+            if (await _context.Accounts.AnyAsync(x => x.Username == Username))
             {
-                ViewBag.Loi = "Tên đăng nhập này đã tồn tại! Vui lòng chọn tên khác.";
+                ViewBag.Loi = "Tên đăng nhập này đã tồn tại!";
                 return View();
             }
 
-            // 1.1. Tạo tài khoản (Băm mật khẩu bằng BCrypt)
+            // BỔ SUNG: Gán FullName = CustomerName
             var newAccount = new Account
             {
                 Username = Username,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(Password),
+                FullName = CustomerName,
                 Role = "Customer",
                 Status = true
             };
             _context.Accounts.Add(newAccount);
-            _context.SaveChanges(); // Lưu để lấy Account.Id sinh ra tự động
+            await _context.SaveChangesAsync();
 
-            // 1.2. Tạo thông tin khách hàng liên kết với tài khoản vừa tạo (Quan hệ 1-1)
             var newCustomer = new Customer
             {
                 AccountId = newAccount.Id,
                 CustomerName = CustomerName,
                 PhoneNumber = PhoneNumber,
                 Email = Email,
-                Address = Address
+                Address = Address,
+                IsActive = true
             };
             _context.Customers.Add(newCustomer);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
-            // Chuyển sang trang đăng nhập kèm thông báo
             TempData["Success"] = "Đăng ký thành công! Vui lòng đăng nhập.";
             return RedirectToAction("DangNhap");
         }
@@ -79,11 +79,11 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
         }
 
         [HttpPost]
-        public IActionResult DangNhap(string username, string password)
+        [ValidateAntiForgeryToken] // BỔ SUNG BẢO MẬT
+        public async Task<IActionResult> DangNhap(string username, string password)
         {
-            var user = _context.Accounts.FirstOrDefault(x => x.Username == username);
+            var user = await _context.Accounts.FirstOrDefaultAsync(x => x.Username == username);
 
-            // Kiểm tra tài khoản và so sánh mật khẩu bằng BCrypt
             if (user != null && BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
             {
                 if (!user.Status)
@@ -92,20 +92,13 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
                     return View();
                 }
 
-                // Lưu thông tin vào Session
                 HttpContext.Session.SetString("AccountId", user.Id.ToString());
                 HttpContext.Session.SetString("Username", user.Username);
+                HttpContext.Session.SetString("FullName", user.FullName ?? "");
                 HttpContext.Session.SetString("Role", user.Role);
 
-                // Phân quyền chuyển hướng (Nếu Admin thì vào trang quản trị, Customer về trang chủ)
-                if (user.Role == "Admin")
-                {
-                    return RedirectToAction("Index", "Admin");
-                }
-                else
-                {
-                    return RedirectToAction("Index", "Home");
-                }
+                // SỬA LỖI 3: Bỏ chuyển hướng sang Admin, chỉ về Home
+                return RedirectToAction("Index", "Home");
             }
 
             ViewBag.Loi = "Tên đăng nhập hoặc mật khẩu không chính xác!";
@@ -117,8 +110,86 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
         // ==========================================
         public IActionResult DangXuat()
         {
-            HttpContext.Session.Clear(); // Xóa toàn bộ session
+            HttpContext.Session.Clear();
             return RedirectToAction("DangNhap");
+        }
+
+        // ==========================================
+        // 4. BỔ SUNG: CHỨC NĂNG ĐỔI MẬT KHẨU (UC02)
+        // ==========================================
+        [HttpGet]
+        public IActionResult DoiMatKhau()
+        {
+            // Kiểm tra đăng nhập
+            if (HttpContext.Session.GetString("AccountId") == null)
+            {
+                return RedirectToAction("DangNhap");
+            }
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DoiMatKhau(string MatKhauCu, string MatKhauMoi, string XacNhanMatKhauMoi)
+        {
+            var accountIdStr = HttpContext.Session.GetString("AccountId");
+            if (accountIdStr == null) return RedirectToAction("DangNhap");
+
+            if (MatKhauMoi != XacNhanMatKhauMoi)
+            {
+                ViewBag.Loi = "Mật khẩu mới xác nhận không khớp!";
+                return View();
+            }
+
+            var accountId = Guid.Parse(accountIdStr);
+            var user = await _context.Accounts.FindAsync(accountId);
+
+            if (user == null || !BCrypt.Net.BCrypt.Verify(MatKhauCu, user.PasswordHash))
+            {
+                ViewBag.Loi = "Mật khẩu cũ không chính xác!";
+                return View();
+            }
+
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(MatKhauMoi);
+            _context.Accounts.Update(user);
+            await _context.SaveChangesAsync();
+
+            ViewBag.Success = "Đổi mật khẩu thành công!";
+            return View();
+        }
+
+        // ==========================================
+        // 5. BỔ SUNG: QUẢN LÝ TÀI KHOẢN (UC03 - DÀNH CHO ADMIN)
+        // ==========================================
+        [HttpGet]
+        public async Task<IActionResult> QuanLyTaiKhoan()
+        {
+            // Phân quyền: Chỉ Admin mới được vào
+            var role = HttpContext.Session.GetString("Role");
+            if (role != "Admin")
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            var danhSach = await _context.Accounts.ToListAsync();
+            return View(danhSach);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> KhoaTaiKhoan(Guid id)
+        {
+            var role = HttpContext.Session.GetString("Role");
+            if (role != "Admin") return RedirectToAction("Index", "Home");
+
+            var user = await _context.Accounts.FindAsync(id);
+            if (user != null && user.Username != "admin") // Không cho khóa chính admin
+            {
+                user.Status = !user.Status; // Đảo trạng thái (Khóa/Mở khóa)
+                _context.Accounts.Update(user);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction("QuanLyTaiKhoan");
         }
     }
 }
