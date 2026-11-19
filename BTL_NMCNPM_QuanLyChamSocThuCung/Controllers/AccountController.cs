@@ -6,7 +6,6 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
 {
     public class AccountController : Controller
     {
-        // SỬA: Dùng ApplicationDbContext thay vì AppDbContext
         private readonly ApplicationDbContext _context;
 
         public AccountController(ApplicationDbContext context)
@@ -15,16 +14,27 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
         }
 
         [HttpGet]
-        public IActionResult DangKy()
-        {
-            return View();
-        }
+        public IActionResult DangKy() => View();
 
         [HttpPost]
-        [ValidateAntiForgeryToken] // THÊM BẢO MẬT
-        public IActionResult DangKy(string Username, string Password, string ConfirmPassword,
-                                    string FullName, string PhoneNumber, string Email, string Address)
+        [ValidateAntiForgeryToken]
+        public IActionResult DangKy(
+            string Username,
+            string Password,
+            string ConfirmPassword,
+            string FullName,
+            string PhoneNumber,
+            string Email,
+            string Address)
         {
+            if (string.IsNullOrWhiteSpace(Username) ||
+                string.IsNullOrWhiteSpace(Password) ||
+                string.IsNullOrWhiteSpace(FullName))
+            {
+                ViewBag.Loi = "Vui lòng nhập tên đăng nhập, mật khẩu và họ tên.";
+                return View();
+            }
+
             if (Password != ConfirmPassword)
             {
                 ViewBag.Loi = "Mật khẩu nhập lại không khớp!";
@@ -37,38 +47,42 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
                 return View();
             }
 
-            var newAccount = new Account
+            if (!string.IsNullOrWhiteSpace(PhoneNumber) &&
+                _context.Customers.Any(c => c.PhoneNumber == PhoneNumber))
             {
-                Username = Username,
+                ViewBag.Loi = "Số điện thoại này đã được đăng ký!";
+                return View();
+            }
+
+            var account = new Account
+            {
+                Username = Username.Trim(),
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(Password),
-                FullName = FullName, // Gán FullName
+                FullName = FullName.Trim(),
                 Role = "Customer",
                 Status = true
             };
-            _context.Accounts.Add(newAccount);
-            _context.SaveChanges();
 
-            var newCustomer = new Customer
+            var customer = new Customer
             {
-                AccountId = newAccount.Id,
-                CustomerName = FullName, // Gán CustomerName từ FullName
-                PhoneNumber = PhoneNumber,
-                Email = Email,
-                Address = Address,
+                Account = account,
+                CustomerName = FullName.Trim(),
+                PhoneNumber = PhoneNumber?.Trim(),
+                Email = Email?.Trim(),
+                Address = Address?.Trim(),
                 IsActive = true
             };
-            _context.Customers.Add(newCustomer);
+
+            _context.Accounts.Add(account);
+            _context.Customers.Add(customer);
             _context.SaveChanges();
 
             TempData["Success"] = "Đăng ký thành công! Vui lòng đăng nhập.";
-            return RedirectToAction("DangNhap");
+            return RedirectToAction(nameof(DangNhap));
         }
 
         [HttpGet]
-        public IActionResult DangNhap()
-        {
-            return View();
-        }
+        public IActionResult DangNhap() => View();
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -76,103 +90,85 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
         {
             var user = _context.Accounts.FirstOrDefault(x => x.Username == username);
 
-            if (user != null && BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
+            if (user == null ||
+                !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
             {
-                if (!user.Status)
-                {
-                    ViewBag.Loi = "Tài khoản của bạn đã bị khóa!";
-                    return View();
-                }
-
-                HttpContext.Session.SetString("AccountId", user.Id.ToString());
-                HttpContext.Session.SetString("Username", user.Username);
-                HttpContext.Session.SetString("FullName", user.FullName);
-                HttpContext.Session.SetString("Role", user.Role);
-
-                // SỬA: Bỏ chuyển hướng Admin, chỉ về Home
-                return RedirectToAction("Index", "Home");
+                ViewBag.Loi = "Tên đăng nhập hoặc mật khẩu không chính xác!";
+                return View();
             }
 
-            ViewBag.Loi = "Tên đăng nhập hoặc mật khẩu không chính xác!";
-            return View();
-        }
+            if (!user.Status)
+            {
+                ViewBag.Loi = "Tài khoản của bạn đã bị khóa!";
+                return View();
+            }
 
-        public IActionResult DangXuat()
-        {
-            HttpContext.Session.Clear();
-            return RedirectToAction("DangNhap");
-        }
+            HttpContext.Session.SetString("AccountId", user.Id.ToString());
+            HttpContext.Session.SetString("Username", user.Username);
+            HttpContext.Session.SetString("FullName", user.FullName);
+            HttpContext.Session.SetString("UserRole", user.Role);
 
-        // ==========================================
-        // BỔ SUNG: CHỨC NĂNG ĐỔI MẬT KHẨU (UC02)
-        // ==========================================
-        [HttpGet]
-        public IActionResult DoiMatKhau()
-        {
-            if (HttpContext.Session.GetString("AccountId") == null)
-                return RedirectToAction("DangNhap");
-            return View();
+            return RedirectToAction("Index", "Home");
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult DoiMatKhau(string oldPassword, string newPassword, string confirmPassword)
+        public IActionResult DangXuat()
         {
-            var accountIdStr = HttpContext.Session.GetString("AccountId");
-            if (string.IsNullOrEmpty(accountIdStr)) return RedirectToAction("DangNhap");
+            HttpContext.Session.Clear();
+            return RedirectToAction(nameof(DangNhap));
+        }
 
-            var accountId = Guid.Parse(accountIdStr);
-            var user = _context.Accounts.Find(accountId);
+        [HttpGet]
+        public IActionResult QuenMatKhau() => View();
 
-            if (user == null) return RedirectToAction("DangNhap");
-
-            if (!BCrypt.Net.BCrypt.Verify(oldPassword, user.PasswordHash))
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult QuenMatKhau(
+            string username,
+            string phoneNumber,
+            string newPassword,
+            string confirmPassword)
+        {
+            if (string.IsNullOrWhiteSpace(username) ||
+                string.IsNullOrWhiteSpace(phoneNumber))
             {
-                ViewBag.Loi = "Mật khẩu cũ không chính xác!";
+                ViewBag.Loi = "Vui lòng nhập tên đăng nhập và mật khẩu.";
+                return View();
+            }
+
+            if (string.IsNullOrWhiteSpace(newPassword))
+            {
+                ViewBag.Loi = "Vui lòng nhập mật khẩu mới.";
                 return View();
             }
 
             if (newPassword != confirmPassword)
             {
-                ViewBag.Loi = "Mật khẩu mới nhập lại không khớp!";
+                ViewBag.Loi = "Mật khẩu nhập lại không khớp!";
                 return View();
             }
 
-            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+            var account = _context.Accounts
+                .FirstOrDefault(a => a.Username == username.Trim());
+
+            var customer = account == null
+                ? null
+                : _context.Customers.FirstOrDefault(c =>
+                    c.AccountId == account.Id &&
+                    c.PhoneNumber == phoneNumber.Trim());
+
+            if (account == null || customer == null)
+            {
+                ViewBag.Loi = "Tên đăng nhập hoặc số điện thoại không chính xác.";
+                return View();
+            }
+
+            account.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
             _context.SaveChanges();
 
-            TempData["Success"] = "Đổi mật khẩu thành công!";
-            return RedirectToAction("Index", "Home");
-        }
-
-        // ==========================================
-        // BỔ SUNG: QUẢN LÝ TÀI KHOẢN CHO ADMIN (UC03)
-        // ==========================================
-        [HttpGet]
-        public IActionResult QuanLyTaiKhoan()
-        {
-            // Kiểm tra quyền Admin
-            if (HttpContext.Session.GetString("Role") != "Admin")
-                return RedirectToAction("DangNhap");
-
-            var dsTaiKhoan = _context.Accounts.ToList();
-            return View(dsTaiKhoan);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult KhoaTaiKhoan(Guid id)
-        {
-            if (HttpContext.Session.GetString("Role") != "Admin")
-                return RedirectToAction("DangNhap");
-
-            var user = _context.Accounts.Find(id);
-            if (user != null)
-            {
-                user.Status = !user.Status; // Đảo trạng thái
-                _context.SaveChanges();
-            }
-            return RedirectToAction("QuanLyTaiKhoan");
+            TempData["Success"] = "Đặt lại mật khẩu thành công. Vui lòng đăng nhập.";
+            return RedirectToAction(nameof(DangNhap));
         }
     }
 }

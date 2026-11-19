@@ -1,12 +1,15 @@
 ﻿@{
     ViewData["Title"] = "Đăng ký";
 }
+
 <div class="container mt-5" style="max-width: 500px;">
     <h2 class="text-center">ĐĂNG KÝ</h2>
+
     @if (ViewBag.Loi != null)
     {
         <div class="alert alert-danger">@ViewBag.Loi</div>
     }
+
     <form asp-action="DangKy" method="post">
         @Html.AntiForgeryToken()
         <div class="form-group mb-3"><label>Tên đăng nhập</label><input name="Username" class="form-control" required /></div>

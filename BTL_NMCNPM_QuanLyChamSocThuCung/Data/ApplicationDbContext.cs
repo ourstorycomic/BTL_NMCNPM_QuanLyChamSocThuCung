@@ -310,6 +310,16 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Data
                       .WithMany(s => s.InvoiceDetails)
                       .HasForeignKey(e => e.ServiceId)
                       .OnDelete(DeleteBehavior.Restrict);
+                modelBuilder.Entity<Account>().HasData(new Account
+                {
+                    Id = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                    Username = "admin",
+                    PasswordHash = "123456789",
+                    FullName = "Administrator",
+                    Role = "Admin",
+                    Status = true,
+                    CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+                });
             });
         }
     }
