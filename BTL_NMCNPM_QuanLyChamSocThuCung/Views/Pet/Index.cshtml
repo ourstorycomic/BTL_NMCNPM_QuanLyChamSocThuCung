@@ -73,10 +73,10 @@
         <div class="d-flex align-items-center gap-2 mt-3 pt-2 border-top flex-wrap" style="font-size: 0.82rem;">
             <span class="text-muted fw-semibold me-1"><i class="bi bi-filter-circle me-1"></i>Lọc nhanh:</span>
             <button type="button" class="btn btn-sm btn-light border rounded-pill px-3 py-1 fw-medium filter-chip active" data-filter="all">Tất cả (@(Model?.Count ?? 0))</button>
-            <button type="button" class="btn btn-sm btn-light border rounded-pill px-3 py-1 fw-medium filter-chip" data-filter="dog">🐶 Chó</button>
-            <button type="button" class="btn btn-sm btn-light border rounded-pill px-3 py-1 fw-medium filter-chip" data-filter="cat">🐱 Mèo</button>
-            <button type="button" class="btn btn-sm btn-light border rounded-pill px-3 py-1 fw-medium filter-chip" data-filter="allergy">⚠️ Có dị ứng</button>
-            <button type="button" class="btn btn-sm btn-light border rounded-pill px-3 py-1 fw-medium filter-chip" data-filter="overdue">💉 Quá hạn tiêm</button>
+            <button type="button" class="btn btn-sm btn-light border rounded-pill px-3 py-1 fw-medium filter-chip" data-filter="dog"><i class="bi bi-heart me-1 text-primary"></i>Chó</button>
+            <button type="button" class="btn btn-sm btn-light border rounded-pill px-3 py-1 fw-medium filter-chip" data-filter="cat"><i class="bi bi-heart me-1 text-success"></i>Mèo</button>
+            <button type="button" class="btn btn-sm btn-light border rounded-pill px-3 py-1 fw-medium filter-chip" data-filter="allergy"><i class="bi bi-exclamation-triangle-fill me-1 text-warning"></i>Có dị ứng</button>
+            <button type="button" class="btn btn-sm btn-light border rounded-pill px-3 py-1 fw-medium filter-chip" data-filter="overdue"><i class="bi bi-calendar-x me-1 text-danger"></i>Quá hạn tiêm</button>
         </div>
     </form>
 </div>
@@ -85,7 +85,7 @@
 @if (Model == null || !Model.Any())
 {
     <div class="text-center py-5 bg-white rounded-4 shadow-sm border p-4">
-        <div class="display-1 text-muted mb-3 opacity-75">🐾</div>
+        <div class="display-3 text-muted mb-3 opacity-50"><i class="bi bi-folder2-open"></i></div>
         <h5 class="fw-bold text-dark">Chưa có hồ sơ thú cưng nào</h5>
         <p class="text-muted small mb-4">
             @(string.IsNullOrEmpty(ViewBag.SearchTerm as string) 
@@ -128,7 +128,7 @@ else
                                 {
                                     <div class="pet-avatar-box d-flex flex-column align-items-center justify-content-center border" 
                                          style="width: 84px; height: 84px; border-radius: 18px; background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);">
-                                        <span style="font-size: 2rem;">@(isCat ? "🐱" : "🐶")</span>
+                                        <i class="bi bi-paw-fill text-success" style="font-size: 2rem;"></i>
                                     </div>
                                 }
                                 <span class="position-absolute bottom-0 end-0 badge rounded-pill shadow-xs" 
