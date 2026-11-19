@@ -502,17 +502,22 @@
 
             if (role === 'Customer') {
                 document.getElementById('tabCustomer').classList.add('active');
-                userInput.placeholder = 'VD: minhanh@gmail.com';
+                userInput.value = 'minhanh';
+                passInput.value = '123456';
             } else if (role === 'Staff') {
                 document.getElementById('tabStaff').classList.add('active');
-                userInput.placeholder = 'VD: staff.demo hoặc lê tân';
-                if (!userInput.value) userInput.value = 'staff.demo';
+                userInput.value = 'letan';
+                passInput.value = '123456';
             } else if (role === 'Admin') {
                 document.getElementById('tabAdmin').classList.add('active');
-                userInput.placeholder = 'VD: admin';
-                if (!userInput.value) userInput.value = 'admin';
+                userInput.value = 'admin';
+                passInput.value = '123456';
             }
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            selectRole('Customer');
+        });
 
         function togglePasswordVisibility() {
             const passInput = document.getElementById('passwordInput');
