@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using BTL_NMCNPM_QuanLyChamSocThuCung.Data;
 using BTL_NMCNPM_QuanLyChamSocThuCung.Models;
 using BTL_NMCNPM_QuanLyChamSocThuCung.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -40,6 +41,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
         // 1. DANH SÁCH LỊCH HẸN
         // ==========================================
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> Index(string? keyword, string? status, DateTime? date)
         {
             var query = _db.Appointments
@@ -49,6 +51,26 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
                 .Include(a => a.AppointmentServices)
                     .ThenInclude(x => x.Service)
                 .AsQueryable();
+
+            var role = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value
+                       ?? HttpContext.Session.GetString("UserRole")
+                       ?? Request.Cookies["UserRole"];
+
+            // Nếu vai trò là Khách hàng, chỉ hiển thị lịch hẹn thuộc về chính mình
+            if (role != "Staff" && role != "Admin")
+            {
+                var accountIdStr = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value
+                                   ?? HttpContext.Session.GetString("AccountId");
+                var customerIdStr = User.Claims.FirstOrDefault(c => c.Type == "CustomerId")?.Value
+                                    ?? HttpContext.Session.GetString("CustomerId");
+
+                Guid.TryParse(accountIdStr, out var accId);
+                Guid.TryParse(customerIdStr, out var custId);
+
+                query = query.Where(a =>
+                    (custId != Guid.Empty && a.Pet.CustomerId == custId) ||
+                    (accId != Guid.Empty && a.Pet.Customer.AccountId == accId));
+            }
 
             if (!string.IsNullOrWhiteSpace(keyword))
             {
@@ -370,6 +392,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
         // ==========================================
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Staff,Admin")]
         public async Task<IActionResult> Confirm(Guid id)
         {
             var appointment = await _db.Appointments.FirstOrDefaultAsync(a => a.AppointmentId == id);
@@ -390,10 +413,38 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<IActionResult> Cancel(Guid id)
         {
-            var appointment = await _db.Appointments.FirstOrDefaultAsync(a => a.AppointmentId == id);
+            var appointment = await _db.Appointments
+                .Include(a => a.Pet)
+                    .ThenInclude(p => p.Customer)
+                .FirstOrDefaultAsync(a => a.AppointmentId == id);
             if (appointment == null) return NotFound();
+
+            var role = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value
+                       ?? HttpContext.Session.GetString("UserRole")
+                       ?? Request.Cookies["UserRole"];
+
+            if (role != "Staff" && role != "Admin")
+            {
+                var accountIdStr = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value
+                                   ?? HttpContext.Session.GetString("AccountId");
+                var customerIdStr = User.Claims.FirstOrDefault(c => c.Type == "CustomerId")?.Value
+                                    ?? HttpContext.Session.GetString("CustomerId");
+
+                Guid.TryParse(accountIdStr, out var accId);
+                Guid.TryParse(customerIdStr, out var custId);
+
+                bool isOwner = (custId != Guid.Empty && appointment.Pet.CustomerId == custId) ||
+                               (accId != Guid.Empty && appointment.Pet.Customer.AccountId == accId);
+
+                if (!isOwner)
+                {
+                    TempData["Error"] = "Bạn không có quyền thao tác trên lịch hẹn của khách hàng khác.";
+                    return RedirectToAction(nameof(Index));
+                }
+            }
 
             if (appointment.Status is not ("Pending" or "Confirmed"))
             {

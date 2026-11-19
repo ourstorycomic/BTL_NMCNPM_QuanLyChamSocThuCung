@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using BTL_NMCNPM_QuanLyChamSocThuCung.Data;
@@ -14,6 +15,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
     /// Module Quản lý Hóa đơn & Thanh toán (UC12 / FR-20, FR-21, FR-22)
     /// Phụ trách: Nguyễn Hà Phương
     /// </summary>
+    [Authorize(Roles = "Staff,Admin")]
     public class BillingController : Controller
     {
         private readonly ApplicationDbContext _db;

@@ -94,9 +94,12 @@
                 <a asp-controller="Billing" asp-action="Index" class="sidebar-link @(currentCtrl == "Billing" ? "active" : "text-muted")">
                     <i class="bi bi-receipt"></i>Thanh toán & Hóa đơn
                 </a>
-                <a asp-controller="Report" asp-action="Index" class="sidebar-link @(currentCtrl == "Report" ? "active" : "text-muted")">
-                    <i class="bi bi-graph-up-arrow"></i>Báo cáo doanh thu
-                </a>
+                @if (currentRole == "Admin" || User.IsInRole("Admin"))
+                {
+                    <a asp-controller="Report" asp-action="Index" class="sidebar-link @(currentCtrl == "Report" ? "active" : "text-muted")">
+                        <i class="bi bi-graph-up-arrow"></i>Báo cáo doanh thu
+                    </a>
+                }
                 <a href="javascript:void(0)" class="sidebar-link text-muted">
                     <i class="bi bi-gear"></i>Cài đặt
                 </a>
@@ -199,8 +202,11 @@
                         <a asp-controller="Home" asp-action="Index" class="customer-nav-link @(currentCtrl == "Home" ? "active" : "")">Trang chủ</a>
                         <a asp-controller="Service" asp-action="Index" class="customer-nav-link @(currentCtrl == "Service" ? "active" : "")">Dịch vụ</a>
                         <a asp-controller="Appointment" asp-action="Create" class="customer-nav-link @(currentCtrl == "Appointment" && ViewContext.RouteData.Values["action"]?.ToString() == "Create" ? "active" : "")">Đặt lịch</a>
-                        <a asp-controller="Appointment" asp-action="Index" class="customer-nav-link @(currentCtrl == "Appointment" && ViewContext.RouteData.Values["action"]?.ToString() != "Create" ? "active" : "")">Lịch hẹn của tôi</a>
-                        <a asp-controller="Pet" asp-action="Index" class="customer-nav-link @(currentCtrl == "Pet" ? "active" : "")">Thú cưng</a>
+                        @if (isAuthenticated)
+                        {
+                            <a asp-controller="Appointment" asp-action="Index" class="customer-nav-link @(currentCtrl == "Appointment" && ViewContext.RouteData.Values["action"]?.ToString() != "Create" ? "active" : "")">Lịch hẹn của tôi</a>
+                            <a asp-controller="Pet" asp-action="Index" class="customer-nav-link @(currentCtrl == "Pet" ? "active" : "")">Thú cưng</a>
+                        }
                     </nav>
 
                     <!-- Right User Information or Login/Register -->

@@ -112,6 +112,13 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
             HttpContext.Session.SetString("FullName", user.FullName);
             HttpContext.Session.SetString("UserRole", user.Role);
 
+            // Tìm thông tin khách hàng liên kết nếu có
+            var customer = _context.Customers.FirstOrDefault(c => c.AccountId == user.Id);
+            if (customer != null)
+            {
+                HttpContext.Session.SetString("CustomerId", customer.Id.ToString());
+            }
+
             // 2. Thiết lập Claims và xác thực Cookie chính thống
             var claims = new List<Claim>
             {
@@ -120,6 +127,11 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
                 new Claim(ClaimTypes.Role, user.Role),
                 new Claim("Username", user.Username)
             };
+
+            if (customer != null)
+            {
+                claims.Add(new Claim("CustomerId", customer.Id.ToString()));
+            }
 
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var authProperties = new AuthenticationProperties
@@ -136,6 +148,10 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
             // 3. Cookie backup hỗ trợ hiển thị giao diện
             Response.Cookies.Append("UserRole", user.Role, new CookieOptions { Expires = DateTimeOffset.UtcNow.AddHours(8) });
             Response.Cookies.Append("FullName", user.FullName, new CookieOptions { Expires = DateTimeOffset.UtcNow.AddHours(8) });
+            if (customer != null)
+            {
+                Response.Cookies.Append("CustomerId", customer.Id.ToString(), new CookieOptions { Expires = DateTimeOffset.UtcNow.AddHours(8) });
+            }
 
             TempData["SuccessMessage"] = $"Chào mừng {user.FullName} đã đăng nhập thành công!";
 
@@ -160,6 +176,8 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             Response.Cookies.Delete("UserRole");
             Response.Cookies.Delete("FullName");
+            Response.Cookies.Delete("CustomerId");
+            Response.Cookies.Delete("PetCare_ActiveRole");
             TempData["SuccessMessage"] = "Bạn đã đăng xuất khỏi hệ thống an toàn.";
             return RedirectToAction("Index", "Home");
         }

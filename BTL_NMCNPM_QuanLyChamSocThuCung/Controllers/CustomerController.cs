@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using BTL_NMCNPM_QuanLyChamSocThuCung.Models;
 using BTL_NMCNPM_QuanLyChamSocThuCung.Data;
 
 namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
 {
+    [Authorize(Roles = "Staff,Admin")]
     public class CustomerController : Controller
     {
         private readonly ApplicationDbContext _context;

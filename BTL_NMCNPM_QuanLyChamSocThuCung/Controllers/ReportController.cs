@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using BTL_NMCNPM_QuanLyChamSocThuCung.Data;
@@ -17,6 +18,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
     /// Dành cho Quản trị viên (Admin) / Quản lý cơ sở
     /// Phụ trách: Nguyễn Hà Phương
     /// </summary>
+    [Authorize(Roles = "Admin")]
     public class ReportController : Controller
     {
         private readonly ApplicationDbContext _db;
