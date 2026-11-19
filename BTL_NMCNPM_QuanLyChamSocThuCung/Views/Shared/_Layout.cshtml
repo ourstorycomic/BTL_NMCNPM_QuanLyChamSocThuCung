@@ -385,6 +385,30 @@
         </footer>
     }
 
+    <!-- Modal Thông báo & Xác nhận Hiện đại chuẩn PawHaven (Thay thế alert/confirm trình duyệt) -->
+    <div class="modal fade" id="pawConfirmModal" tabindex="-1" aria-labelledby="pawConfirmModalLabel" aria-hidden="true" style="backdrop-filter: blur(4px); background-color: rgba(15, 23, 42, 0.45);">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 420px;">
+            <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+                <div class="modal-body p-4 text-center">
+                    <div id="pawConfirmIconBox" class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3 shadow-sm" style="width: 60px; height: 60px;">
+                        <i id="pawConfirmIcon" class="fs-2"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-2" id="pawConfirmTitle">Xác nhận thao tác</h5>
+                    <p class="text-muted small mb-4 px-2 lh-base" id="pawConfirmMessage">Bạn có chắc chắn muốn thực hiện hành động này?</p>
+                    
+                    <div class="d-flex gap-2 justify-content-center">
+                        <button type="button" class="btn btn-light rounded-pill px-4 py-2 fw-semibold text-secondary border flex-grow-1" data-bs-dismiss="modal" id="pawConfirmCancelBtn">
+                            Hủy bỏ
+                        </button>
+                        <button type="button" class="btn btn-success rounded-pill px-4 py-2 fw-bold flex-grow-1 shadow-sm" id="pawConfirmOkBtn">
+                            Xác nhận
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script>

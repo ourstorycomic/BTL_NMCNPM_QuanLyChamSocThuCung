@@ -166,9 +166,13 @@
                 <div class="d-grid gap-2 mt-3">
                     @if (Model.Status == "Pending")
                     {
-                        <form method="post" asp-action="Confirm" asp-route-id="@Model.AppointmentId" onsubmit="return confirm('Bạn có chắc chắn muốn xác nhận lịch hẹn này?');">
+                        <form method="post" asp-action="Confirm" asp-route-id="@Model.AppointmentId">
                             @Html.AntiForgeryToken()
-                            <button type="submit" class="btn btn-success w-100 py-2 fw-bold shadow-sm">
+                            <button type="submit" class="btn btn-success w-100 py-2 fw-bold shadow-sm"
+                                    data-paw-confirm="Xác nhận duyệt lịch hẹn cho bé @Model.Pet.PetName lúc @Model.AppointmentDate.ToString("HH:mm dd/MM/yyyy")?"
+                                    data-paw-title="Xác nhận lịch hẹn"
+                                    data-paw-type="success"
+                                    data-paw-ok="Xác nhận ngay">
                                 <i class="bi bi-check-circle-fill me-1"></i>Xác nhận lịch hẹn
                             </button>
                         </form>
@@ -176,10 +180,13 @@
 
                     @if (Model.Status is "Pending" or "Confirmed")
                     {
-                        <form method="post" asp-action="Cancel" asp-route-id="@Model.AppointmentId"
-                              onsubmit="return confirm('Bạn có chắc chắn muốn hủy lịch hẹn này?');">
+                        <form method="post" asp-action="Cancel" asp-route-id="@Model.AppointmentId">
                             @Html.AntiForgeryToken()
-                            <button type="submit" class="btn btn-outline-danger w-100 py-2">
+                            <button type="submit" class="btn btn-outline-danger w-100 py-2"
+                                    data-paw-confirm="Bạn có chắc chắn muốn hủy lịch hẹn này không? Hành động này sẽ hoàn lại khung giờ trống cho khách hàng khác."
+                                    data-paw-title="Hủy lịch hẹn"
+                                    data-paw-type="danger"
+                                    data-paw-ok="Hủy lịch ngay">
                                 <i class="bi bi-x-circle me-1"></i>Hủy lịch hẹn
                             </button>
                         </form>

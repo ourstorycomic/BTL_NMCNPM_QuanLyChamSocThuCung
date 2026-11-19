@@ -134,9 +134,13 @@
                                 <a asp-action="Details" asp-route-id="@item.AppointmentId" class="btn btn-sm btn-outline-primary">Chi tiết</a>
                                 @if (isStaffOrAdmin && item.Status == "Pending")
                                 {
-                                    <form method="post" asp-action="Confirm" asp-route-id="@item.AppointmentId" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xác nhận lịch hẹn này?');">
+                                    <form method="post" asp-action="Confirm" asp-route-id="@item.AppointmentId" class="d-inline">
                                         @Html.AntiForgeryToken()
-                                        <button type="submit" class="btn btn-sm btn-success ms-1" title="Xác nhận lịch hẹn">
+                                        <button type="submit" class="btn btn-sm btn-success ms-1" title="Xác nhận lịch hẹn"
+                                                data-paw-confirm="Xác nhận duyệt lịch hẹn cho bé @item.Pet.PetName lúc @item.AppointmentDate.ToString("HH:mm dd/MM/yyyy")?"
+                                                data-paw-title="Xác nhận lịch hẹn"
+                                                data-paw-type="success"
+                                                data-paw-ok="Xác nhận ngay">
                                             <i class="bi bi-check-lg me-1"></i>Xác nhận
                                         </button>
                                     </form>

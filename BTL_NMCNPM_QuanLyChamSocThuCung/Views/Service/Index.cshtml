@@ -100,8 +100,12 @@
                                 {
                                     <td class="text-center pe-4">
                                         <a asp-action="Edit" asp-route-id="@item.ServiceId" class="btn btn-sm btn-light border rounded-circle me-1" title="Sửa" style="width: 35px; height: 35px;"><i class="bi bi-pencil-square text-primary"></i></a>
-                                        <form asp-action="Delete" asp-route-id="@item.ServiceId" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn ngừng cung cấp dịch vụ này?');">
-                                            <button type="submit" class="btn btn-sm btn-light border rounded-circle" title="Xóa" style="width: 35px; height: 35px;"><i class="bi bi-trash text-danger"></i></button>
+                                        <form asp-action="Delete" asp-route-id="@item.ServiceId" method="post" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-light border rounded-circle" title="Xóa" style="width: 35px; height: 35px;"
+                                                    data-paw-confirm="Bạn có chắc chắn muốn ngừng cung cấp dịch vụ @item.ServiceName?"
+                                                    data-paw-title="Ngừng cung cấp dịch vụ"
+                                                    data-paw-type="danger"
+                                                    data-paw-ok="Ngừng cung cấp"><i class="bi bi-trash text-danger"></i></button>
                                         </form>
                                     </td>
                                 }

@@ -527,7 +527,11 @@
     }
 
     function openAddServiceModal() {
-        alert("Chức năng thêm dịch vụ / sản phẩm bổ sung: Bạn có thể chọn thêm các sản phẩm spa hoặc dinh dưỡng trực tiếp vào hóa đơn.");
+        showPawAlert({
+            title: 'Dịch vụ & Sản phẩm bổ sung',
+            message: 'Tính năng thêm sản phẩm/dịch vụ ngoài luồng: Bạn có thể chọn thêm các sản phẩm spa hoặc thức ăn dinh dưỡng trực tiếp vào hóa đơn tại quầy thanh toán.',
+            type: 'info'
+        });
     }
 
     // Initialize on load

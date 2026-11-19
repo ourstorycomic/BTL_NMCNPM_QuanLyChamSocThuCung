@@ -267,17 +267,20 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
                 var opening = start.Value.Date.Add(OpeningTime);
                 var closing = start.Value.Date.Add(ClosingTime);
 
-                if (start.Value < opening || end > closing)
+                // Dịch vụ lưu trú (Khách sạn thú cưng 24h) không bị ràng buộc phải trả bé trước 20:00 cùng ngày
+                var isBoarding = services.Any(s => s.Category == "Lưu trú" || s.DurationMinutes >= 720);
+
+                if (start.Value < opening || start.Value > closing || (!isBoarding && end > closing))
                 {
                     ModelState.AddModelError(nameof(model.StartTime),
-                        "Giờ hẹn phải nằm trong khung 07:00 - 20:00 và kết thúc trước 20:00.");
+                        "Giờ hẹn nhận bé phải nằm trong khung 07:00 - 20:00 và dịch vụ làm đẹp trong ngày cần kết thúc trước 20:00.");
                 }
                 else if (start.Value < DateTime.Now)
                 {
                     ModelState.AddModelError(nameof(model.StartTime), 
                         $"Khung giờ {start.Value:dd/MM/yyyy HH:mm} đã ở trong quá khứ. Vui lòng chọn ngày hoặc giờ tiếp theo.");
                 }
-                else if (await HasConflictAsync(start.Value, end))
+                else if (!isBoarding && await HasConflictAsync(start.Value, end))
                 {
                     ModelState.AddModelError(nameof(model.StartTime),
                         $"Khung giờ {start.Value:HH:mm} - {end:HH:mm} đã có lịch hẹn khác. Vui lòng chọn giờ khác.");
