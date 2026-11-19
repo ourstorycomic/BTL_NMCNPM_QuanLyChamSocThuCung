@@ -3,30 +3,22 @@
     ViewData["Title"] = "Quản lý Dịch Vụ";
 }
 
-<div class="container py-4">
+<div class="container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="text-success fw-bold mb-1">
+            <h2 class="text-paw fw-bold mb-1">
                 <i class="bi bi-tags-fill me-2"></i>Bảng Giá Dịch Vụ
             </h2>
             <p class="text-muted small mb-0">Quản lý các gói dịch vụ chăm sóc thú cưng</p>
         </div>
-        <a asp-action="Create" class="btn btn-gradient-success rounded-pill px-4 shadow-sm">
+        <a asp-action="Create" class="btn btn-paw rounded-pill px-4 shadow-sm">
             <i class="bi bi-plus-circle-fill me-1"></i> Thêm Dịch Vụ
         </a>
     </div>
 
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 rounded-3" role="alert">
-            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
-
     <div class="row mb-4">
         <div class="col-md-4">
-            <div class="card border-0 shadow-sm rounded-4 hover-lift text-white" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+            <div class="card border-0 shadow-sm rounded-4 hover-lift text-white" style="background-color: #10b981;">
                 <div class="card-body p-4 d-flex align-items-center">
                     <div class="bg-white bg-opacity-25 rounded-circle p-3 me-3">
                         <i class="bi bi-scissors fs-3"></i>
@@ -50,7 +42,7 @@
                     </div>
                 </div>
                 <div class="col-md-3 text-end">
-                    <button type="submit" class="btn btn-gradient-success rounded-pill px-4">Tìm kiếm</button>
+                    <button type="submit" class="btn btn-paw rounded-pill px-4">Tìm kiếm</button>
                 </div>
             </form>
         </div>
@@ -65,7 +57,7 @@
                             <th class="ps-4 py-3 text-uppercase text-muted small fw-bold">Tên Dịch Vụ</th>
                             <th class="text-uppercase text-muted small fw-bold">Phân Loại</th>
                             <th class="text-uppercase text-muted small fw-bold">Thời Gian</th>
-                            <th class="text-uppercase text-muted small fw-bold">Cân Nặng (kg)</th> <!-- CỘT MỚI -->
+                            <th class="text-uppercase text-muted small fw-bold">Cân Nặng (kg)</th>
                             <th class="text-uppercase text-muted small fw-bold">Giá Cơ Bản</th>
                             <th class="text-center pe-4 text-uppercase text-muted small fw-bold">Thao tác</th>
                         </tr>
@@ -75,12 +67,11 @@
                         {
                             <tr>
                                 <td class="ps-4">
-                                    <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-tag-fill text-success me-2"></i>@item.ServiceName</h6>
+                                    <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-tag-fill text-paw me-2"></i>@item.ServiceName</h6>
                                 </td>
                                 <td><span class="badge bg-info bg-opacity-10 text-info border border-info px-3 py-2 rounded-pill">@item.Category</span></td>
                                 <td><div class="small"><i class="bi bi-clock text-warning me-1"></i> @item.DurationMinutes phút</div></td>
                                 <td>
-                                    <!-- DỮ LIỆU CÂN NẶNG MỚI -->
                                     <span class="badge bg-secondary bg-opacity-10 text-dark border px-2 py-1">
                                         @item.WeightTierMin.ToString("0.##") - @item.WeightTierMax.ToString("0.##") kg
                                     </span>

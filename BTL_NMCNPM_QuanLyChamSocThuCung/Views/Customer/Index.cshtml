@@ -3,30 +3,22 @@
     ViewData["Title"] = "Quản lý Khách Hàng";
 }
 
-<div class="container py-4">
+<div class="container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="text-primary fw-bold mb-1">
+            <h2 class="text-paw fw-bold mb-1">
                 <i class="bi bi-people-fill me-2"></i>Quản lý Khách Hàng
             </h2>
             <p class="text-muted small mb-0">Hệ thống quản lý thông tin chủ nuôi và thú cưng</p>
         </div>
-        <a asp-action="Create" class="btn btn-success rounded-pill px-4 shadow-sm">
+        <a asp-action="Create" class="btn btn-paw rounded-pill px-4 shadow-sm">
             <i class="bi bi-person-plus-fill me-1"></i> Thêm Khách Hàng
         </a>
     </div>
 
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 rounded-3" role="alert">
-            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    }
-
     <div class="row mb-4">
         <div class="col-md-4">
-            <div class="card border-0 shadow-sm rounded-4 hover-lift text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <div class="card border-0 shadow-sm rounded-4 hover-lift text-white" style="background-color: #10b981;">
                 <div class="card-body p-4 d-flex align-items-center">
                     <div class="bg-white bg-opacity-25 rounded-circle p-3 me-3">
                         <i class="bi bi-person-lines-fill fs-3"></i>
@@ -50,7 +42,7 @@
                     </div>
                 </div>
                 <div class="col-md-3 text-end">
-                    <button type="submit" class="btn btn-primary rounded-pill px-4">Tìm kiếm</button>
+                    <button type="submit" class="btn btn-paw rounded-pill px-4">Tìm kiếm</button>
                 </div>
             </form>
         </div>
@@ -71,18 +63,14 @@
                     <tbody>
                         @if (!Model.Any())
                         {
-                            <tr>
-                                <td colspan="4" class="text-center text-muted py-5">
-                                    <i class="bi bi-inbox fs-1 d-block mb-3 text-secondary"></i>Chưa có dữ liệu khách hàng.
-                                </td>
-                            </tr>
+                            <tr><td colspan="4" class="text-center text-muted py-5"><i class="bi bi-inbox fs-1 d-block mb-3 text-secondary"></i>Chưa có dữ liệu khách hàng.</td></tr>
                         }
                         @foreach (var item in Model)
                         {
                             <tr>
                                 <td class="ps-4">
                                     <div class="d-flex align-items-center">
-                                        <div class="rounded-circle text-white d-flex justify-content-center align-items-center me-3 shadow-sm" style="width: 45px; height: 45px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); font-weight: 600;">
+                                        <div class="rounded-circle text-white d-flex justify-content-center align-items-center me-3 shadow-sm" style="width: 45px; height: 45px; background-color: #10b981; font-weight: 600;">
                                             @(item.CustomerName.Length > 0 ? item.CustomerName.Substring(0, 1).ToUpper() : "?")
                                         </div>
                                         <div>
@@ -92,7 +80,7 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <div class="small"><i class="bi bi-telephone text-primary me-2"></i>@item.PhoneNumber</div>
+                                    <div class="small"><i class="bi bi-telephone text-paw me-2"></i>@item.PhoneNumber</div>
                                     <div class="small text-muted">
                                         <i class="bi bi-envelope me-2"></i>
                                         @if (string.IsNullOrEmpty(item.Email))
@@ -105,19 +93,11 @@
                                         }
                                     </div>
                                 </td>
-                                <td>
-                                    <span class="badge bg-light text-dark border px-3 py-2">
-                                        <i class="bi bi-calendar3 me-1"></i> @item.CreatedAt.ToString("dd/MM/yyyy")
-                                    </span>
-                                </td>
+                                <td><span class="badge bg-light text-dark border px-3 py-2"><i class="bi bi-calendar3 me-1"></i> @item.CreatedAt.ToString("dd/MM/yyyy")</span></td>
                                 <td class="text-center pe-4">
-                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-light border rounded-circle me-1" title="Sửa" style="width: 35px; height: 35px;">
-                                        <i class="bi bi-pencil-square text-primary"></i>
-                                    </a>
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-light border rounded-circle me-1" title="Sửa" style="width: 35px; height: 35px;"><i class="bi bi-pencil-square text-primary"></i></a>
                                     <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn ngừng hoạt động khách hàng này?');">
-                                        <button type="submit" class="btn btn-sm btn-light border rounded-circle" title="Xóa" style="width: 35px; height: 35px;">
-                                            <i class="bi bi-trash text-danger"></i>
-                                        </button>
+                                        <button type="submit" class="btn btn-sm btn-light border rounded-circle" title="Xóa" style="width: 35px; height: 35px;"><i class="bi bi-trash text-danger"></i></button>
                                     </form>
                                 </td>
                             </tr>

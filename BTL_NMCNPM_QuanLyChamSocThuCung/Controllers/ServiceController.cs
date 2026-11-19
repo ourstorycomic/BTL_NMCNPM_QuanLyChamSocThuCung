@@ -31,6 +31,11 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Service service)
         {
+            // Validate logic to avoid SQL crash
+            if (service.BasePrice < 0) ModelState.AddModelError("BasePrice", "Giá cơ bản không được âm.");
+            if (service.WeightTierMin < 0) ModelState.AddModelError("WeightTierMin", "Cân nặng tối thiểu không được âm.");
+            if (service.WeightTierMax < service.WeightTierMin) ModelState.AddModelError("WeightTierMax", "Cân nặng tối đa phải lớn hơn hoặc bằng cân nặng tối thiểu.");
+
             if (ModelState.IsValid)
             {
                 service.ServiceId = Guid.NewGuid();
@@ -57,11 +62,15 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
         {
             if (id != service.ServiceId) return NotFound();
 
+            // Validate logic to avoid SQL crash
+            if (service.BasePrice < 0) ModelState.AddModelError("BasePrice", "Giá cơ bản không được âm.");
+            if (service.WeightTierMin < 0) ModelState.AddModelError("WeightTierMin", "Cân nặng tối thiểu không được âm.");
+            if (service.WeightTierMax < service.WeightTierMin) ModelState.AddModelError("WeightTierMax", "Cân nặng tối đa phải lớn hơn hoặc bằng cân nặng tối thiểu.");
+
             if (ModelState.IsValid)
             {
                 try
                 {
-                    // FIX THEO FEEDBACK: Lấy bản ghi gốc
                     var existingService = await _context.Services.FindAsync(id);
                     if (existingService == null) return NotFound();
 
@@ -70,8 +79,8 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
                     existingService.Description = service.Description;
                     existingService.DurationMinutes = service.DurationMinutes;
                     existingService.BasePrice = service.BasePrice;
-                    existingService.WeightTierMin = service.WeightTierMin; // Cập nhật cân nặng
-                    existingService.WeightTierMax = service.WeightTierMax; // Cập nhật cân nặng
+                    existingService.WeightTierMin = service.WeightTierMin;
+                    existingService.WeightTierMax = service.WeightTierMax;
 
                     _context.Update(existingService);
                     await _context.SaveChangesAsync();

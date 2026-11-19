@@ -31,6 +31,13 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Customer customer)
         {
+            // FR-10: Check trùng số điện thoại
+            var phoneExists = await _context.Customers.AnyAsync(c => c.PhoneNumber == customer.PhoneNumber && c.IsActive);
+            if (phoneExists)
+            {
+                ModelState.AddModelError("PhoneNumber", "Số điện thoại này đã được đăng ký cho một khách hàng khác.");
+            }
+
             if (ModelState.IsValid)
             {
                 customer.Id = Guid.NewGuid();
@@ -58,11 +65,17 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
         {
             if (id != customer.Id) return NotFound();
 
+            // FR-10: Check trùng SĐT (trừ chính bản ghi đang sửa)
+            var phoneExists = await _context.Customers.AnyAsync(c => c.PhoneNumber == customer.PhoneNumber && c.Id != id && c.IsActive);
+            if (phoneExists)
+            {
+                ModelState.AddModelError("PhoneNumber", "Số điện thoại này đã được đăng ký cho một khách hàng khác.");
+            }
+
             if (ModelState.IsValid)
             {
                 try
                 {
-                    // FIX THEO FEEDBACK: Lấy bản ghi gốc, chỉ cập nhật các trường cho phép
                     var existingCustomer = await _context.Customers.FindAsync(id);
                     if (existingCustomer == null) return NotFound();
 
@@ -70,7 +83,6 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
                     existingCustomer.PhoneNumber = customer.PhoneNumber;
                     existingCustomer.Email = customer.Email;
                     existingCustomer.Address = customer.Address;
-                    // Giữ nguyên CreatedAt và AccountId
 
                     _context.Update(existingCustomer);
                     await _context.SaveChangesAsync();
