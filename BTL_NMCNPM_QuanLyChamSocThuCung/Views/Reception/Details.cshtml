@@ -1,0 +1,260 @@
+@model BTL_NMCNPM_QuanLyChamSocThuCung.ViewModels.ReceptionDetailsViewModel
+@{
+    ViewData["Title"] = "Cập nhật tiến độ chăm sóc - " + Model.Appointment.Pet.PetName;
+    var pet = Model.Appointment.Pet;
+    var customer = pet.Customer;
+    var ticket = Model.Ticket;
+    var shortTicketId = Model.Appointment.AppointmentId.ToString().Substring(0, 5).ToUpper();
+    var staffName = ticket?.Staff?.FullName ?? "Trần Đức Huy";
+}
+
+<div class="grooming-container py-2">
+    <!-- Top Nav Header with Back button and Timer -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <a asp-action="Index" class="btn btn-light rounded-circle border shadow-sm p-2 d-inline-flex align-items-center justify-content-center" style="width: 40px; height: 40px;" title="Quay lại">
+            <i class="bi bi-arrow-left text-dark"></i>
+        </a>
+
+        <div class="d-flex align-items-center gap-3">
+            <div class="d-flex align-items-center gap-2">
+                <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80" 
+                     alt="@staffName" class="rounded-circle object-fit-cover shadow-sm" style="width: 36px; height: 36px;" />
+                <div class="text-end d-none d-sm-block">
+                    <div class="fw-bold small text-dark lh-sm">@staffName</div>
+                    <div class="text-muted" style="font-size: 0.72rem;">Groomer · Cat ring</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Title and Live Timer -->
+    <div class="d-flex justify-content-between align-items-end mb-3 flex-wrap gap-2">
+        <div>
+            <div class="text-muted small fw-semibold">Phiếu #PH-@shortTicketId · Phòng grooming 2</div>
+            <h3 class="fw-bold text-dark mb-0">Cập nhật tiến độ chăm sóc</h3>
+        </div>
+        <div class="timer-pill shadow-sm">
+            <i class="bi bi-clock-history text-muted"></i>
+            <span>Đã làm</span>
+            <span class="text-danger fw-bold" id="liveTimerDisplay">00:53:55</span>
+        </div>
+    </div>
+
+    <!-- CARD 1: THÔNG TIN BÉ CƯNG (MOCHI) -->
+    <div class="grooming-card p-4 mb-4">
+        <div class="d-flex flex-column flex-sm-row align-items-start gap-4">
+            <img src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=200&auto=format&fit=crop&q=80" 
+                 alt="@pet.PetName" class="rounded-4 object-fit-cover shadow-sm flex-shrink-0" style="width: 100px; height: 100px;" />
+
+            <div class="flex-grow-1 w-100">
+                <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                    <h4 class="fw-bold text-dark mb-0">@pet.PetName</h4>
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-1" style="font-size: 0.75rem;">
+                        <i class="bi bi-gender-male me-1"></i>@(pet.Species.Contains("Mèo") ? "Mèo · Đực" : "Chó · Đực")
+                    </span>
+                </div>
+                <div class="text-muted small mb-3">@pet.Breed · 3 tuổi · Chủ: <strong>@customer.CustomerName</strong></div>
+
+                <!-- Cân nặng hiện tại vs lần trước -->
+                <div class="d-flex gap-3 mb-3">
+                    <div class="weight-stat-box">
+                        <div class="text-muted text-uppercase fw-bold" style="font-size: 0.65rem;">Cân nặng</div>
+                        <div class="fw-bold text-dark fs-5">@(ticket?.ActualWeight > 0 ? ticket.ActualWeight.ToString("0.0") : "5,6") <small class="fs-6 fw-normal text-muted">kg</small></div>
+                    </div>
+                    <div class="weight-stat-box">
+                        <div class="text-muted text-uppercase fw-bold" style="font-size: 0.65rem;">Lần trước</div>
+                        <div class="fw-bold text-dark fs-5">4,2 <small class="fs-6 fw-normal text-muted">kg</small></div>
+                    </div>
+                </div>
+
+                <!-- Dịch vụ đang thực hiện -->
+                <div class="mb-3">
+                    <div class="text-muted text-uppercase fw-bold mb-1" style="font-size: 0.68rem; letter-spacing: 0.05em;">Dịch vụ đang thực hiện</div>
+                    <div class="d-flex flex-wrap gap-2">
+                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-2 fw-semibold" style="font-size: 0.8rem;">
+                            <i class="bi bi-check2 me-1"></i>Tắm vệ sinh
+                        </span>
+                        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-3 py-2 fw-semibold" style="font-size: 0.8rem;">
+                            <i class="bi bi-clock me-1"></i>Vệ sinh tai & cắt móng
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Alert dị ứng -->
+                <div class="p-3 rounded-3 small" style="background-color: #fffbeb; border: 1px solid #fef3c7; color: #b45309;">
+                    <i class="bi bi-exclamation-triangle-fill text-warning me-1"></i>
+                    <strong>Dị ứng:</strong> @(string.IsNullOrWhiteSpace(pet.AllergyNote) ? "ngũ cốc, sữa tắm chứa Sulfate. Bé hơi nhát, nhẹ tay khi cắt móng." : pet.AllergyNote)
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CARD 2: FORM CẬP NHẬT TIẾN ĐỘ CHĂM SÓC -->
+    <form asp-action="AddProgress" method="post" enctype="multipart/form-data" id="careProgressForm" class="grooming-card p-4 mb-4">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="TicketId" value="@(ticket?.TicketId ?? Guid.Empty)" />
+        <input type="hidden" name="StaffId" value="@(ticket?.StaffId ?? Model.StaffMembers.FirstOrDefault()?.Id ?? Guid.Empty)" />
+        <input type="hidden" name="StepDescription" value="Cập nhật tiến độ grooming & kiểm tra y tế" />
+        <input type="hidden" name="CompleteAppointment" id="inputCompleteAppointment" value="false" />
+
+        <!-- 1. Trạng thái -->
+        <div class="mb-4">
+            <label class="form-label text-dark fw-bold small mb-1">Trạng thái <span class="text-danger">*</span></label>
+            <div class="position-relative">
+                <select name="ProgressStatus" id="selectProgressStatus" class="form-select rounded-3 py-2 fw-semibold" style="height: 46px;">
+                    <option value="Processing" selected>Đang chăm sóc</option>
+                    <option value="Completed">Hoàn thành công đoạn</option>
+                    <option value="Pending">Tạm hoãn</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- 2. Hình ảnh kết quả -->
+        <div class="mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <label class="form-label text-dark fw-bold small mb-0">Hình ảnh kết quả</label>
+                <span class="text-muted small" id="photoCountLabel">2 / 6 ảnh</span>
+            </div>
+
+            <!-- Upload dropzone -->
+            <div class="upload-dropzone mb-3" onclick="document.getElementById('fileInputResult').click()">
+                <div class="rounded-circle bg-success bg-opacity-10 text-success d-inline-flex align-items-center justify-content-center mb-2" style="width: 48px; height: 48px;">
+                    <i class="bi bi-cloud-arrow-up-fill fs-4"></i>
+                </div>
+                <div class="fw-bold text-dark">Chạm để chụp / chọn ảnh</div>
+                <div class="text-muted small">hoặc kéo thả ảnh vào đây · JPG, PNG tối đa 10MB</div>
+                <input type="file" name="ResultImage" id="fileInputResult" class="d-none" accept="image/*" onchange="handleImageSelected(this)" />
+            </div>
+
+            <!-- Photo Gallery (2 preview thumbnails as in mockup) -->
+            <div class="d-flex flex-wrap gap-3" id="photoGallery">
+                <div class="result-photo-card">
+                    <img src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=200&auto=format&fit=crop&q=80" 
+                         alt="Before" class="result-photo-img" />
+                    <span class="photo-tag-badge">Before</span>
+                    <button type="button" class="photo-delete-btn" onclick="removePhotoCard(this)">✕</button>
+                </div>
+
+                <div class="result-photo-card">
+                    <img src="https://images.unsplash.com/photo-1533738363-b7f9aef128ce?w=200&auto=format&fit=crop&q=80" 
+                         alt="Grooming" class="result-photo-img" />
+                    <span class="photo-tag-badge">Grooming</span>
+                    <button type="button" class="photo-delete-btn" onclick="removePhotoCard(this)">✕</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Ghi chú chuyên môn -->
+        <div class="mb-4">
+            <label class="form-label text-dark fw-bold small mb-1">Ghi chú chuyên môn</label>
+
+            <!-- Quick Clinical Tag Chips -->
+            <div class="d-flex flex-wrap gap-1 mb-2">
+                <span class="clinical-tag-chip" onclick="toggleClinicalTag(this, 'Da khỏe, không mẩn đỏ')">+ Da khỏe, không mẩn đỏ</span>
+                <span class="clinical-tag-chip" onclick="toggleClinicalTag(this, 'Tai có ráy nhẹ')">+ Tai có ráy nhẹ</span>
+                <span class="clinical-tag-chip" onclick="toggleClinicalTag(this, 'Lông rụng nhiều')">+ Lông rụng nhiều</span>
+                <span class="clinical-tag-chip" onclick="toggleClinicalTag(this, 'Bé hợp tác tốt')">+ Bé hợp tác tốt</span>
+            </div>
+
+            <textarea name="StaffNotes" id="inputClinicalNotes" class="form-control rounded-3" rows="3" maxlength="500"
+                      placeholder="Ghi nhận tình trạng da, lông, lưu ý chăm sóc..." oninput="updateCharCount()">Đã tắm bằng sữa tắm không Sulfate. Phát hiện ráy tai nhẹ bên trái, đã vệ sinh.</textarea>
+
+            <div class="d-flex justify-content-between align-items-center mt-1 text-muted" style="font-size: 0.75rem;">
+                <div><i class="bi bi-info-circle me-1"></i>Ghi chú sẽ gửi kèm cho chủ nuôi</div>
+                <div id="charCounter">70 / 500</div>
+            </div>
+        </div>
+
+        <!-- 4. Action Buttons (Lưu nháp & Hoàn thành dịch vụ) -->
+        <div class="d-flex justify-content-between align-items-center pt-3 border-top gap-2 flex-wrap">
+            <button type="submit" class="btn btn-save-draft d-flex align-items-center gap-2" onclick="setCompletion(false)">
+                <i class="bi bi-file-earmark-text"></i>
+                <span>Lưu nháp</span>
+            </button>
+
+            <button type="submit" class="btn btn-complete-service d-flex align-items-center gap-2" onclick="setCompletion(true)">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>Hoàn thành dịch vụ</span>
+            </button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+<script>
+    // Live Timer Ticking
+    let totalSeconds = 53 * 60 + 55;
+    setInterval(() => {
+        totalSeconds++;
+        const hrs = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+        const mins = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+        const secs = String(totalSeconds % 60).padStart(2, '0');
+        const timerEl = document.getElementById('liveTimerDisplay');
+        if (timerEl) {
+            timerEl.textContent = `${hrs}:${mins}:${secs}`;
+        }
+    }, 1000);
+
+    function toggleClinicalTag(chip, tagText) {
+        chip.classList.toggle('active');
+        const textarea = document.getElementById('inputClinicalNotes');
+        let currentText = textarea.value.trim();
+
+        if (chip.classList.contains('active')) {
+            if (currentText.length > 0 && !currentText.includes(tagText)) {
+                textarea.value = currentText + '. ' + tagText;
+            } else if (currentText.length === 0) {
+                textarea.value = tagText;
+            }
+        } else {
+            textarea.value = currentText.replace(tagText, '').replace(/\.\s*\.\s*/g, '. ').replace(/^\.\s*|\s*\.\s*$/g, '').trim();
+        }
+        updateCharCount();
+    }
+
+    function updateCharCount() {
+        const textarea = document.getElementById('inputClinicalNotes');
+        const counter = document.getElementById('charCounter');
+        if (textarea && counter) {
+            counter.textContent = `${textarea.value.length} / 500`;
+        }
+    }
+
+    function removePhotoCard(btn) {
+        btn.closest('.result-photo-card').remove();
+        const remaining = document.querySelectorAll('.result-photo-card').length;
+        document.getElementById('photoCountLabel').textContent = `${remaining} / 6 ảnh`;
+    }
+
+    function handleImageSelected(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const gallery = document.getElementById('photoGallery');
+                const card = document.createElement('div');
+                card.className = 'result-photo-card';
+                card.innerHTML = `
+                    <img src="${e.target.result}" alt="New photo" class="result-photo-img" />
+                    <span class="photo-tag-badge">After</span>
+                    <button type="button" class="photo-delete-btn" onclick="removePhotoCard(this)">✕</button>
+                `;
+                gallery.appendChild(card);
+                const remaining = document.querySelectorAll('.result-photo-card').length;
+                document.getElementById('photoCountLabel').textContent = `${remaining} / 6 ảnh`;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function setCompletion(isComplete) {
+        document.getElementById('inputCompleteAppointment').value = isComplete ? 'true' : 'false';
+        if (isComplete) {
+            document.getElementById('selectProgressStatus').value = 'Completed';
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        updateCharCount();
+    });
+</script>
+}

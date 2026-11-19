@@ -1,0 +1,542 @@
+@model BTL_NMCNPM_QuanLyChamSocThuCung.ViewModels.BillingCheckoutViewModel
+@{
+    ViewData["Title"] = "Lập hóa đơn & Thanh toán - " + Model.CustomerName;
+    var shortCode = Model.AppointmentId.ToString().Substring(0, 5).ToUpper();
+    var invoiceCode = "#HD-" + shortCode;
+    var apptCode = "#PH-" + shortCode;
+}
+
+<div class="checkout-container">
+    <!-- Top Header -->
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+            <h4 class="fw-bold mb-0 text-dark">Lập hóa đơn & Thanh toán</h4>
+            <div class="text-muted small">@DateTime.Now.ToString("dddd, dd/MM/yyyy") · Chi nhánh Thảo Điền</div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge rounded-pill bg-success-subtle text-success fw-bold px-3 py-2 border border-success-subtle">
+                <span class="d-inline-block rounded-circle bg-success me-1" style="width: 8px; height: 8px;"></span>
+                Ca sáng · 07:30 - 14:00
+            </span>
+            <button type="button" class="btn btn-light rounded-circle p-2 text-muted" title="Thông báo">
+                <i class="bi bi-bell"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Ready for Payment Banner -->
+    <div class="badge-status-ready mb-3">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-check-circle-fill fs-5 text-success"></i>
+            <span>Dịch vụ đã hoàn tất · Sẵn sàng thanh toán</span>
+        </div>
+        <div class="fw-bold text-dark" style="font-size: 0.95rem;">
+            Mã hóa đơn <span class="text-success">@invoiceCode</span>
+        </div>
+    </div>
+
+    <!-- 4-Box Summary Header: Khách hàng | Thú cưng | Thời gian | Kỹ thuật viên -->
+    <div class="checkout-card p-3 mb-3">
+        <div class="row g-3">
+            <!-- Box 1: Khách hàng -->
+            <div class="col-12 col-sm-6 col-lg-3 border-end-lg">
+                <div class="info-box-item">
+                    <div class="info-box-avatar bg-light border text-secondary">
+                        <i class="bi bi-person-fill"></i>
+                    </div>
+                    <div>
+                        <div class="text-uppercase text-muted fw-bold" style="font-size: 0.68rem; letter-spacing: 0.05em;">Khách hàng</div>
+                        <div class="fw-bold text-dark lh-sm">@Model.CustomerName</div>
+                        <div class="text-muted small">@Model.PhoneNumber</div>
+                        <span class="badge bg-warning bg-opacity-10 text-dark border border-warning-subtle fw-semibold" style="font-size: 0.68rem; padding: 2px 6px;">
+                            <i class="bi bi-star-fill text-warning me-1"></i>Thành viên Vàng
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Box 2: Thú cưng -->
+            <div class="col-12 col-sm-6 col-lg-3 border-end-lg">
+                <div class="info-box-item">
+                    <img src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=100&auto=format&fit=crop&q=80" 
+                         alt="@Model.PetName" class="info-box-avatar border" />
+                    <div>
+                        <div class="text-uppercase text-muted fw-bold" style="font-size: 0.68rem; letter-spacing: 0.05em;">Thú cưng</div>
+                        <div class="fw-bold text-dark lh-sm">@Model.PetName</div>
+                        <div class="text-muted small">@Model.Breed · 3 tuổi</div>
+                        <div class="text-dark small fw-semibold">Cân nặng: <span class="text-danger">@Model.ActualWeight.ToString("0.0") kg</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Box 3: Thời gian -->
+            <div class="col-12 col-sm-6 col-lg-3 border-end-lg">
+                <div class="info-box-item">
+                    <div class="info-box-avatar bg-light border text-secondary">
+                        <i class="bi bi-clock"></i>
+                    </div>
+                    <div>
+                        <div class="text-uppercase text-muted fw-bold" style="font-size: 0.68rem; letter-spacing: 0.05em;">Thời gian</div>
+                        <div class="fw-bold text-dark lh-sm">@Model.AppointmentDate.ToString("HH:mm") – @Model.AppointmentDate.AddMinutes(85).ToString("HH:mm")</div>
+                        <div class="text-muted small">Lịch hẹn @apptCode</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Box 4: Kỹ thuật viên -->
+            <div class="col-12 col-sm-6 col-lg-3">
+                <div class="info-box-item">
+                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80" 
+                         alt="KTV" class="info-box-avatar border" />
+                    <div>
+                        <div class="text-uppercase text-muted fw-bold" style="font-size: 0.68rem; letter-spacing: 0.05em;">Kỹ thuật viên</div>
+                        <div class="fw-bold text-dark lh-sm">@Model.TechnicianName</div>
+                        <div class="text-muted small">Groomer · Bậc 2</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Note KTV -->
+    <div class="ktv-note-alert mb-4 d-flex align-items-center gap-2">
+        <i class="bi bi-exclamation-triangle-fill text-warning fs-5 flex-shrink-0"></i>
+        <div>
+            <strong>Ghi chú KTV:</strong> @(string.IsNullOrWhiteSpace(Model.TechnicianNote) ? "Mochi vượt mức cân gói tiêu chuẩn (< 5 kg). Bé hơi cáu khi cắt móng." : Model.TechnicianNote)
+        </div>
+    </div>
+
+    <!-- Main Content Form -->
+    <form asp-action="ProcessPayment" method="post" id="checkoutForm">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="AppointmentId" value="@Model.AppointmentId" />
+        <input type="hidden" name="DiscountCode" id="inputDiscountCode" value="@Model.DiscountCode" />
+        <input type="hidden" name="DiscountAmount" id="inputDiscountAmount" value="@Model.DiscountAmount.ToString("0")" />
+        <input type="hidden" name="PaymentMethod" id="inputPaymentMethod" value="@Model.PaymentMethod" />
+
+        <div class="row g-4">
+            <!-- CỘT TRÁI: CHI TIẾT DỊCH VỤ, PHỤ PHÍ & MÃ GIẢM GIÁ -->
+            <div class="col-12 col-lg-8">
+                <!-- Card 1: Chi tiết dịch vụ đã sử dụng -->
+                <div class="checkout-card p-4 mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h5 class="fw-bold mb-0 text-dark">Chi tiết dịch vụ đã sử dụng</h5>
+                            <small class="text-muted" id="itemCountLabel">@Model.Services.Count dịch vụ / sản phẩm</small>
+                        </div>
+                        <button type="button" class="btn btn-outline-primary btn-sm rounded-pill fw-semibold" onclick="openAddServiceModal()">
+                            <i class="bi bi-plus-lg me-1"></i>Thêm dịch vụ
+                        </button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0" id="servicesTable">
+                            <thead>
+                                <tr class="text-muted small" style="font-size: 0.75rem; letter-spacing: 0.05em;">
+                                    <th style="width: 30px;">#</th>
+                                    <th>TÊN DỊCH VỤ</th>
+                                    <th class="text-center" style="width: 140px;">SỐ LƯỢNG</th>
+                                    <th class="text-end" style="width: 120px;">ĐƠN GIÁ</th>
+                                    <th class="text-end" style="width: 120px;">THÀNH TIỀN</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    int idx = 1;
+                                    string[] icons = { "bi-droplet-fill text-primary", "bi-scissors text-purple", "bi-heart-pulse-fill text-success", "bi-box-seam-fill text-warning" };
+                                    string[] bgColors = { "bg-primary-subtle", "bg-purple-subtle", "bg-success-subtle", "bg-warning-subtle" };
+                                }
+                                @foreach (var svc in Model.Services)
+                                {
+                                    var currentIcon = icons[(idx - 1) % icons.Length];
+                                    var currentBg = bgColors[(idx - 1) % bgColors.Length];
+                                    <tr class="service-item-row" data-unit-price="@svc.UnitPrice">
+                                        <td class="text-muted fw-bold">@idx</td>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="rounded-3 p-2 d-inline-flex align-items-center justify-content-center @currentBg" style="width: 32px; height: 32px;">
+                                                    <i class="bi @currentIcon small"></i>
+                                                </span>
+                                                <div>
+                                                    <div class="fw-bold text-dark lh-sm">@svc.ServiceName</div>
+                                                    <small class="text-muted" style="font-size: 0.75rem;">@svc.Category</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="qty-stepper">
+                                                <button type="button" class="qty-btn" onclick="adjustQty(this, -1)">-</button>
+                                                <input type="text" class="qty-val" value="@svc.Quantity" readonly />
+                                                <button type="button" class="qty-btn" onclick="adjustQty(this, 1)">+</button>
+                                            </div>
+                                        </td>
+                                        <td class="text-end text-muted small">@svc.UnitPrice.ToString("N0") đ</td>
+                                        <td class="text-end fw-bold text-dark item-line-amount">@svc.Amount.ToString("N0") đ</td>
+                                    </tr>
+                                    idx++;
+                                }
+                            </tbody>
+                            <tfoot class="border-top">
+                                <tr>
+                                    <td colspan="4" class="text-end text-muted fw-semibold py-3">Tạm tính</td>
+                                    <td class="text-end fw-bold text-dark py-3 fs-6" id="displaySubtotal">@Model.ServiceTotal.ToString("N0") đ</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Card 2: Phụ phí phát sinh -->
+                <div class="checkout-card p-4 mb-4">
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <i class="bi bi-dash-circle-dotted text-warning fs-5"></i>
+                        <h5 class="fw-bold mb-0 text-dark">Phụ phí phát sinh</h5>
+                    </div>
+                    <small class="text-muted d-block mb-3">Chọn loại phụ phí và điều chỉnh số tiền nếu cần</small>
+
+                    <div class="row g-3 mb-3">
+                        <!-- Option 1: Quá cân (Default 50.000đ if pet weight > standard) -->
+                        <div class="col-12">
+                            <div class="surcharge-option-card @(Model.ActualWeight > 5.0m || Model.Surcharge >= 50000 ? "active" : "")" id="cardSurchargeOverweight" onclick="toggleSurchargeOption('overweight', 50000, 'Vượt mức cân gói tiêu chuẩn')">
+                                <div class="d-flex align-items-center gap-3">
+                                    <input class="form-check-input mt-0" type="checkbox" id="chkOverweight" @(Model.ActualWeight > 5.0m || Model.Surcharge >= 50000 ? "checked" : "") onclick="event.stopPropagation(); toggleSurchargeOption('overweight', 50000, 'Vượt mức cân gói tiêu chuẩn')" />
+                                    <div>
+                                        <div class="fw-bold text-dark lh-sm">Quá cân</div>
+                                        <small class="text-muted">Vượt @((Model.ActualWeight > 5.0m ? (Model.ActualWeight - 5.0m) : 0.6m).ToString("0.0")) kg so với gói tiêu chuẩn</small>
+                                    </div>
+                                </div>
+                                <div class="fw-bold text-dark">50.000 <small>đ</small></div>
+                            </div>
+                        </div>
+
+                        <!-- Option 2: Thú dữ / Khó chăm sóc (100.000đ) -->
+                        <div class="col-12">
+                            <div class="surcharge-option-card" id="cardSurchargeAggressive" onclick="toggleSurchargeOption('aggressive', 100000, 'Cần thêm KTV hỗ trợ / dụng cụ bảo hộ')">
+                                <div class="d-flex align-items-center gap-3">
+                                    <input class="form-check-input mt-0" type="checkbox" id="chkAggressive" onclick="event.stopPropagation(); toggleSurchargeOption('aggressive', 100000, 'Cần thêm KTV hỗ trợ / dụng cụ bảo hộ')" />
+                                    <div>
+                                        <div class="fw-bold text-dark lh-sm">Thú dữ</div>
+                                        <small class="text-muted">Cần thêm KTV hỗ trợ / dụng cụ bảo hộ</small>
+                                    </div>
+                                </div>
+                                <div class="fw-bold text-dark">100.000 <small>đ</small></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <input type="hidden" name="Surcharge" id="inputSurcharge" value="@(Model.Surcharge > 0 ? Model.Surcharge : (Model.ActualWeight > 5.0m ? 50000 : 0))" />
+
+                    <div>
+                        <input type="text" name="SurchargeReason" id="inputSurchargeReason" 
+                               value="@(string.IsNullOrWhiteSpace(Model.SurchargeReason) && Model.ActualWeight > 5.0m ? "Vượt 0.6 kg so với gói tiêu chuẩn" : Model.SurchargeReason)" 
+                               class="form-control rounded-3" placeholder="Chi tiết lý do phụ phí (không bắt buộc)" />
+                    </div>
+                </div>
+
+                <!-- Card 3: Mã giảm giá -->
+                <div class="checkout-card p-4">
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <i class="bi bi-tag-fill text-primary"></i>
+                        <h5 class="fw-bold mb-0 text-dark">Mã giảm giá</h5>
+                    </div>
+                    <small class="text-muted d-block mb-3">
+                        Thử <a href="javascript:void(0)" class="text-decoration-none fw-semibold" onclick="fillPromo('PAWVIP10')">PAWVIP10</a> hoặc <a href="javascript:void(0)" class="text-decoration-none fw-semibold" onclick="fillPromo('GIAM50K')">GIAM50K</a>
+                    </small>
+
+                    <div class="row g-2">
+                        <div class="col">
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0 text-muted">
+                                    <i class="bi bi-ticket-perforated"></i>
+                                </span>
+                                <input type="text" id="promoCodeDisplay" value="@Model.DiscountCode" 
+                                       class="form-control border-start-0 text-uppercase fw-bold" placeholder="Nhập mã giảm giá" />
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <button type="button" class="btn btn-dark fw-bold px-4 rounded-3" onclick="applyPromo()">
+                                Áp dụng
+                            </button>
+                        </div>
+                    </div>
+                    <div id="promoFeedback" class="small mt-2">
+                        @if (Model.DiscountAmount > 0)
+                        {
+                            <span class="text-success"><i class="bi bi-check-circle-fill me-1"></i>Đã áp dụng mã @Model.DiscountCode: -@Model.DiscountAmount.ToString("N0")đ</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- CỘT PHẢI: TỔNG TIỀN, PHƯƠNG THỨC THANH TOÁN & NÚT HÀNH ĐỘNG -->
+            <div class="col-12 col-lg-4">
+                <div class="checkout-card p-4 position-sticky" style="top: 20px;">
+                    <!-- Bảng tính tóm tắt -->
+                    <div class="d-flex justify-content-between mb-2 small text-muted">
+                        <span>Tạm tính dịch vụ</span>
+                        <strong class="text-dark" id="sumSubtotal">@Model.ServiceTotal.ToString("N0") đ</strong>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2 small text-muted">
+                        <span>Phụ phí phát sinh</span>
+                        <strong class="text-danger" id="sumSurcharge">+@(Model.Surcharge > 0 ? Model.Surcharge.ToString("N0") : (Model.ActualWeight > 5.0m ? "50.000" : "0")) đ</strong>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-3 pb-3 border-bottom small text-muted">
+                        <span>Giảm giá</span>
+                        <strong class="text-success" id="sumDiscount">-@Model.DiscountAmount.ToString("N0") đ</strong>
+                    </div>
+
+                    <!-- Tổng tiền thanh toán lớn màu đỏ -->
+                    <div class="mb-3">
+                        <div class="text-uppercase text-muted fw-bold small" style="font-size: 0.75rem; letter-spacing: 0.05em;">Tổng tiền thanh toán</div>
+                        <div class="amount-grand-total mt-1" id="sumGrandTotal">
+                            @((Model.ServiceTotal + (Model.Surcharge > 0 ? Model.Surcharge : (Model.ActualWeight > 5.0m ? 50000 : 0)) - Model.DiscountAmount).ToString("N0")) <small class="fs-4">đ</small>
+                        </div>
+                        <div class="text-muted small fst-italic" id="amountInWords">Bằng chữ: Bảy trăm hai mươi lăm nghìn đồng</div>
+                    </div>
+
+                    <!-- Phương thức thanh toán (Tiền mặt / QR Code) -->
+                    <div class="mb-4">
+                        <label class="form-label text-muted fw-bold small mb-2">Phương thức thanh toán</label>
+                        <div class="d-flex gap-2">
+                            <div class="btn-toggle-method active-cash" id="toggleCash" onclick="selectPaymentMethod('Cash')">
+                                <i class="bi bi-cash-stack text-success fs-5"></i>
+                                <span>Tiền mặt</span>
+                            </div>
+                            <div class="btn-toggle-method" id="toggleQR" onclick="selectPaymentMethod('QRCode')">
+                                <i class="bi bi-qr-code-scan text-purple fs-5"></i>
+                                <span>QR Code</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Khung tiền mặt: Khách đưa & Tiền thối lại -->
+                    <div id="cashCalculationBox" class="mb-4 p-3 rounded-3 bg-light border">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="small text-muted fw-semibold">Khách đưa</span>
+                            <div style="width: 140px;">
+                                <input type="number" id="inputCashReceived" class="form-control form-control-sm text-end fw-bold" 
+                                       value="1000000" step="10000" min="0" oninput="calculateChange()" />
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="small text-muted fw-semibold">Tiền thối lại</span>
+                            <strong class="text-dark" id="displayChangeAmount">275.000 đ</strong>
+                        </div>
+                    </div>
+
+                    <!-- Khung QR Code động (Ẩn mặc định, hiển thị khi chọn QR) -->
+                    <div id="qrCodeBox" class="p-3 rounded-4 border text-center mb-4" style="display: none; background-color: #f8fafc;">
+                        <small class="text-muted d-block mb-2 fw-semibold">Quét mã VietQR bằng App Ngân hàng</small>
+                        <div class="bg-white p-2 d-inline-block rounded-3 shadow-sm border mb-2">
+                            <img id="qrDynamicImage" src="" alt="Mã thanh toán QR" style="width: 180px; height: 180px; object-fit: contain;" />
+                        </div>
+                        <div class="small fw-bold text-dark">Ngân hàng Quân Đội (MB Bank)</div>
+                        <div class="small text-muted">STK: <strong>0901234567</strong> · PAWHAVEN THAO DIEN</div>
+                        <div class="small text-primary mt-1" id="qrNoteDisplay">Nội dung: PAWHAVEN @shortCode</div>
+                    </div>
+
+                    <!-- Hai nút hành động chuẩn Figma: In hóa đơn & Xác nhận thanh toán -->
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-action-print flex-grow-0" onclick="window.print()">
+                            <i class="bi bi-printer me-1"></i>In hóa đơn
+                        </button>
+                        <button type="submit" class="btn btn-action-pay flex-grow-1 d-flex align-items-center justify-content-center gap-1">
+                            <i class="bi bi-check-circle-fill"></i>
+                            <span>Xác nhận thanh toán</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+<script>
+    let currentSubtotal = @Model.ServiceTotal;
+    const shortId = '@shortCode';
+
+    function adjustQty(btn, delta) {
+        const row = btn.closest('.service-item-row');
+        const qtyInput = row.querySelector('.qty-val');
+        let qty = parseInt(qtyInput.value) || 1;
+        qty = Math.max(1, qty + delta);
+        qtyInput.value = qty;
+
+        const unitPrice = parseFloat(row.getAttribute('data-unit-price')) || 0;
+        const lineTotal = qty * unitPrice;
+        row.querySelector('.item-line-amount').textContent = lineTotal.toLocaleString('vi-VN') + ' đ';
+
+        recalculateAll();
+    }
+
+    function toggleSurchargeOption(type, amount, reason) {
+        const chkOverweight = document.getElementById('chkOverweight');
+        const chkAggressive = document.getElementById('chkAggressive');
+        const cardOverweight = document.getElementById('cardSurchargeOverweight');
+        const cardAggressive = document.getElementById('cardSurchargeAggressive');
+
+        let totalSurcharge = 0;
+        let reasons = [];
+
+        if (chkOverweight.checked) {
+            totalSurcharge += 50000;
+            reasons.push("Vượt mức cân gói tiêu chuẩn (+50.000đ)");
+            cardOverweight.classList.add('active');
+        } else {
+            cardOverweight.classList.remove('active');
+        }
+
+        if (chkAggressive.checked) {
+            totalSurcharge += 100000;
+            reasons.push("Thú dữ / Dụng cụ bảo hộ (+100.000đ)");
+            cardAggressive.classList.add('active');
+        } else {
+            cardAggressive.classList.remove('active');
+        }
+
+        document.getElementById('inputSurcharge').value = totalSurcharge;
+        document.getElementById('inputSurchargeReason').value = reasons.join('; ');
+
+        recalculateAll();
+    }
+
+    function fillPromo(code) {
+        document.getElementById('promoCodeDisplay').value = code;
+        applyPromo();
+    }
+
+    async function applyPromo() {
+        const code = document.getElementById('promoCodeDisplay').value.trim();
+        const feedback = document.getElementById('promoFeedback');
+        if (!code) {
+            feedback.innerHTML = '<span class="text-danger">Vui lòng nhập mã giảm giá.</span>';
+            return;
+        }
+
+        feedback.innerHTML = '<span class="text-muted"><i class="bi bi-hourglass-split me-1"></i>Đang kiểm tra mã...</span>';
+
+        try {
+            const resp = await fetch('@Url.Action("CheckPromo", "Billing")', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code: code, subtotal: currentSubtotal })
+            });
+            const data = await resp.json();
+
+            if (data.success) {
+                document.getElementById('inputDiscountCode').value = data.code;
+                document.getElementById('inputDiscountAmount').value = data.discountAmount;
+                feedback.innerHTML = `<span class="text-success"><i class="bi bi-check-circle-fill me-1"></i>${data.message}</span>`;
+            } else {
+                document.getElementById('inputDiscountCode').value = '';
+                document.getElementById('inputDiscountAmount').value = 0;
+                feedback.innerHTML = `<span class="text-danger"><i class="bi bi-x-circle-fill me-1"></i>${data.message}</span>`;
+            }
+            recalculateAll();
+        } catch (e) {
+            feedback.innerHTML = '<span class="text-danger">Lỗi kết nối kiểm tra mã.</span>';
+        }
+    }
+
+    function recalculateAll() {
+        // 1. Calculate Subtotal from rows
+        let subtotal = 0;
+        document.querySelectorAll('.service-item-row').forEach(row => {
+            const qty = parseInt(row.querySelector('.qty-val').value) || 1;
+            const unitPrice = parseFloat(row.getAttribute('data-unit-price')) || 0;
+            subtotal += qty * unitPrice;
+        });
+        currentSubtotal = subtotal;
+        document.getElementById('displaySubtotal').textContent = subtotal.toLocaleString('vi-VN') + ' đ';
+        document.getElementById('sumSubtotal').textContent = subtotal.toLocaleString('vi-VN') + ' đ';
+
+        // 2. Surcharge
+        const surcharge = parseFloat(document.getElementById('inputSurcharge').value) || 0;
+        document.getElementById('sumSurcharge').textContent = '+' + surcharge.toLocaleString('vi-VN') + ' đ';
+
+        // 3. Discount
+        const discount = parseFloat(document.getElementById('inputDiscountAmount').value) || 0;
+        document.getElementById('sumDiscount').textContent = '-' + discount.toLocaleString('vi-VN') + ' đ';
+
+        // 4. Grand total
+        const grandTotal = Math.max(0, subtotal + surcharge - discount);
+        document.getElementById('sumGrandTotal').innerHTML = grandTotal.toLocaleString('vi-VN') + ' <small class="fs-4">đ</small>';
+
+        // Number to words
+        document.getElementById('amountInWords').textContent = 'Bằng chữ: ' + numberToVietnameseWords(grandTotal);
+
+        // 5. Update Change & QR
+        calculateChange();
+        updateVietQR(grandTotal);
+    }
+
+    function selectPaymentMethod(method) {
+        document.getElementById('inputPaymentMethod').value = method;
+        const toggleCash = document.getElementById('toggleCash');
+        const toggleQR = document.getElementById('toggleQR');
+        const cashBox = document.getElementById('cashCalculationBox');
+        const qrBox = document.getElementById('qrCodeBox');
+
+        if (method === 'Cash') {
+            toggleCash.className = 'btn-toggle-method active-cash';
+            toggleQR.className = 'btn-toggle-method';
+            cashBox.style.display = 'block';
+            qrBox.style.display = 'none';
+        } else {
+            toggleCash.className = 'btn-toggle-method';
+            toggleQR.className = 'btn-toggle-method active-qr';
+            cashBox.style.display = 'none';
+            qrBox.style.display = 'block';
+            const surcharge = parseFloat(document.getElementById('inputSurcharge').value) || 0;
+            const discount = parseFloat(document.getElementById('inputDiscountAmount').value) || 0;
+            updateVietQR(Math.max(0, currentSubtotal + surcharge - discount));
+        }
+    }
+
+    function calculateChange() {
+        const grandTotal = Math.max(0, currentSubtotal + (parseFloat(document.getElementById('inputSurcharge').value) || 0) - (parseFloat(document.getElementById('inputDiscountAmount').value) || 0));
+        const cashReceived = parseFloat(document.getElementById('inputCashReceived').value) || 0;
+        const change = Math.max(0, cashReceived - grandTotal);
+        document.getElementById('displayChangeAmount').textContent = change.toLocaleString('vi-VN') + ' đ';
+    }
+
+    function updateVietQR(amount) {
+        const qrNote = 'PAWHAVEN ' + shortId;
+        const qrUrl = `https://img.vietqr.io/image/MB-0901234567-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(qrNote)}&accountName=PAWHAVEN%20THAO%20DIEN`;
+        const img = document.getElementById('qrDynamicImage');
+        if (img) img.src = qrUrl;
+    }
+
+    function numberToVietnameseWords(n) {
+        if (n === 0) return "Không đồng";
+        const units = ["", "nghìn", "triệu", "tỷ"];
+        if (n >= 1000000) {
+            const m = Math.floor(n / 1000000);
+            const rem = n % 1000000;
+            const k = Math.floor(rem / 1000);
+            return `${m} triệu ${k > 0 ? k + ' nghìn ' : ''}đồng`;
+        }
+        if (n >= 1000) {
+            const k = Math.floor(n / 1000);
+            return `${k} nghìn đồng`;
+        }
+        return n.toLocaleString('vi-VN') + ' đồng';
+    }
+
+    function openAddServiceModal() {
+        showPawAlert({
+            title: 'Dịch vụ & Sản phẩm bổ sung',
+            message: 'Tính năng thêm sản phẩm/dịch vụ ngoài luồng: Bạn có thể chọn thêm các sản phẩm spa hoặc thức ăn dinh dưỡng trực tiếp vào hóa đơn tại quầy thanh toán.',
+            type: 'info'
+        });
+    }
+
+    // Initialize on load
+    document.addEventListener("DOMContentLoaded", function() {
+        recalculateAll();
+    });
+</script>
+}

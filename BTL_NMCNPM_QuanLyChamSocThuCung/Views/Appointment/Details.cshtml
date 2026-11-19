@@ -1,0 +1,219 @@
+@model BTL_NMCNPM_QuanLyChamSocThuCung.Models.Appointment
+@using System.Globalization
+@{
+    ViewData["Title"] = "Chi tiết lịch hẹn";
+    var userRole = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Role)?.Value
+                   ?? Context.Session.GetString("UserRole")
+                   ?? Context.Request.Cookies["UserRole"];
+    var isStaffOrAdmin = userRole == "Staff" || userRole == "Admin";
+    var vn = CultureInfo.GetCultureInfo("vi-VN");
+
+    var statusText = Model.Status switch
+    {
+        "Pending" => "Chờ xác nhận",
+        "Confirmed" => "Đã xác nhận",
+        "Processing" => "Đang chăm sóc",
+        "Completed" => "Hoàn thành",
+        "Cancelled" => "Đã hủy",
+        _ => Model.Status
+    };
+
+    var statusClass = Model.Status switch
+    {
+        "Pending" => "status-pending",
+        "Confirmed" => "status-confirmed",
+        "Processing" => "status-processing",
+        "Completed" => "status-completed",
+        "Cancelled" => "status-cancelled",
+        _ => "status-pending"
+    };
+
+    var endTime = Model.EndTime;
+    if (endTime == null)
+    {
+        var minutes = Model.AppointmentServices.Sum(x => x.Service.DurationMinutes);
+        if (minutes <= 0) minutes = 30;
+        endTime = Model.AppointmentDate.AddMinutes(minutes);
+    }
+
+    var totalDuration = Model.AppointmentServices.Sum(x => x.Service.DurationMinutes);
+    if (totalDuration <= 0) totalDuration = 30;
+
+    var totalPrice = Model.AppointmentServices.Sum(x => x.Service.BasePrice * x.Quantity);
+}
+<link rel="stylesheet" href="~/css/appointment.css" />
+
+<div class="appointment-page">
+    <div class="appointment-heading">
+        <div>
+            <h2>Chi tiết lịch hẹn</h2>
+            <p>Mã lịch hẹn: <span class="text-muted">@Model.AppointmentId</span></p>
+        </div>
+        <div class="d-flex gap-2">
+            <span class="status-pill @statusClass align-self-center">@statusText</span>
+            <a asp-action="Index" class="btn btn-outline-secondary">Quay lại danh sách</a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="appointment-card">
+                <h5>Thông tin khách hàng và thú cưng</h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="info-label">Khách hàng</div>
+                        <div class="info-value">@Model.Pet.Customer.CustomerName</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-label">Số điện thoại</div>
+                        <div class="info-value">@Model.Pet.Customer.PhoneNumber</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-label">Thú cưng</div>
+                        <div class="info-value">@Model.Pet.PetName (@Model.Pet.Species)</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-label">Cân nặng ghi nhận</div>
+                        <div class="info-value">@Model.Pet.Weight.ToString("0.##") kg</div>
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(Model.Pet.AllergyNote))
+                    {
+                        <div class="col-12">
+                            <div class="info-label">Lưu ý dị ứng</div>
+                            <div class="info-value text-danger">@Model.Pet.AllergyNote</div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="appointment-card">
+                <h5>Dịch vụ đã chọn</h5>
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Dịch vụ</th>
+                                <th class="text-center">Thời lượng</th>
+                                <th class="text-center">Số lượng</th>
+                                <th class="text-end">Đơn giá</th>
+                                <th class="text-end">Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var line in Model.AppointmentServices)
+                            {
+                                <tr>
+                                    <td>
+                                        <strong>@line.Service.ServiceName</strong>
+                                        <div class="small text-muted">@line.Service.Category</div>
+                                    </td>
+                                    <td class="text-center">@line.Service.DurationMinutes phút</td>
+                                    <td class="text-center">@line.Quantity</td>
+                                    <td class="text-end">@line.Service.BasePrice.ToString("N0", vn) đ</td>
+                                    <td class="text-end">@((line.Service.BasePrice * line.Quantity).ToString("N0", vn)) đ</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="3">Tổng cộng</th>
+                                <th class="text-end">@totalDuration phút</th>
+                                <th class="text-end">@totalPrice.ToString("N0", vn) đ</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(Model.Notes))
+            {
+                <div class="appointment-card">
+                    <h5>Ghi chú</h5>
+                    <p class="mb-0">@Model.Notes</p>
+                </div>
+            }
+        </div>
+
+        <div class="col-lg-4">
+            <div class="summary-card">
+                <h5>Thời gian hẹn</h5>
+                <div class="summary-row">
+                    <span>Ngày</span>
+                    <strong>@Model.AppointmentDate.ToString("dd/MM/yyyy")</strong>
+                </div>
+                <div class="summary-row">
+                    <span>Giờ</span>
+                    <strong>@Model.AppointmentDate.ToString("HH:mm") - @endTime.Value.ToString("HH:mm")</strong>
+                </div>
+                <div class="summary-row">
+                    <span>Thời lượng</span>
+                    <strong>@totalDuration phút</strong>
+                </div>
+                <div class="summary-row">
+                    <span>Tạm tính</span>
+                    <strong>@totalPrice.ToString("N0", vn) đ</strong>
+                </div>
+
+                @if (Model.ReceptionTicket != null)
+                {
+                    <hr />
+                    <div class="summary-row">
+                        <span>Tiếp nhận lúc</span>
+                        <strong>@Model.ReceptionTicket.CheckInTime.ToString("dd/MM/yyyy HH:mm")</strong>
+                    </div>
+                    <div class="summary-row">
+                        <span>Cân nặng thực tế</span>
+                        <strong>@Model.ReceptionTicket.ActualWeight.ToString("0.##") kg</strong>
+                    </div>
+                }
+
+                <div class="d-grid gap-2 mt-3">
+                    @if (Model.Status == "Pending")
+                    {
+                        @if (isStaffOrAdmin)
+                        {
+                            <form method="post" asp-action="Confirm" asp-route-id="@Model.AppointmentId">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-success w-100 py-2 fw-bold shadow-sm"
+                                        data-paw-confirm="Xác nhận duyệt lịch hẹn cho bé @Model.Pet.PetName lúc @Model.AppointmentDate.ToString("HH:mm dd/MM/yyyy")?"
+                                        data-paw-title="Xác nhận lịch hẹn"
+                                        data-paw-type="success"
+                                        data-paw-ok="Xác nhận ngay">
+                                    <i class="bi bi-check-circle-fill me-1"></i>Xác nhận lịch hẹn
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning border-0 rounded-3 p-3 mb-1 small text-dark d-flex align-items-center gap-2" style="background-color: #fffbeb;">
+                                <i class="bi bi-hourglass-split text-warning fs-5"></i>
+                                <div>
+                                    <div class="fw-bold">Đang chờ nhân viên duyệt</div>
+                                    <div class="text-muted" style="font-size: 0.8rem;">Cửa hàng sẽ xác nhận lịch hẹn của bạn trong vòng 15 phút.</div>
+                                </div>
+                            </div>
+                        }
+                    }
+
+                    @if (Model.Status is "Pending" or "Confirmed")
+                    {
+                        <form method="post" asp-action="Cancel" asp-route-id="@Model.AppointmentId">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-outline-danger w-100 py-2"
+                                    data-paw-confirm="Bạn có chắc chắn muốn hủy lịch hẹn này không? Hành động này sẽ hoàn lại khung giờ trống cho khách hàng khác."
+                                    data-paw-title="Hủy lịch hẹn"
+                                    data-paw-type="danger"
+                                    data-paw-ok="Hủy lịch ngay">
+                                <i class="bi bi-x-circle me-1"></i>Hủy lịch hẹn
+                            </button>
+                        </form>
+                    }
+                </div>
+
+                <p class="summary-note">
+                    Trạng thái được cập nhật tự động khi nhân viên tiếp nhận và hoàn tất chăm sóc.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

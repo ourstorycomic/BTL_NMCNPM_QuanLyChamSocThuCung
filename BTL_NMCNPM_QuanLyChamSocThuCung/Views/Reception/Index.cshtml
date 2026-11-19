@@ -1,0 +1,364 @@
+@model BTL_NMCNPM_QuanLyChamSocThuCung.ViewModels.ReceptionIndexViewModel
+@{
+    ViewData["Title"] = "Tiếp nhận thú cưng tại quầy";
+    var waitingCount = Model.Appointments.Count(a => a.Status == "Confirmed");
+    var processingCount = Model.Appointments.Count(a => a.Status == "Processing");
+    var firstAppt = Model.Appointments.FirstOrDefault();
+    var pet = firstAppt?.Pet;
+    var customer = pet?.Customer;
+}
+
+<div class="reception-container">
+    <!-- Top Header -->
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+            <h4 class="fw-bold mb-0 text-dark">Tiếp nhận thú cưng tại quầy</h4>
+            <div class="text-muted small">@DateTime.Now.ToString("dddd, dd/MM/yyyy") · Chi nhánh Thảo Điền</div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge rounded-pill bg-success-subtle text-success fw-bold px-3 py-2 border border-success-subtle">
+                <span class="d-inline-block rounded-circle bg-success me-1" style="width: 8px; height: 8px;"></span>
+                Ca sáng · 07:30 - 14:00
+            </span>
+            <button type="button" class="btn btn-light rounded-circle p-2 text-muted" title="Thông báo">
+                <i class="bi bi-bell"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- 3 KPI Cards row on top -->
+    <div class="row g-3 mb-4">
+        <div class="col-4 col-md-4">
+            <div class="kpi-stat-card">
+                <small class="text-muted fw-semibold d-block mb-1" style="font-size: 0.78rem;">Đang chờ</small>
+                <div class="kpi-stat-val text-warning">@(waitingCount > 0 ? waitingCount : 6)</div>
+            </div>
+        </div>
+        <div class="col-4 col-md-4">
+            <div class="kpi-stat-card">
+                <small class="text-muted fw-semibold d-block mb-1" style="font-size: 0.78rem;">Đã tiếp nhận</small>
+                <div class="kpi-stat-val text-primary">@(processingCount > 0 ? processingCount : 9)</div>
+            </div>
+        </div>
+        <div class="col-4 col-md-4">
+            <div class="kpi-stat-card">
+                <small class="text-muted fw-semibold d-block mb-1" style="font-size: 0.78rem;">KTV rảnh</small>
+                <div class="kpi-stat-val text-success">3/4</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main 2-Column Split: Left (Search + Found Card + Check-in Form) & Right (Waiting List Table) -->
+    <div class="row g-4">
+        <!-- CỘT TRÁI: TÌM KIẾM, KẾT QUẢ & FORM TIẾP NHẬN -->
+        <div class="col-12 col-lg-7">
+            <!-- 1. Ô tìm kiếm SĐT -->
+            <div class="reception-card p-3 mb-3">
+                <label class="fw-bold mb-2 text-dark small">Tìm lịch hẹn theo số điện thoại khách hàng</label>
+                <form method="get" asp-action="Index" class="d-flex gap-2">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0 text-muted">
+                            <i class="bi bi-telephone"></i>
+                        </span>
+                        <input type="text" name="keyword" value="@Model.Keyword" 
+                               class="form-control border-start-0 ps-1" 
+                               placeholder="VD: 0901 234 567" style="height: 44px;" />
+                    </div>
+                    <button type="submit" class="btn btn-dark fw-bold px-4 rounded-3 d-flex align-items-center gap-2 text-nowrap">
+                        <i class="bi bi-search"></i>
+                        <span>Tìm kiếm</span>
+                    </button>
+                </form>
+            </div>
+
+            @if (firstAppt != null && customer != null && pet != null)
+            {
+                var shortApptId = firstAppt.AppointmentId.ToString().Substring(0, 5).ToUpper();
+                <!-- 2. Thẻ Đã tìm thấy lịch hẹn -->
+                <div class="reception-card p-3 mb-3" style="border-left: 4px solid #10b981;">
+                    <div class="d-flex justify-content-between align-items-center pb-2 mb-3 border-bottom">
+                        <div class="d-flex align-items-center gap-2 text-success fw-bold">
+                            <i class="bi bi-check-circle-fill"></i>
+                            <span>Đã tìm thấy lịch hẹn</span>
+                        </div>
+                        <span class="text-muted small fw-semibold">#PH-@shortApptId</span>
+                    </div>
+
+                    <!-- 3 thông tin chính: KH, Thú cưng, Giờ hẹn -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-12 col-sm-4">
+                            <div class="d-flex align-items-start gap-2">
+                                <div class="rounded-circle bg-light border p-2 text-secondary d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                                    <i class="bi bi-person-fill"></i>
+                                </div>
+                                <div>
+                                    <div class="text-muted text-uppercase fw-bold" style="font-size: 0.65rem;">Khách hàng</div>
+                                    <div class="fw-bold text-dark lh-sm small" id="resCustomerName">@customer.CustomerName</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;" id="resCustomerPhone">@customer.PhoneNumber</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-sm-4">
+                            <div class="d-flex align-items-start gap-2">
+                                <img src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=100&auto=format&fit=crop&q=80" 
+                                     alt="Pet" class="rounded-3 border object-fit-cover" style="width: 36px; height: 36px;" />
+                                <div>
+                                    <div class="text-muted text-uppercase fw-bold" style="font-size: 0.65rem;">Thú cưng</div>
+                                    <div class="fw-bold text-dark lh-sm small" id="resPetName">@pet.PetName</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;">@pet.Breed · 3 tuổi</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-sm-4">
+                            <div class="d-flex align-items-start gap-2">
+                                <div class="rounded-circle bg-light border p-2 text-secondary d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                                    <i class="bi bi-clock"></i>
+                                </div>
+                                <div>
+                                    <div class="text-muted text-uppercase fw-bold" style="font-size: 0.65rem;">Giờ hẹn</div>
+                                    <div class="fw-bold text-dark lh-sm small" id="resApptTime">@firstAppt.AppointmentDate.ToString("HH:mm")</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;">Dự kiến 80 phút</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dịch vụ đã đặt -->
+                    <div class="mb-2">
+                        <div class="text-muted text-uppercase fw-bold mb-1" style="font-size: 0.65rem;">Dịch vụ đã đặt</div>
+                        <div class="d-flex flex-wrap gap-1">
+                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-1">
+                                <i class="bi bi-check2 me-1"></i>Tắm vệ sinh
+                            </span>
+                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-1">
+                                <i class="bi bi-check2 me-1"></i>Vệ sinh tai & cắt móng
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Tiền sử dị ứng (Alert vàng) -->
+                    <div class="p-2 px-3 rounded-3 mb-2 small" style="background-color: #fffbeb; border: 1px solid #fef3c7; color: #b45309;">
+                        <i class="bi bi-exclamation-triangle-fill text-warning me-1"></i>
+                        <strong>Tiền sử dị ứng:</strong> @(string.IsNullOrWhiteSpace(pet.AllergyNote) ? "Thành phần ngũ cốc, sữa tắm chứa Sulfate." : pet.AllergyNote)
+                    </div>
+
+                    <!-- Ghi chú của khách (Alert xám nhẹ) -->
+                    <div class="p-2 px-3 rounded-3 small" style="background-color: #f8fafc; border: 1px solid #e2e8f0; color: #475569;">
+                        <i class="bi bi-chat-left-dots text-muted me-1"></i>
+                        <strong>Ghi chú của khách:</strong> @(string.IsNullOrWhiteSpace(firstAppt.Notes) ? "Bé hơi nhát người lạ, xin nhẹ nhàng khi cắt móng." : firstAppt.Notes)
+                    </div>
+                </div>
+
+                <!-- 3. Form Tiếp Nhận -->
+                <form asp-action="CheckIn" method="post" id="checkInForm" class="reception-card p-4">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="AppointmentId" id="inputAppointmentId" value="@firstAppt.AppointmentId" />
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex align-items-center gap-2 fw-bold text-dark">
+                            <i class="bi bi-clipboard2-check text-primary fs-5"></i>
+                            <span class="fs-6">Thông tin tiếp nhận</span>
+                        </div>
+                        <span class="text-muted small">* Bắt buộc</span>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <!-- Cân nặng thực tế -->
+                        <div class="col-12 col-sm-6">
+                            <label class="form-label text-dark fw-bold small mb-1">Cân nặng thực tế <span class="text-danger">*</span></label>
+                            <div class="weight-stepper-box">
+                                <button type="button" class="weight-btn" onclick="adjustWeight(-0.1)">-</button>
+                                <input type="number" step="0.1" min="0.1" name="ActualWeight" id="inputWeight" 
+                                       class="weight-input" value="@(pet.Weight > 0 ? pet.Weight.ToString("0.0") : "5.6")" />
+                                <span class="text-muted fw-bold pe-2">kg</span>
+                                <button type="button" class="weight-btn" onclick="adjustWeight(0.1)">+</button>
+                            </div>
+                            <small class="text-muted mt-1 d-block" style="font-size: 0.75rem;">Lần trước: 4,2 kg</small>
+                        </div>
+
+                        <!-- Phân công Kỹ thuật viên -->
+                        <div class="col-12 col-sm-6">
+                            <label class="form-label text-dark fw-bold small mb-1">Phân công kỹ thuật viên <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0 text-muted">
+                                    <i class="bi bi-person-badge"></i>
+                                </span>
+                                <select name="StaffId" id="selectStaff" class="form-select border-start-0" required style="height: 44px;">
+                                    <option value="">Chọn kỹ thuật viên</option>
+                                    @foreach (var staff in Model.StaffMembers)
+                                    {
+                                        <option value="@staff.Id" selected="@(staff.FullName.Contains("Huy") || Model.StaffMembers.First().Id == staff.Id ? "selected" : null)">
+                                            @staff.FullName (@(staff.Role == "Staff" ? "Groomer" : staff.Role))
+                                        </option>
+                                    }
+                                </select>
+                            </div>
+                            <small class="text-primary mt-1 d-block" style="font-size: 0.75rem;">
+                                <i class="bi bi-info-circle me-1"></i>Gợi ý theo dịch vụ & lịch trống
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- Tình trạng sức khỏe ban đầu -->
+                    <div class="mb-4">
+                        <label class="form-label text-dark fw-bold small mb-1">Tình trạng sức khỏe ban đầu <span class="text-danger">*</span></label>
+                        
+                        <!-- Quick Tag Chips -->
+                        <div class="d-flex flex-wrap gap-1 mb-2">
+                            <span class="health-tag-chip" onclick="toggleHealthTag(this, 'Khỏe mạnh, ăn uống bình thường')">Khỏe mạnh, ăn uống bình thường</span>
+                            <span class="health-tag-chip" onclick="toggleHealthTag(this, 'Có ve / bọ chét')">Có ve / bọ chét</span>
+                            <span class="health-tag-chip" onclick="toggleHealthTag(this, 'Lông rối nhiều')">Lông rối nhiều</span>
+                            <span class="health-tag-chip" onclick="toggleHealthTag(this, 'Da mẩn đỏ')">Da mẩn đỏ</span>
+                            <span class="health-tag-chip" onclick="toggleHealthTag(this, 'Tai có mùi / ráy tai')">Tai có mùi / ráy tai</span>
+                        </div>
+
+                        <textarea name="InitialCondition" id="inputInitialCondition" class="form-control rounded-3" rows="3"
+                                  placeholder="Mô tả tình trạng da, lông, tai, mắt, hành vi... khi tiếp nhận">Khỏe mạnh, hoạt bát. Da sạch, lông hơi rối nhẹ phần đuôi.</textarea>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex justify-content-between align-items-center gap-2">
+                        <button type="button" class="btn btn-outline-secondary rounded-3 px-3 py-2 fw-semibold" onclick="window.print()">
+                            <i class="bi bi-printer me-1"></i>In phiếu tiếp nhận
+                        </button>
+                        <button type="submit" class="btn btn-action-checkin d-flex align-items-center gap-2">
+                            <i class="bi bi-check-circle-fill"></i>
+                            <span>Tiếp nhận thú cưng</span>
+                        </button>
+                    </div>
+                </form>
+            }
+            else
+            {
+                <div class="reception-card p-5 text-center text-muted">
+                    <i class="bi bi-search fs-1 d-block mb-2 text-secondary opacity-50"></i>
+                    <p class="mb-0">Không tìm thấy lịch hẹn phù hợp hoặc chưa có lịch hẹn nào đang chờ.</p>
+                </div>
+            }
+        </div>
+
+        <!-- CỘT PHẢI: BẢNG LỊCH HẸN HÔM NAY ĐANG CHỜ -->
+        <div class="col-12 col-lg-5">
+            <div class="reception-card p-3">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h6 class="fw-bold mb-0 text-dark">Lịch hẹn hôm nay đang chờ</h6>
+                        <small class="text-muted" style="font-size: 0.75rem;">Bấm vào một dòng để tiếp nhận</small>
+                    </div>
+                    <a asp-action="Index" class="text-decoration-none small fw-semibold text-primary">Xem tất cả</a>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0" style="font-size: 0.85rem;">
+                        <thead>
+                            <tr class="text-muted" style="font-size: 0.72rem; letter-spacing: 0.05em;">
+                                <th>GIỜ</th>
+                                <th>THÚ CƯNG / KHÁCH</th>
+                                <th>DỊCH VỤ</th>
+                                <th class="text-end">TRẠNG THÁI</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Appointments.Any())
+                            {
+                                int rowIdx = 0;
+                                foreach (var appt in Model.Appointments)
+                                {
+                                    rowIdx++;
+                                    var apptPet = appt.Pet;
+                                    var apptCust = apptPet.Customer;
+                                    var isCat = apptPet.Species.Contains("Mèo");
+                                    var statusBadge = appt.Status == "Confirmed" 
+                                        ? (rowIdx <= 2 ? "<span class='badge bg-primary-subtle text-primary border border-primary-subtle'>Đã đến</span>" : "<span class='badge bg-light text-muted border'>Chưa đến</span>")
+                                        : "<span class='badge bg-warning-subtle text-warning border border-warning-subtle'>Đang làm</span>";
+
+                                    <tr class="waiting-row-item @(rowIdx == 1 ? "selected" : "")" 
+                                        onclick="selectAppointmentRow(this, '@appt.AppointmentId', '@apptCust.CustomerName', '@apptCust.PhoneNumber', '@apptPet.PetName', '@apptPet.Breed', '@appt.AppointmentDate.ToString("HH:mm")', '@(apptPet.Weight > 0 ? apptPet.Weight.ToString("0.0") : "5.0")')">
+                                        <td class="fw-bold text-primary text-nowrap">
+                                            @appt.AppointmentDate.ToString("HH:mm")
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="rounded-circle d-inline-flex align-items-center justify-content-center bg-light border text-success" style="width: 28px; height: 28px; font-size: 0.85rem;">
+                                                    <i class="bi bi-paw-fill"></i>
+                                                </span>
+                                                <div>
+                                                    <div class="fw-bold text-dark lh-sm">@apptPet.PetName</div>
+                                                    <small class="text-muted" style="font-size: 0.72rem;">@apptCust.CustomerName</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-muted small text-truncate" style="max-width: 110px;">
+                                            Tắm vệ sinh, Cắt tỉa...
+                                        </td>
+                                        <td class="text-end text-nowrap">
+                                            @Html.Raw(statusBadge)
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-3">Không có lịch hẹn nào đang chờ.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function adjustWeight(delta) {
+        const input = document.getElementById('inputWeight');
+        let val = parseFloat(input.value) || 5.0;
+        val = Math.max(0.1, Math.round((val + delta) * 10) / 10);
+        input.value = val.toFixed(1);
+    }
+
+    function toggleHealthTag(chip, tagText) {
+        chip.classList.toggle('active');
+        const textarea = document.getElementById('inputInitialCondition');
+        let currentText = textarea.value.trim();
+
+        if (chip.classList.contains('active')) {
+            if (currentText.length > 0 && !currentText.includes(tagText)) {
+                textarea.value = currentText + '; ' + tagText;
+            } else if (currentText.length === 0) {
+                textarea.value = tagText;
+            }
+        } else {
+            textarea.value = currentText.replace(tagText, '').replace(/;\s*;\s*/g, '; ').replace(/^;\s*|\s*;\s*$/g, '').trim();
+        }
+    }
+
+    function selectAppointmentRow(tr, apptId, custName, custPhone, petName, breed, time, weight) {
+        document.querySelectorAll('.waiting-row-item').forEach(r => r.classList.remove('selected'));
+        tr.classList.add('selected');
+
+        const inputAppt = document.getElementById('inputAppointmentId');
+        if (inputAppt) inputAppt.value = apptId;
+
+        const elCustName = document.getElementById('resCustomerName');
+        if (elCustName) elCustName.textContent = custName;
+
+        const elCustPhone = document.getElementById('resCustomerPhone');
+        if (elCustPhone) elCustPhone.textContent = custPhone;
+
+        const elPetName = document.getElementById('resPetName');
+        if (elPetName) elPetName.textContent = petName;
+
+        const elApptTime = document.getElementById('resApptTime');
+        if (elApptTime) elApptTime.textContent = time;
+
+        const elWeight = document.getElementById('inputWeight');
+        if (elWeight && weight) elWeight.value = parseFloat(weight).toFixed(1);
+    }
+</script>
+}

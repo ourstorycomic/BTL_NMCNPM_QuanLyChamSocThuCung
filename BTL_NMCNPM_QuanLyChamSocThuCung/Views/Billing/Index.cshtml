@@ -1,0 +1,291 @@
+@model BTL_NMCNPM_QuanLyChamSocThuCung.ViewModels.BillingIndexViewModel
+@{
+    ViewData["Title"] = "Thanh toán & Hóa đơn";
+}
+
+<!-- Top Header -->
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+    <div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1 small">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" class="text-decoration-none text-muted">Trang chủ</a></li>
+                <li class="breadcrumb-item active fw-bold text-dark" aria-current="page">Thanh toán & Hóa đơn</li>
+            </ol>
+        </nav>
+        <h3 class="fw-bold text-dark mb-0 d-flex align-items-center">
+            <span class="rounded-3 bg-success bg-opacity-10 text-success p-2 d-inline-flex align-items-center justify-content-center me-2" style="width: 38px; height: 38px;">
+                <i class="bi bi-receipt-cutoff"></i>
+            </span>
+            Quản lý Thu ngân & Hóa đơn (UC12)
+        </h3>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-controller="Report" asp-action="Index" class="btn btn-paw-outline">
+            <i class="bi bi-graph-up-arrow me-1 text-success"></i>Xem Báo cáo Doanh thu
+        </a>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 rounded-4 mb-4" role="alert">
+        <i class="bi bi-check-circle-fill text-success me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 rounded-4 mb-4" role="alert">
+        <i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- 3 KPI Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="paw-card p-4">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="text-muted small fw-semibold text-uppercase">Doanh thu hôm nay</span>
+                <span class="badge rounded-circle p-2 bg-success bg-opacity-10 text-success">
+                    <i class="bi bi-cash-stack fs-5"></i>
+                </span>
+            </div>
+            <div class="fs-2 fw-bold text-dark">@Model.TodayRevenue.ToString("N0") <small class="fs-6 text-muted">đ</small></div>
+            <small class="text-success fw-medium"><i class="bi bi-arrow-up-right me-1"></i>Thực thu qua tiền mặt & QR</small>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="paw-card p-4">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="text-muted small fw-semibold text-uppercase">Hóa đơn đã thu hôm nay</span>
+                <span class="badge rounded-circle p-2 bg-primary bg-opacity-10 text-primary">
+                    <i class="bi bi-check2-all fs-5"></i>
+                </span>
+            </div>
+            <div class="fs-2 fw-bold text-dark">@Model.TodayPaidCount <small class="fs-6 text-muted">giao dịch</small></div>
+            <small class="text-muted">Hoàn tất bàn giao thú cưng</small>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="paw-card p-4">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="text-muted small fw-semibold text-uppercase">Chờ thanh toán tại quầy</span>
+                <span class="badge rounded-circle p-2 bg-warning bg-opacity-10 text-warning">
+                    <i class="bi bi-hourglass-split fs-5"></i>
+                </span>
+            </div>
+            <div class="fs-2 fw-bold text-warning-emphasis">@Model.PendingCheckoutCount <small class="fs-6 text-muted">bé cưng</small></div>
+            <small class="text-muted">Dịch vụ đã hoàn tất / đang chăm sóc</small>
+        </div>
+    </div>
+</div>
+
+<!-- SECTION 1: CÁC CUỘC HẸN CHỜ LẬP HÓA ĐƠN & THU TIỀN TẠI QUẦY -->
+@if (Model.PendingAppointments != null && Model.PendingAppointments.Any())
+{
+    <div class="paw-card p-4 mb-4" style="border-left: 5px solid #eab308;">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h5 class="fw-bold mb-0 text-dark">
+                    <i class="bi bi-bell-fill text-warning me-2"></i>Lịch hẹn cần thanh toán & xuất hóa đơn (@Model.PendingAppointments.Count)
+                </h5>
+                <small class="text-muted">Thú cưng đã hoàn thành dịch vụ hoặc có phụ phí phát sinh</small>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table align-middle table-hover mb-0" style="font-size: 0.9rem;">
+                <thead class="table-light small">
+                    <tr>
+                        <th>THỜI GIAN</th>
+                        <th>KHÁCH HÀNG / SĐT</th>
+                        <th>BÉ CƯNG</th>
+                        <th>DỊCH VỤ THỰC HIỆN</th>
+                        <th>TẠM TÍNH</th>
+                        <th class="text-end">THAO TÁC</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var appt in Model.PendingAppointments)
+                    {
+                        var serviceTotal = appt.AppointmentServices?.Sum(s => s.Quantity * (s.Service != null ? s.Service.BasePrice : 0)) ?? 0;
+                        var surcharge = appt.Invoice?.Surcharge ?? 0;
+                        var totalEst = serviceTotal + surcharge;
+
+                        <tr>
+                            <td>
+                                <strong>@appt.AppointmentDate.ToString("HH:mm")</strong>
+                                <div class="text-muted small">@appt.AppointmentDate.ToString("dd/MM/yyyy")</div>
+                            </td>
+                            <td>
+                                <div class="fw-bold text-dark">@appt.Pet.Customer.CustomerName</div>
+                                <small class="text-muted">@appt.Pet.Customer.PhoneNumber</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark border">
+                                    <i class="bi bi-paw me-1 text-success"></i>@appt.Pet.PetName
+                                </span>
+                                <small class="text-muted d-block">@(appt.ReceptionTicket?.ActualWeight ?? appt.Pet.Weight) kg</small>
+                            </td>
+                            <td>
+                                @if (appt.AppointmentServices != null && appt.AppointmentServices.Any())
+                                {
+                                    <div class="d-flex flex-wrap gap-1">
+                                        @foreach (var s in appt.AppointmentServices)
+                                        {
+                                            <span class="badge bg-success bg-opacity-10 text-success small">@s.Service.ServiceName</span>
+                                        }
+                                    </div>
+                                }
+                                @if (surcharge > 0)
+                                {
+                                    <small class="text-danger d-block mt-1">
+                                        <i class="bi bi-plus-circle me-1"></i>Phụ phí: +@surcharge.ToString("N0")đ (@appt.Invoice?.SurchargeReason)
+                                    </small>
+                                }
+                            </td>
+                            <td>
+                                <strong class="text-success fs-6">@totalEst.ToString("N0") đ</strong>
+                            </td>
+                            <td class="text-end">
+                                <a asp-action="Checkout" asp-route-id="@appt.AppointmentId" class="btn btn-paw-primary btn-sm px-3 shadow-sm">
+                                    <i class="bi bi-credit-card me-1"></i>Thanh toán ngay
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+<!-- SECTION 2: DANH SÁCH TẤT CẢ HÓA ĐƠN -->
+<div class="paw-card p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <h5 class="fw-bold mb-0 text-dark">
+            <i class="bi bi-clock-history text-success me-2"></i>Lịch sử Hóa đơn thanh toán
+        </h5>
+        
+        <!-- Bộ lọc tìm kiếm -->
+        <form method="get" asp-action="Index" class="d-flex gap-2 flex-wrap">
+            <div class="input-group" style="width: 280px;">
+                <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                <input type="text" name="keyword" value="@Model.Keyword" class="form-control border-start-0" placeholder="Tên khách, SĐT, mã bill..." />
+            </div>
+            <select name="status" class="form-select" style="width: 160px;" onchange="this.form.submit()">
+                <option value="All" selected="@(Model.Status == "All")">Tất cả trạng thái</option>
+                <option value="Paid" selected="@(Model.Status == "Paid")">Đã thanh toán</option>
+                <option value="Unpaid" selected="@(Model.Status == "Unpaid")">Chưa thanh toán</option>
+            </select>
+            <select name="paymentMethod" class="form-select" style="width: 150px;" onchange="this.form.submit()">
+                <option value="All" selected="@(Model.PaymentMethod == "All")">Hình thức (Tất cả)</option>
+                <option value="Cash" selected="@(Model.PaymentMethod == "Cash")">Tiền mặt</option>
+                <option value="QRCode" selected="@(Model.PaymentMethod == "QRCode")">Mã QR</option>
+            </select>
+            <button type="submit" class="btn btn-paw-outline">Lọc</button>
+            @if (!string.IsNullOrWhiteSpace(Model.Keyword) || Model.Status != "All" || Model.PaymentMethod != "All")
+            {
+                <a asp-action="Index" class="btn btn-light border text-muted">Xóa</a>
+            }
+        </form>
+    </div>
+
+    @if (Model.Invoices == null || !Model.Invoices.Any())
+    {
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-receipt fs-1 d-block mb-2 opacity-50"></i>
+            Chưa có bản ghi hóa đơn nào phù hợp với điều kiện tìm kiếm.
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" style="font-size: 0.9rem;">
+                <thead class="table-light small">
+                    <tr>
+                        <th>MÃ HÓA ĐƠN</th>
+                        <th>THỜI GIAN</th>
+                        <th>KHÁCH HÀNG</th>
+                        <th>BÉ CƯNG</th>
+                        <th>PHƯƠNG THỨC</th>
+                        <th>TỔNG THANH TOÁN</th>
+                        <th>TRẠNG THÁI</th>
+                        <th class="text-end">HÀNH ĐỘNG</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var inv in Model.Invoices)
+                    {
+                        <tr>
+                            <td>
+                                <strong class="text-dark">#HD-@inv.InvoiceId.ToString().Substring(0, 6).ToUpper()</strong>
+                            </td>
+                            <td>
+                                @((inv.PaymentTime ?? inv.CreatedAt).ToString("dd/MM/yyyy HH:mm"))
+                            </td>
+                            <td>
+                                <div class="fw-bold">@inv.Appointment.Pet.Customer.CustomerName</div>
+                                <small class="text-muted">@inv.Appointment.Pet.Customer.PhoneNumber</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark border">
+                                    <i class="bi bi-paw me-1 text-success"></i>@inv.Appointment.Pet.PetName
+                                </span>
+                            </td>
+                            <td>
+                                @if (inv.PaymentMethod == "QRCode")
+                                {
+                                    <span class="badge bg-primary bg-opacity-10 text-primary px-2.5 py-1">
+                                        <i class="bi bi-qr-code me-1"></i>Mã QR
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary bg-opacity-10 text-secondary px-2.5 py-1">
+                                        <i class="bi bi-cash me-1"></i>Tiền mặt
+                                    </span>
+                                }
+                            </td>
+                            <td>
+                                <strong class="text-success fs-6">@inv.TotalAmount.ToString("N0") đ</strong>
+                                @if (inv.DiscountAmount > 0)
+                                {
+                                    <small class="text-danger d-block">Giảm -@inv.DiscountAmount.ToString("N0")đ (@inv.DiscountCode)</small>
+                                }
+                            </td>
+                            <td>
+                                @if (inv.PaymentStatus == "Paid")
+                                {
+                                    <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle px-3 py-1">
+                                        <i class="bi bi-check-circle-fill me-1"></i>Đã thanh toán
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge rounded-pill bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3 py-1">
+                                        <i class="bi bi-hourglass-split me-1"></i>Chưa thanh toán
+                                    </span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group">
+                                    @if (inv.PaymentStatus != "Paid")
+                                    {
+                                        <a asp-action="Checkout" asp-route-id="@inv.AppointmentId" class="btn btn-sm btn-paw-primary">
+                                            <i class="bi bi-credit-card me-1"></i>Thu tiền
+                                        </a>
+                                    }
+                                    <a asp-action="Print" asp-route-id="@inv.InvoiceId" class="btn btn-sm btn-paw-outline" target="_blank" title="In biên lai">
+                                        <i class="bi bi-printer me-1"></i>In biên lai
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
