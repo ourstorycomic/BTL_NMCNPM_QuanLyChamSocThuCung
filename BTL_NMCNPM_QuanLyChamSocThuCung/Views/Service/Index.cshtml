@@ -3,18 +3,22 @@
     ViewData["Title"] = "Quản lý Dịch Vụ";
 }
 
-<div class="container mt-4">
+<div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="text-primary fw-bold mb-0"><i class="bi bi-tags-fill me-2"></i>Bảng Giá Dịch Vụ</h2>
-            <p class="text-muted small mb-0">Quản lý danh mục các dịch vụ chăm sóc thú cưng</p>
+            <h2 class="text-success fw-bold mb-1">
+                <i class="bi bi-tags-fill me-2"></i>Bảng Giá Dịch Vụ
+            </h2>
+            <p class="text-muted small mb-0">Quản lý các gói dịch vụ chăm sóc thú cưng</p>
         </div>
-        <a asp-action="Create" class="btn btn-success shadow-sm"><i class="bi bi-plus-circle-fill me-1"></i> Thêm Dịch Vụ</a>
+        <a asp-action="Create" class="btn btn-gradient-success rounded-pill px-4 shadow-sm">
+            <i class="bi bi-plus-circle-fill me-1"></i> Thêm Dịch Vụ
+        </a>
     </div>
 
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+        <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 rounded-3" role="alert">
             <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
@@ -22,60 +26,70 @@
 
     <div class="row mb-4">
         <div class="col-md-4">
-            <div class="card bg-success text-white shadow-sm border-0">
-                <div class="card-body d-flex align-items-center">
-                    <i class="bi bi-scissors fs-1 me-3 opacity-50"></i>
+            <div class="card border-0 shadow-sm rounded-4 hover-lift text-white" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                <div class="card-body p-4 d-flex align-items-center">
+                    <div class="bg-white bg-opacity-25 rounded-circle p-3 me-3">
+                        <i class="bi bi-scissors fs-3"></i>
+                    </div>
                     <div>
-                        <h6 class="mb-0 opacity-75">Dịch Vụ Đang Cung Cấp</h6>
-                        <h3 class="mb-0 fw-bold">@Model.Count()</h3>
+                        <h6 class="mb-1 text-white text-opacity-75 fw-normal">Dịch Vụ Đang Cung Cấp</h6>
+                        <h2 class="mb-0 fw-bold">@Model.Count()</h2>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="card shadow-sm border-0 mb-4">
-        <div class="card-body">
-            <form asp-action="Index" method="get" class="row g-3 align-items-center">
-                <div class="col-md-8">
-                    <div class="input-group">
-                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-search"></i></span>
-                        <input type="text" name="searchString" class="form-control border-start-0 bg-light" placeholder="Tìm kiếm tên dịch vụ hoặc phân loại..." value="@ViewData["CurrentFilter"]" />
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-3">
+            <form asp-action="Index" method="get" class="row g-2 align-items-center">
+                <div class="col-md-9">
+                    <div class="input-group bg-light rounded-pill overflow-hidden px-3 py-1 border">
+                        <span class="input-group-text bg-transparent border-0"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" name="searchString" class="form-control border-0 bg-transparent shadow-none" placeholder="Tìm theo tên dịch vụ hoặc phân loại..." value="@ViewData["CurrentFilter"]" />
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <button type="submit" class="btn btn-primary me-2"><i class="bi bi-funnel"></i> Lọc</button>
-                    <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-counterclockwise"></i> Làm mới</a>
+                <div class="col-md-3 text-end">
+                    <button type="submit" class="btn btn-gradient-success rounded-pill px-4">Tìm kiếm</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <div class="card shadow-sm border-0">
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
-                    <thead class="table-dark">
+                    <thead style="background-color: #f8f9fa;">
                         <tr>
-                            <th class="ps-4">Tên Dịch Vụ</th>
-                            <th>Phân Loại</th>
-                            <th>Thời Gian</th>
-                            <th>Giá Cơ Bản</th>
-                            <th class="text-center pe-4">Thao tác</th>
+                            <th class="ps-4 py-3 text-uppercase text-muted small fw-bold">Tên Dịch Vụ</th>
+                            <th class="text-uppercase text-muted small fw-bold">Phân Loại</th>
+                            <th class="text-uppercase text-muted small fw-bold">Thời Gian</th>
+                            <th class="text-uppercase text-muted small fw-bold">Cân Nặng (kg)</th> <!-- CỘT MỚI -->
+                            <th class="text-uppercase text-muted small fw-bold">Giá Cơ Bản</th>
+                            <th class="text-center pe-4 text-uppercase text-muted small fw-bold">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var item in Model)
                         {
                             <tr>
-                                <td class="ps-4 fw-bold text-primary">@item.ServiceName</td>
-                                <td><span class="badge bg-info text-dark px-3 py-2 rounded-pill">@item.Category</span></td>
-                                <td><i class="bi bi-clock text-muted me-1"></i> @item.DurationMinutes phút</td>
-                                <td class="text-danger fw-bold fs-6">@item.BasePrice.ToString("N0") <small>VNĐ</small></td>
+                                <td class="ps-4">
+                                    <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-tag-fill text-success me-2"></i>@item.ServiceName</h6>
+                                </td>
+                                <td><span class="badge bg-info bg-opacity-10 text-info border border-info px-3 py-2 rounded-pill">@item.Category</span></td>
+                                <td><div class="small"><i class="bi bi-clock text-warning me-1"></i> @item.DurationMinutes phút</div></td>
+                                <td>
+                                    <!-- DỮ LIỆU CÂN NẶNG MỚI -->
+                                    <span class="badge bg-secondary bg-opacity-10 text-dark border px-2 py-1">
+                                        @item.WeightTierMin.ToString("0.##") - @item.WeightTierMax.ToString("0.##") kg
+                                    </span>
+                                </td>
+                                <td class="text-danger fw-bold fs-6">@item.BasePrice.ToString("N0") <small class="fw-normal">VNĐ</small></td>
                                 <td class="text-center pe-4">
-                                    <a asp-action="Edit" asp-route-id="@item.ServiceId" class="btn btn-sm btn-outline-primary" title="Sửa"><i class="bi bi-pencil-square"></i></a>
+                                    <a asp-action="Edit" asp-route-id="@item.ServiceId" class="btn btn-sm btn-light border rounded-circle me-1" title="Sửa" style="width: 35px; height: 35px;"><i class="bi bi-pencil-square text-primary"></i></a>
                                     <form asp-action="Delete" asp-route-id="@item.ServiceId" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn ngừng cung cấp dịch vụ này?');">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa"><i class="bi bi-trash"></i></button>
+                                        <button type="submit" class="btn btn-sm btn-light border rounded-circle" title="Xóa" style="width: 35px; height: 35px;"><i class="bi bi-trash text-danger"></i></button>
                                     </form>
                                 </td>
                             </tr>

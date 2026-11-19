@@ -57,13 +57,24 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
         public async Task<IActionResult> Edit(Guid id, Customer customer)
         {
             if (id != customer.Id) return NotFound();
+
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(customer);
+                    // FIX THEO FEEDBACK: Lấy bản ghi gốc, chỉ cập nhật các trường cho phép
+                    var existingCustomer = await _context.Customers.FindAsync(id);
+                    if (existingCustomer == null) return NotFound();
+
+                    existingCustomer.CustomerName = customer.CustomerName;
+                    existingCustomer.PhoneNumber = customer.PhoneNumber;
+                    existingCustomer.Email = customer.Email;
+                    existingCustomer.Address = customer.Address;
+                    // Giữ nguyên CreatedAt và AccountId
+
+                    _context.Update(existingCustomer);
                     await _context.SaveChangesAsync();
-                    TempData["SuccessMessage"] = "Cập nhật thành công!";
+                    TempData["SuccessMessage"] = "Cập nhật thông tin thành công!";
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -82,7 +93,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
             var customer = await _context.Customers.FindAsync(id);
             if (customer != null)
             {
-                customer.IsActive = false; // Xóa mềm
+                customer.IsActive = false;
                 _context.Update(customer);
                 await _context.SaveChangesAsync();
                 TempData["SuccessMessage"] = "Đã ngừng hoạt động khách hàng!";

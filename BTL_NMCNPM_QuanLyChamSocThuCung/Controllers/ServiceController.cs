@@ -56,11 +56,24 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
         public async Task<IActionResult> Edit(Guid id, Service service)
         {
             if (id != service.ServiceId) return NotFound();
+
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(service);
+                    // FIX THEO FEEDBACK: Lấy bản ghi gốc
+                    var existingService = await _context.Services.FindAsync(id);
+                    if (existingService == null) return NotFound();
+
+                    existingService.ServiceName = service.ServiceName;
+                    existingService.Category = service.Category;
+                    existingService.Description = service.Description;
+                    existingService.DurationMinutes = service.DurationMinutes;
+                    existingService.BasePrice = service.BasePrice;
+                    existingService.WeightTierMin = service.WeightTierMin; // Cập nhật cân nặng
+                    existingService.WeightTierMax = service.WeightTierMax; // Cập nhật cân nặng
+
+                    _context.Update(existingService);
                     await _context.SaveChangesAsync();
                     TempData["SuccessMessage"] = "Cập nhật thành công!";
                 }
@@ -81,7 +94,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
             var service = await _context.Services.FindAsync(id);
             if (service != null)
             {
-                service.IsActive = false; // Xóa mềm
+                service.IsActive = false;
                 _context.Update(service);
                 await _context.SaveChangesAsync();
                 TempData["SuccessMessage"] = "Đã ngừng cung cấp dịch vụ!";
