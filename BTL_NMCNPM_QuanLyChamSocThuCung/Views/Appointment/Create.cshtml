@@ -47,12 +47,14 @@
 
     @if (!ViewData.ModelState.IsValid)
     {
-        <div asp-validation-summary="ModelOnly" class="alert alert-danger rounded-3 mb-4"></div>
+        <div asp-validation-summary="All" class="alert alert-danger rounded-4 shadow-sm mb-4">
+            <div class="fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill me-2"></i>Không thể lưu lịch hẹn, vui lòng kiểm tra:</div>
+        </div>
     }
 
     <form method="post" id="bookingForm" novalidate>
         @Html.AntiForgeryToken()
-        <input type="hidden" asp-for="StartTime" id="startTimeInput" value="10:00" />
+        <input type="hidden" asp-for="StartTime" id="startTimeInput" value="@(Model.StartTime ?? "09:00")" />
         <input type="hidden" asp-for="AppointmentDate" id="appointmentDateInput" value="@defaultDate.ToString("yyyy-MM-dd")" />
 
         <div class="row g-4">
@@ -93,7 +95,20 @@
                             <div class="row g-2 align-items-center">
                                 <div class="col-12">
                                     <select asp-for="PetId" id="petSelect" class="form-select rounded-3 py-2 fw-semibold" onchange="onPetChanged()">
-                                        <!-- Danh sách bé cưng của khách -->
+                                        @if (Model.CustomerId.HasValue && Model.PetsByCustomer.TryGetValue(Model.CustomerId.Value.ToString(), out var petsList) && petsList.Any())
+                                        {
+                                            foreach (var p in petsList)
+                                            {
+                                                <option value="@p.PetId" selected="@(Model.PetId == p.PetId || petsList.First() == p)"
+                                                        data-name="@p.PetName" data-breed="@(p.Breed ?? p.Species)" data-weight="@p.Weight" data-allergy="@p.AllergyNote">
+                                                    @p.PetName - @(p.Breed ?? p.Species) (@p.Weight.ToString("0.##") kg)
+                                                </option>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <option value="">-- Chọn thú cưng --</option>
+                                        }
                                     </select>
                                 </div>
                             </div>
@@ -288,23 +303,27 @@
                             <!-- Buổi sáng -->
                             <div class="text-muted fw-bold mb-1" style="font-size: 0.72rem; letter-spacing: 0.05em;">S. BUỔI SÁNG</div>
                             <div class="row g-2 mb-3">
-                                <div class="col-4"><button type="button" class="slot-pill-btn" onclick="selectSlot(this, '08:00')">08:00</button></div>
-                                <div class="col-4"><button type="button" class="slot-pill-btn" onclick="selectSlot(this, '08:30')">08:30</button></div>
-                                <div class="col-4"><button type="button" class="slot-pill-btn disabled" disabled>09:00</button></div>
-                                <div class="col-4"><button type="button" class="slot-pill-btn" onclick="selectSlot(this, '09:30')">09:30</button></div>
-                                <div class="col-4"><button type="button" class="slot-pill-btn selected" onclick="selectSlot(this, '10:00')">10:00</button></div>
-                                <div class="col-4"><button type="button" class="slot-pill-btn" onclick="selectSlot(this, '11:00')">11:00</button></div>
+                                <div class="col-4"><button type="button" class="slot-pill-btn" data-time="08:00" onclick="selectSlot(this, '08:00')">08:00</button></div>
+                                <div class="col-4"><button type="button" class="slot-pill-btn" data-time="08:30" onclick="selectSlot(this, '08:30')">08:30</button></div>
+                                <div class="col-4"><button type="button" class="slot-pill-btn" data-time="09:00" onclick="selectSlot(this, '09:00')">09:00</button></div>
+                                <div class="col-4"><button type="button" class="slot-pill-btn" data-time="09:30" onclick="selectSlot(this, '09:30')">09:30</button></div>
+                                <div class="col-4"><button type="button" class="slot-pill-btn" data-time="10:00" onclick="selectSlot(this, '10:00')">10:00</button></div>
+                                <div class="col-4"><button type="button" class="slot-pill-btn" data-time="10:30" onclick="selectSlot(this, '10:30')">10:30</button></div>
+                                <div class="col-4"><button type="button" class="slot-pill-btn" data-time="11:00" onclick="selectSlot(this, '11:00')">11:00</button></div>
+                                <div class="col-4"><button type="button" class="slot-pill-btn" data-time="11:30" onclick="selectSlot(this, '11:30')">11:30</button></div>
                             </div>
 
                             <!-- Buổi chiều -->
                             <div class="text-muted fw-bold mb-1" style="font-size: 0.72rem; letter-spacing: 0.05em;">C. BUỔI CHIỀU</div>
                             <div class="row g-2 mb-3">
-                                <div class="col-4"><button type="button" class="slot-pill-btn" onclick="selectSlot(this, '13:30')">13:30</button></div>
-                                <div class="col-4"><button type="button" class="slot-pill-btn disabled" disabled>14:00</button></div>
-                                <div class="col-4"><button type="button" class="slot-pill-btn" onclick="selectSlot(this, '14:30')">14:30</button></div>
-                                <div class="col-4"><button type="button" class="slot-pill-btn" onclick="selectSlot(this, '15:30')">15:30</button></div>
-                                <div class="col-4"><button type="button" class="slot-pill-btn disabled" disabled>16:00</button></div>
-                                <div class="col-4"><button type="button" class="slot-pill-btn" onclick="selectSlot(this, '17:00')">17:00</button></div>
+                                <div class="col-4"><button type="button" class="slot-pill-btn" data-time="13:30" onclick="selectSlot(this, '13:30')">13:30</button></div>
+                                <div class="col-4"><button type="button" class="slot-pill-btn" data-time="14:00" onclick="selectSlot(this, '14:00')">14:00</button></div>
+                                <div class="col-4"><button type="button" class="slot-pill-btn" data-time="14:30" onclick="selectSlot(this, '14:30')">14:30</button></div>
+                                <div class="col-4"><button type="button" class="slot-pill-btn" data-time="15:00" onclick="selectSlot(this, '15:00')">15:00</button></div>
+                                <div class="col-4"><button type="button" class="slot-pill-btn" data-time="15:30" onclick="selectSlot(this, '15:30')">15:30</button></div>
+                                <div class="col-4"><button type="button" class="slot-pill-btn" data-time="16:00" onclick="selectSlot(this, '16:00')">16:00</button></div>
+                                <div class="col-4"><button type="button" class="slot-pill-btn" data-time="16:30" onclick="selectSlot(this, '16:30')">16:30</button></div>
+                                <div class="col-4"><button type="button" class="slot-pill-btn" data-time="17:00" onclick="selectSlot(this, '17:00')">17:00</button></div>
                             </div>
 
                             <!-- Legend -->
@@ -445,9 +464,11 @@
     <partial name="_ValidationScriptsPartial" />
     <script>
         const petsByCustomer = @Json.Serialize(Model.PetsByCustomer);
-        let selectedYear = 2026;
-        let selectedMonth = 10; // Tháng 11 (0-indexed: 10)
-        let selectedDay = 14;
+        const defaultDateStr = '@defaultDate.ToString("yyyy-MM-dd")';
+        const [defY, defM, defD] = defaultDateStr.split('-').map(Number);
+        let selectedYear = defY;
+        let selectedMonth = defM - 1; // 0-indexed
+        let selectedDay = defD;
 
         function renderCalendar() {
             const monthNames = ["Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6", "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"];
@@ -464,23 +485,36 @@
             for (let i = 0; i < startOffset; i++) {
                 const emptyCell = document.createElement('div');
                 emptyCell.className = 'calendar-day-cell disabled';
+                emptyCell.style.opacity = '0.2';
                 container.appendChild(emptyCell);
             }
+
+            const todayMidnight = new Date();
+            todayMidnight.setHours(0, 0, 0, 0);
 
             // Days of the month
             for (let d = 1; d <= daysInMonth; d++) {
                 const cell = document.createElement('div');
                 cell.className = 'calendar-day-cell';
                 cell.textContent = d;
-                if (d === selectedDay) {
-                    cell.classList.add('selected');
+
+                const thisDate = new Date(selectedYear, selectedMonth, d);
+                if (thisDate < todayMidnight) {
+                    cell.classList.add('disabled');
+                    cell.style.opacity = '0.35';
+                    cell.style.pointerEvents = 'none';
+                    cell.title = 'Ngày trong quá khứ';
+                } else {
+                    if (d === selectedDay) {
+                        cell.classList.add('selected');
+                    }
+                    cell.onclick = function() {
+                        document.querySelectorAll('.calendar-day-cell').forEach(c => c.classList.remove('selected'));
+                        cell.classList.add('selected');
+                        selectedDay = d;
+                        onDateSelected(selectedYear, selectedMonth + 1, selectedDay);
+                    };
                 }
-                cell.onclick = function() {
-                    document.querySelectorAll('.calendar-day-cell').forEach(c => c.classList.remove('selected'));
-                    cell.classList.add('selected');
-                    selectedDay = d;
-                    onDateSelected(selectedYear, selectedMonth + 1, selectedDay);
-                };
                 container.appendChild(cell);
             }
         }
@@ -506,11 +540,55 @@
         function onDateSelected(year, month, day) {
             const formatted = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
             document.getElementById('appointmentDateInput').value = formatted;
-            document.getElementById('selectedDateDisplay').textContent = `Thứ Bảy, ${day}/${month}/${year}`;
+            const dateObj = new Date(year, month - 1, day);
+            const dayNames = ["Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"];
+            const dayName = dayNames[dateObj.getDay()];
+            document.getElementById('selectedDateDisplay').textContent = `${dayName}, ${day}/${month}/${year}`;
             document.getElementById('sumDate').textContent = `${day}/${month}/${year}`;
+            updateSlotsForDate(year, month, day);
+        }
+
+        function updateSlotsForDate(year, month, day) {
+            const now = new Date();
+            const isToday = (now.getFullYear() === year && (now.getMonth() + 1) === month && now.getDate() === day);
+            const currentTotalMinutes = now.getHours() * 60 + now.getMinutes();
+
+            const buttons = document.querySelectorAll('.slot-pill-btn');
+            let foundCurrentSelected = false;
+            let firstValidBtn = null;
+
+            buttons.forEach(btn => {
+                const t = btn.getAttribute('data-time') || btn.textContent.trim();
+                const [h, m] = t.split(':').map(Number);
+                const slotTotalMinutes = h * 60 + m;
+
+                if (isToday && slotTotalMinutes <= currentTotalMinutes) {
+                    btn.classList.add('disabled');
+                    btn.disabled = true;
+                    btn.classList.remove('selected');
+                } else {
+                    btn.classList.remove('disabled');
+                    btn.disabled = false;
+                    if (!firstValidBtn) firstValidBtn = btn;
+                    if (btn.classList.contains('selected')) {
+                        foundCurrentSelected = true;
+                    }
+                }
+            });
+
+            const currentInputVal = document.getElementById('startTimeInput').value;
+            if (foundCurrentSelected) {
+                document.getElementById('sumTime').textContent = currentInputVal;
+            } else if (firstValidBtn) {
+                firstValidBtn.classList.add('selected');
+                const t = firstValidBtn.getAttribute('data-time') || firstValidBtn.textContent.trim();
+                document.getElementById('startTimeInput').value = t;
+                document.getElementById('sumTime').textContent = t;
+            }
         }
 
         function selectSlot(btn, time) {
+            if (btn.classList.contains('disabled') || btn.disabled) return;
             document.querySelectorAll('.slot-pill-btn').forEach(b => b.classList.remove('selected'));
             btn.classList.add('selected');
             document.getElementById('startTimeInput').value = time;
@@ -666,17 +744,33 @@
 
         document.addEventListener("DOMContentLoaded", function() {
             renderCalendar();
+            onDateSelected(selectedYear, selectedMonth + 1, selectedDay);
+
+            const initialTime = document.getElementById('startTimeInput').value || '09:00';
+            const matchedBtn = Array.from(document.querySelectorAll('.slot-pill-btn')).find(b => (b.getAttribute('data-time') === initialTime || b.textContent.trim() === initialTime) && !b.disabled);
+            if (matchedBtn) {
+                document.querySelectorAll('.slot-pill-btn').forEach(b => b.classList.remove('selected'));
+                matchedBtn.classList.add('selected');
+                document.getElementById('sumTime').textContent = initialTime;
+            }
+
             const custSelect = document.getElementById('customerSelect');
-            if (custSelect) {
-                const initCustId = custSelect.value || (custSelect.tagName === 'SELECT' ? custSelect.options[1]?.value : '');
+            if (custSelect && custSelect.tagName === 'SELECT') {
+                const initCustId = custSelect.value || custSelect.options[1]?.value;
                 if (initCustId) {
-                    if (custSelect.tagName === 'SELECT') custSelect.value = initCustId;
+                    custSelect.value = initCustId;
                     populatePetsForCustomer(initCustId);
                 }
                 custSelect.addEventListener('change', () => populatePetsForCustomer(custSelect.value));
             } else {
-                updateGuestInfo();
+                const petSelect = document.getElementById('petSelect');
+                if (petSelect && petSelect.options.length > 0) {
+                    onPetChanged();
+                } else {
+                    updateGuestInfo();
+                }
             }
+
             updateBookingSummary();
             updateNotesCount();
         });

@@ -112,12 +112,25 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
         [HttpGet]
         public async Task<IActionResult> Create()
         {
+            var now = DateTime.Now;
+            // Nếu ngoài giờ hoạt động (sau 18:00), mặc định đặt cho ngày mai lúc 09:00
+            var defaultDate = now.Hour >= 18 ? DateTime.Today.AddDays(1) : DateTime.Today;
+            var defaultTime = now.Hour >= 18 ? "09:00" : (now.Hour < 8 ? "09:00" : $"{now.AddHours(1).Hour:D2}:00");
+
             var model = new AppointmentCreateViewModel
             {
-                AppointmentDate = DateTime.Today
+                AppointmentDate = defaultDate,
+                StartTime = defaultTime
             };
 
             await PopulateOptionsAsync(model);
+
+            // Tự động chọn thú cưng đầu tiên nếu khách đã có thú cưng
+            if (model.CustomerId.HasValue && model.PetsByCustomer.TryGetValue(model.CustomerId.Value.ToString(), out var pets) && pets.Any())
+            {
+                model.PetId = pets.First().PetId;
+            }
+
             return View(model);
         }
 
@@ -261,7 +274,8 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
                 }
                 else if (start.Value < DateTime.Now)
                 {
-                    ModelState.AddModelError(nameof(model.StartTime), "Không thể đặt lịch ở thời điểm đã qua.");
+                    ModelState.AddModelError(nameof(model.StartTime), 
+                        $"Khung giờ {start.Value:dd/MM/yyyy HH:mm} đã ở trong quá khứ. Vui lòng chọn ngày hoặc giờ tiếp theo.");
                 }
                 else if (await HasConflictAsync(start.Value, end))
                 {
@@ -269,9 +283,29 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
                         $"Khung giờ {start.Value:HH:mm} - {end:HH:mm} đã có lịch hẹn khác. Vui lòng chọn giờ khác.");
                 }
             }
+            else
+            {
+                ModelState.AddModelError(nameof(model.StartTime), "Vui lòng chọn ngày và giờ hẹn hợp lệ.");
+            }
 
             if (!ModelState.IsValid || start == null || customer == null || pet == null)
             {
+                if (customer == null) ModelState.AddModelError(nameof(model.CustomerId), "Vui lòng chọn hoặc nhập thông tin khách hàng.");
+                if (pet == null) ModelState.AddModelError(nameof(model.PetId), "Vui lòng chọn thú cưng.");
+                if (start == null) ModelState.AddModelError(nameof(model.StartTime), "Thời gian đặt lịch không hợp lệ.");
+
+                var errorList = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .Where(msg => !string.IsNullOrWhiteSpace(msg))
+                    .Distinct()
+                    .ToList();
+
+                TempData["Error"] = errorList.Count > 0
+                    ? string.Join(" ", errorList)
+                    : "Thông tin đặt lịch chưa hợp lệ. Vui lòng kiểm tra lại.";
+
+                await PopulateOptionsAsync(model);
                 return View(model);
             }
 
