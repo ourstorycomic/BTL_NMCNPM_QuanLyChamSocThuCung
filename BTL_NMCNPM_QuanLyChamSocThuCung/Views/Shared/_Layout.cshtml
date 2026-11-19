@@ -1,49 +1,456 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="vi">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - BTL_NMCNPM_QuanLyChamSocThuCung</title>
+    <title>@ViewData["Title"] - PawHaven Hệ thống Quản lý Chăm sóc Thú cưng</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/BTL_NMCNPM_QuanLyChamSocThuCung.styles.css" asp-append-version="true" />
+
+    <style>
+        :root {
+            --paw-primary: #10b981;
+            --paw-primary-dark: #059669;
+            --paw-primary-light: #ecfdf5;
+            --paw-text-dark: #0f172a;
+            --paw-text-muted: #64748b;
+            --paw-bg: #f8fafc;
+            --paw-card-bg: #ffffff;
+            --paw-border: #e2e8f0;
+            --paw-radius: 18px;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', 'Be Vietnam Pro', system-ui, -apple-system, sans-serif;
+            background-color: var(--paw-bg);
+            color: var(--paw-text-dark);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .paw-main-container {
+            max-width: 1240px;
+            margin: 0 auto;
+        }
+
+        /* PawHaven Brand Utilities */
+        .btn-paw-primary {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border: none;
+            color: #ffffff;
+            font-weight: 600;
+            border-radius: 9999px;
+            padding: 0.55rem 1.35rem;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.28);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-paw-primary:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.38);
+        }
+
+        .btn-paw-outline {
+            border: 1.5px solid var(--paw-border);
+            color: #334155;
+            background: #ffffff;
+            font-weight: 600;
+            border-radius: 9999px;
+            padding: 0.5rem 1.25rem;
+            transition: all 0.2s ease;
+        }
+        .btn-paw-outline:hover {
+            border-color: var(--paw-primary);
+            color: var(--paw-primary-dark);
+            background: var(--paw-primary-light);
+            transform: translateY(-1px);
+        }
+
+        /* Sidebar Styling (Staff View) */
+        .staff-sidebar {
+            width: 250px;
+            background: #ffffff;
+            border-right: 1px solid var(--paw-border);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            z-index: 1000;
+        }
+        .staff-main-content {
+            margin-left: 250px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar-section-title {
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            color: #94a3b8;
+            padding: 0.75rem 1.25rem 0.25rem;
+            text-transform: uppercase;
+        }
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            padding: 0.625rem 1.25rem;
+            color: #475569;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-decoration: none;
+            border-radius: 10px;
+            margin: 0.15rem 0.75rem;
+            transition: all 0.15s ease;
+        }
+        .sidebar-link i {
+            font-size: 1.1rem;
+            margin-right: 0.75rem;
+            width: 20px;
+            text-align: center;
+        }
+        .sidebar-link:hover {
+            background-color: #f1f5f9;
+            color: var(--paw-text-dark);
+        }
+        .sidebar-link.active {
+            background-color: var(--paw-primary-light);
+            color: var(--paw-primary-dark);
+            font-weight: 700;
+        }
+        .sidebar-link.active i {
+            color: var(--paw-primary);
+        }
+
+        /* Customer Header */
+        .customer-header {
+            background: #ffffff;
+            border-bottom: 1px solid var(--paw-border);
+        }
+        .customer-nav-link {
+            font-weight: 600;
+            color: #475569;
+            padding: 0.5rem 1rem !important;
+            border-radius: 9999px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .customer-nav-link:hover {
+            color: var(--paw-primary);
+            background-color: var(--paw-primary-light);
+        }
+        .customer-nav-link.active {
+            background-color: var(--paw-primary-light);
+            color: var(--paw-primary-dark);
+            font-weight: 700;
+        }
+
+        /* Card System */
+        .paw-card {
+            background: var(--paw-card-bg);
+            border-radius: var(--paw-radius);
+            border: 1px solid #f1f5f9;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.02);
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.25s ease;
+        }
+        .paw-card:hover {
+            transform: translateY(-4px);
+            border-color: #d1fae5;
+            box-shadow: 0 16px 32px -4px rgba(16, 185, 129, 0.12), 0 4px 12px -2px rgba(0, 0, 0, 0.04);
+        }
+
+        /* Alert Box FR-09 */
+        .paw-health-alert {
+            background-color: #fffdf0;
+            border: 1px solid #fde68a;
+            border-radius: 14px;
+            padding: 0.85rem 1rem;
+        }
+
+        .pet-avatar-box {
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        }
+
+        /* Biological Chips */
+        .paw-meta-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.25rem 0.65rem;
+            border-radius: 8px;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        /* Status Pills for Vaccination */
+        .vaccine-status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.3rem 0.75rem;
+            border-radius: 9999px;
+        }
+        .vaccine-status-pill.overdue {
+            background-color: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fee2e2;
+        }
+        .vaccine-status-pill.warning {
+            background-color: #fffbeb;
+            color: #b45309;
+            border: 1px solid #fef3c7;
+        }
+        .vaccine-status-pill.good {
+            background-color: #ecfdf5;
+            color: #059669;
+            border: 1px solid #d1fae5;
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">BTL_NMCNPM_QuanLyChamSocThuCung</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Appointment" asp-action="Index">Lịch hẹn</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
+    @{
+        // Tự động nhận diện vai trò từ phiên đăng nhập thực tế của hệ thống
+        string? sessionRole = null;
+        string? sessionName = null;
+        try
+        {
+            sessionRole = Context.Session?.GetString("UserRole");
+            sessionName = Context.Session?.GetString("FullName");
+        }
+        catch { }
+
+        var currentRole = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Role)?.Value
+                          ?? sessionRole
+                          ?? Context.Request.Cookies["UserRole"]
+                          ?? "Customer";
+
+        bool isStaffView = currentRole == "Staff" || currentRole == "Admin" || User.IsInRole("Staff") || User.IsInRole("Admin");
+
+        var currentUserName = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Name)?.Value
+                              ?? sessionName
+                              ?? Context.Request.Cookies["FullName"]
+                              ?? (isStaffView ? "Hoàng Thu Trang" : "Nguyễn Minh Anh");
+    }
+
+    @if (isStaffView)
+    {
+        <!-- GÓC NHÌN NHÂN VIÊN (STAFF) - CÓ THANH SIDEBAR KIỂU PAWHAVEN -->
+        <aside class="staff-sidebar">
+            <!-- Brand Logo -->
+            <div class="d-flex align-items-center justify-content-between p-3 border-bottom">
+                <a asp-controller="Pet" asp-action="Index" class="d-flex align-items-center text-decoration-none">
+                    <span class="rounded-3 bg-success bg-gradient text-white p-2 d-inline-flex align-items-center justify-content-center me-2 shadow-sm" style="width: 38px; height: 38px;">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                            <ellipse cx="12" cy="16.5" rx="5" ry="4"/>
+                            <circle cx="6" cy="10" r="2.2"/>
+                            <circle cx="10" cy="6.8" r="2.2"/>
+                            <circle cx="14" cy="6.8" r="2.2"/>
+                            <circle cx="18" cy="10" r="2.2"/>
+                        </svg>
+                    </span>
+                    <span class="fs-5 fw-bold text-dark tracking-tight">PawHaven</span>
+                </a>
+                <span class="badge bg-light text-secondary border fw-bold" style="font-size: 0.68rem; letter-spacing: 0.05em;">STAFF</span>
+            </div>
+
+            <!-- Menu list -->
+            <div class="flex-grow-1 overflow-auto py-2">
+                <div class="sidebar-section-title">VẬN HÀNH</div>
+                <a href="javascript:void(0)" class="sidebar-link text-muted">
+                    <i class="bi bi-grid"></i>Tổng quan
+                </a>
+                <a href="javascript:void(0)" class="sidebar-link text-muted d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-clipboard2-check"></i>Tiếp nhận tại quầy</span>
+                    <span class="badge rounded-pill bg-success" style="font-size: 0.7rem;">6</span>
+                </a>
+                <a asp-controller="Appointment" asp-action="Index" class="sidebar-link text-muted">
+                    <i class="bi bi-calendar3"></i>Lịch hẹn
+                </a>
+                <a href="javascript:void(0)" class="sidebar-link text-muted">
+                    <i class="bi bi-scissors"></i>Đang thực hiện
+                </a>
+                <a href="javascript:void(0)" class="sidebar-link text-muted">
+                    <i class="bi bi-houses"></i>Khách sạn
+                </a>
+
+                <div class="sidebar-section-title mt-2">QUẢN LÝ</div>
+                <a href="javascript:void(0)" class="sidebar-link text-muted">
+                    <i class="bi bi-people"></i>Khách hàng
+                </a>
+                <a asp-controller="Pet" asp-action="Index" class="sidebar-link active">
+                    <i class="bi bi-heart-pulse-fill"></i>Hồ sơ thú cưng
+                </a>
+                <a href="javascript:void(0)" class="sidebar-link text-muted">
+                    <i class="bi bi-person-gear"></i>Kỹ thuật viên
+                </a>
+                <a href="javascript:void(0)" class="sidebar-link text-muted">
+                    <i class="bi bi-receipt"></i>Thanh toán
+                </a>
+                <a href="javascript:void(0)" class="sidebar-link text-muted">
+                    <i class="bi bi-gear"></i>Cài đặt
+                </a>
+            </div>
+
+            <!-- Footer User Profile in Sidebar -->
+            <div class="p-3 border-top bg-light d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" 
+                         alt="Staff Avatar" class="rounded-circle me-2 object-fit-cover shadow-sm" style="width: 36px; height: 36px;">
+                    <div>
+                        <div class="fw-bold small text-dark lh-sm">@currentUserName</div>
+                        <div class="text-muted" style="font-size: 0.72rem;">Lễ tân · Ca sáng</div>
+                    </div>
                 </div>
             </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
+        </aside>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - BTL_NMCNPM_QuanLyChamSocThuCung - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        <!-- Main Content Area (Staff) -->
+        <div class="staff-main-content">
+            <!-- Top Navbar for Staff -->
+            <header class="bg-white border-bottom py-2 px-4 d-flex justify-content-between align-items-center sticky-top">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge rounded-pill bg-success-subtle text-success fw-bold px-3 py-2 border border-success-subtle">
+                        <i class="bi bi-clock-fill me-1"></i>Ca sáng · 07:30 - 14:00
+                    </span>
+                    <span class="text-muted small">Chi nhánh Thảo Điền</span>
+                </div>
+
+                <div class="d-flex align-items-center gap-3">
+                    <button class="btn btn-light rounded-circle p-2 text-muted" type="button">
+                        <i class="bi bi-bell"></i>
+                    </button>
+                    <div class="d-flex align-items-center gap-2 bg-light rounded-pill p-1 pe-3 border">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" 
+                             alt="Staff Avatar" class="rounded-circle object-fit-cover shadow-sm" style="width: 32px; height: 32px;">
+                        <div class="text-start">
+                            <div class="fw-bold small text-dark lh-1">@currentUserName</div>
+                            <span class="badge bg-success text-white p-0 px-1" style="font-size: 0.65rem;">Nhân viên</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <main role="main" class="p-4 flex-grow-1">
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 rounded-3 mb-4" role="alert">
+                        <i class="bi bi-check-circle-fill text-success me-2"></i>@TempData["SuccessMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 rounded-3 mb-4" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>@TempData["ErrorMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+                @RenderBody()
+            </main>
+
+            <footer class="border-top py-3 px-4 bg-white text-muted small d-flex justify-content-between align-items-center">
+                <span>&copy; 2026 PawHaven - Hệ thống Quản lý Chăm sóc Thú cưng</span>
+                <span>Phiên bản BTL NMCNPM</span>
+            </footer>
         </div>
-    </footer>
+    }
+    else
+    {
+        <!-- GÓC NHÌN KHÁCH HÀNG (CUSTOMER) - HEADER CHUẨN THIẾT KẾ PAWHAVEN -->
+        <header class="customer-header sticky-top">
+            <div class="container py-2">
+                <div class="d-flex align-items-center justify-content-between">
+                    <!-- Brand -->
+                    <a asp-controller="Pet" asp-action="Index" class="d-flex align-items-center text-decoration-none">
+                        <span class="rounded-3 bg-success bg-gradient text-white p-2 d-inline-flex align-items-center justify-content-center me-2 shadow-sm" style="width: 38px; height: 38px;">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                                <ellipse cx="12" cy="16.5" rx="5" ry="4"/>
+                                <circle cx="6" cy="10" r="2.2"/>
+                                <circle cx="10" cy="6.8" r="2.2"/>
+                                <circle cx="14" cy="6.8" r="2.2"/>
+                                <circle cx="18" cy="10" r="2.2"/>
+                            </svg>
+                        </span>
+                        <span class="fs-4 fw-bold text-dark tracking-tight">PawHaven</span>
+                    </a>
+
+                    <!-- Nav Links -->
+                    <nav class="d-flex align-items-center gap-1">
+                        <a asp-controller="Home" asp-action="Index" class="customer-nav-link">Trang chủ</a>
+                        <a asp-controller="Appointment" asp-action="Create" class="customer-nav-link">Đặt lịch</a>
+                        <a asp-controller="Appointment" asp-action="Index" class="customer-nav-link">Lịch hẹn của tôi</a>
+                        <a asp-controller="Pet" asp-action="Index" class="customer-nav-link active">Thú cưng</a>
+                    </nav>
+
+                    <!-- Right User Information -->
+                    <div class="d-flex align-items-center gap-3">
+                        <button class="btn btn-light rounded-circle p-2 text-muted" type="button">
+                            <i class="bi bi-bell"></i>
+                        </button>
+
+                        <div class="d-flex align-items-center gap-2 bg-light rounded-pill p-1 pe-3 border">
+                            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80" 
+                                 alt="Customer Avatar" class="rounded-circle object-fit-cover shadow-sm" style="width: 32px; height: 32px;">
+                            <div class="text-start">
+                                <div class="fw-bold small text-dark lh-1">@currentUserName</div>
+                                <span class="badge bg-warning text-dark p-0 px-1" style="font-size: 0.65rem;">Khách thân thiết</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="paw-main-container px-3 px-md-4 py-4">
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 rounded-3 mb-4" role="alert">
+                    <i class="bi bi-check-circle-fill text-success me-2"></i>@TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 rounded-3 mb-4" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>@TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+            <main role="main" class="pb-3">
+                @RenderBody()
+            </main>
+        </div>
+
+        <footer class="border-top py-4 bg-white text-muted small mt-5">
+            <div class="container text-center">
+                <div class="d-flex justify-content-center align-items-center gap-2 mb-2">
+                    <span class="rounded-3 bg-success text-white p-1 d-inline-flex align-items-center justify-content-center" style="width: 24px; height: 24px;">
+                        <i class="bi bi-paw-fill small"></i>
+                    </span>
+                    <strong class="text-dark">PawHaven</strong> - Chăm sóc thú cưng bằng cả trái tim.
+                </div>
+                <div>&copy; 2026 PawHaven · BTL Nhập môn Công nghệ Phần mềm · Điều khoản & Chính sách</div>
+            </div>
+        </footer>
+    }
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
