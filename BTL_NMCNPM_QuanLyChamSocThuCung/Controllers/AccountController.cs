@@ -6,7 +6,6 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
 {
     public class AccountController : Controller
     {
-        // Dùng ApplicationDbContext của nhóm
         private readonly ApplicationDbContext _context;
 
         public AccountController(ApplicationDbContext context)
@@ -14,105 +13,162 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
             _context = context;
         }
 
-        // 1. GET: Hiển thị form Đăng ký
         [HttpGet]
-        public IActionResult DangKy()
-        {
-            return View();
-        }
+        public IActionResult DangKy() => View();
 
-        // 2. POST: Xử lý Đăng ký
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult DangKy(string Username, string Password, string ConfirmPassword,
-                                    string FullName, string PhoneNumber, string Email, string Address)
+        public IActionResult DangKy(
+            string Username,
+            string Password,
+            string ConfirmPassword,
+            string FullName,
+            string PhoneNumber,
+            string Email,
+            string Address)
         {
-            // Kiểm tra mật khẩu nhập lại
+            if (string.IsNullOrWhiteSpace(Username) ||
+                string.IsNullOrWhiteSpace(Password) ||
+                string.IsNullOrWhiteSpace(FullName))
+            {
+                ViewBag.Loi = "Vui lòng nhập tên đăng nhập, mật khẩu và họ tên.";
+                return View();
+            }
+
             if (Password != ConfirmPassword)
             {
                 ViewBag.Loi = "Mật khẩu nhập lại không khớp!";
                 return View();
             }
 
-            // Kiểm tra Username đã tồn tại chưa
             if (_context.Accounts.Any(x => x.Username == Username))
             {
                 ViewBag.Loi = "Tên đăng nhập này đã tồn tại!";
                 return View();
             }
 
-            // 1. Tạo tài khoản (Gán FullName để tránh lỗi NULL)
-            var newAccount = new Account
+            if (!string.IsNullOrWhiteSpace(PhoneNumber) &&
+                _context.Customers.Any(c => c.PhoneNumber == PhoneNumber))
             {
-                Username = Username,
+                ViewBag.Loi = "Số điện thoại này đã được đăng ký!";
+                return View();
+            }
+
+            var account = new Account
+            {
+                Username = Username.Trim(),
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(Password),
-                FullName = FullName, // Đã gán FullName
+                FullName = FullName.Trim(),
                 Role = "Customer",
                 Status = true
             };
-            _context.Accounts.Add(newAccount);
-            _context.SaveChanges(); // Lưu để lấy Account.Id
 
-            // 2. Tạo thông tin khách hàng (Quan hệ 1-1)
-            var newCustomer = new Customer
+            var customer = new Customer
             {
-                AccountId = newAccount.Id,
-                CustomerName = FullName,
-                PhoneNumber = PhoneNumber,
-                Email = Email,
-                Address = Address,
+                Account = account,
+                CustomerName = FullName.Trim(),
+                PhoneNumber = PhoneNumber?.Trim(),
+                Email = Email?.Trim(),
+                Address = Address?.Trim(),
                 IsActive = true
             };
-            _context.Customers.Add(newCustomer);
+
+            _context.Accounts.Add(account);
+            _context.Customers.Add(customer);
             _context.SaveChanges();
 
             TempData["Success"] = "Đăng ký thành công! Vui lòng đăng nhập.";
-            return RedirectToAction("DangNhap");
+            return RedirectToAction(nameof(DangNhap));
         }
 
-        // 3. GET: Hiển thị form Đăng nhập
         [HttpGet]
-        public IActionResult DangNhap()
-        {
-            return View();
-        }
+        public IActionResult DangNhap() => View();
 
-        // 4. POST: Xử lý Đăng nhập
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult DangNhap(string username, string password)
         {
             var user = _context.Accounts.FirstOrDefault(x => x.Username == username);
 
-            // Kiểm tra mật khẩu bằng BCrypt
-            if (user != null && BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
+            if (user == null ||
+                !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
             {
-                if (!user.Status)
-                {
-                    ViewBag.Loi = "Tài khoản của bạn đã bị khóa!";
-                    return View();
-                }
-
-                // Lưu Session
-                HttpContext.Session.SetString("AccountId", user.Id.ToString());
-                HttpContext.Session.SetString("Username", user.Username);
-                HttpContext.Session.SetString("FullName", user.FullName);
-                HttpContext.Session.SetString("Role", user.Role);
-
-                return RedirectToAction("Index", "Home");
+                ViewBag.Loi = "Tên đăng nhập hoặc mật khẩu không chính xác!";
+                return View();
             }
 
-            ViewBag.Loi = "Tên đăng nhập hoặc mật khẩu không chính xác!";
-            return View();
+            if (!user.Status)
+            {
+                ViewBag.Loi = "Tài khoản của bạn đã bị khóa!";
+                return View();
+            }
+
+            HttpContext.Session.SetString("AccountId", user.Id.ToString());
+            HttpContext.Session.SetString("Username", user.Username);
+            HttpContext.Session.SetString("FullName", user.FullName);
+            HttpContext.Session.SetString("UserRole", user.Role);
+
+            return RedirectToAction("Index", "Home");
         }
 
-        // 5. Đăng xuất
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult DangXuat()
         {
             HttpContext.Session.Clear();
-            return RedirectToAction("DangNhap");
+            return RedirectToAction(nameof(DangNhap));
         }
 
-        // Các hàm DoiMatKhau, QuanLyTaiKhoan... (giữ nguyên như cũ nếu bạn đã viết)
+        [HttpGet]
+        public IActionResult QuenMatKhau() => View();
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult QuenMatKhau(
+            string username,
+            string phoneNumber,
+            string newPassword,
+            string confirmPassword)
+        {
+            if (string.IsNullOrWhiteSpace(username) ||
+                string.IsNullOrWhiteSpace(phoneNumber))
+            {
+                ViewBag.Loi = "Vui lòng nhập tên đăng nhập và mật khẩu.";
+                return View();
+            }
+
+            if (string.IsNullOrWhiteSpace(newPassword))
+            {
+                ViewBag.Loi = "Vui lòng nhập mật khẩu mới.";
+                return View();
+            }
+
+            if (newPassword != confirmPassword)
+            {
+                ViewBag.Loi = "Mật khẩu nhập lại không khớp!";
+                return View();
+            }
+
+            var account = _context.Accounts
+                .FirstOrDefault(a => a.Username == username.Trim());
+
+            var customer = account == null
+                ? null
+                : _context.Customers.FirstOrDefault(c =>
+                    c.AccountId == account.Id &&
+                    c.PhoneNumber == phoneNumber.Trim());
+
+            if (account == null || customer == null)
+            {
+                ViewBag.Loi = "Tên đăng nhập hoặc số điện thoại không chính xác.";
+                return View();
+            }
+
+            account.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+            _context.SaveChanges();
+
+            TempData["Success"] = "Đặt lại mật khẩu thành công. Vui lòng đăng nhập.";
+            return RedirectToAction(nameof(DangNhap));
+        }
     }
 }
