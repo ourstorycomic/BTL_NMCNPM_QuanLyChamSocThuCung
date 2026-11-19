@@ -44,6 +44,14 @@
                             <span asp-validation-for="PetId" class="text-danger small"></span>
                         </div>
                     </div>
+
+                    <div id="petAllergyBox" class="appointment-allergy mt-3 d-none" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        <div>
+                            <strong>Cảnh báo dị ứng</strong>
+                            <div id="petAllergyText"></div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="appointment-card">
@@ -142,6 +150,8 @@
             const sumDuration = document.getElementById('sumDuration');
             const sumPrice = document.getElementById('sumPrice');
             const sumTime = document.getElementById('sumTime');
+            const petAllergyBox = document.getElementById('petAllergyBox');
+            const petAllergyText = document.getElementById('petAllergyText');
 
             let slotRequestId = 0;
 
@@ -183,6 +193,22 @@
             function updatePetSummary() {
                 const option = petSelect.options[petSelect.selectedIndex];
                 sumPet.textContent = option && option.value ? option.text : '—';
+
+                const pet = option && option.value
+                    ? (petsByCustomer[customerSelect.value] || []).find(function (p) {
+                        return p.petId === option.value;
+                    })
+                    : null;
+
+                const allergy = pet && pet.allergyNote ? pet.allergyNote.trim() : '';
+
+                if (allergy) {
+                    petAllergyText.textContent = allergy;
+                    petAllergyBox.classList.remove('d-none');
+                } else {
+                    petAllergyText.textContent = '';
+                    petAllergyBox.classList.add('d-none');
+                }
             }
 
             function fillPets() {

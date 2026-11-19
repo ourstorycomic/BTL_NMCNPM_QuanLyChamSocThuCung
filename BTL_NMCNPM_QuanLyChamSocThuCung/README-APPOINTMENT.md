@@ -4,6 +4,7 @@
 
 - Danh sách lịch hẹn, lọc theo từ khóa (tên thú cưng / khách hàng / số điện thoại), ngày và trạng thái.
 - Đặt lịch: chọn khách hàng → thú cưng → dịch vụ → khung giờ trống.
+- Hiển thị cảnh báo dị ứng của thú cưng ngay dưới ô chọn thú cưng.
 - Chặn trùng giờ ở cả API hiển thị khung giờ và khi submit form.
 - Xác nhận / hủy lịch hẹn.
 - **Không thay đổi model, migration hay CSDL.** Module dùng các cột đã có trên nhánh `dev`
@@ -52,13 +53,15 @@
 
 - Cần CSDL SQL Server theo `appsettings.json` và chạy migration của nhánh `dev`.
 - Cần có sẵn dữ liệu Khách hàng / Thú cưng / Dịch vụ (từ seed của nhóm hoặc module tiếp nhận).
-- Chạy project, mở menu **Lịch hẹn** hoặc `/Appointment`.
-- Menu được thêm 1 mục trong `Views/Shared/_Layout.cshtml`; khi gộp nhánh nếu nhóm có menu
-  chung thì chỉ cần giữ một mục.
+- Chạy project, mở menu **Lịch hẹn** (sidebar nhân viên) hoặc **Đặt lịch / Lịch hẹn của tôi**
+  (header khách hàng), hoặc truy cập `/Appointment`.
+- Menu đã được nối vào layout PawHaven mới của nhóm; không còn mục menu riêng kiểu cũ.
 
 ## Kiểm thử
 
-Đã chạy harness tạm với EF InMemory (không commit vào repo): **59/59 kiểm tra đạt**, gồm:
+Đã chạy harness tạm (không commit vào repo): **59/59 kiểm tra đạt**, gồm:
+
+- chạy trên EF InMemory và chạy lại trên SQL Server LocalDB thật (`PetCareManagementDb`);
 
 - danh sách, bộ lọc, form đặt lịch;
 - slot 30/60 phút, định dạng 24h, mốc 07:00–19:30;

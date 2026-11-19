@@ -58,6 +58,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.ViewModels
         public string Species { get; set; } = string.Empty;
         public string? Breed { get; set; }
         public decimal Weight { get; set; }
+        public string? AllergyNote { get; set; }
 
         public string DisplayName =>
             string.IsNullOrWhiteSpace(Breed)

@@ -387,7 +387,8 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
                         PetName = p.PetName,
                         Species = p.Species,
                         Breed = p.Breed,
-                        Weight = p.Weight
+                        Weight = p.Weight,
+                        AllergyNote = p.AllergyNote
                     }).ToList());
 
             model.Services = await _db.Services
