@@ -1,5 +1,7 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using BTL_NMCNPM_QuanLyChamSocThuCung.Models.ViewModels;
 using BTL_NMCNPM_QuanLyChamSocThuCung.Services;
@@ -19,9 +21,38 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
         private async Task<(string Role, Guid CustomerId)> GetCurrentContextAsync()
         {
             var (demoCustomerId, _) = await _petService.EnsureDemoDataAsync();
-            var role = Request.Cookies[RoleCookieKey] ?? "Customer";
-            if (role != "Staff" && role != "Customer") role = "Customer";
-            return (role, demoCustomerId);
+
+            string? sessionRole = null;
+            string? sessionCustomerId = null;
+            try
+            {
+                sessionRole = HttpContext.Session.GetString("UserRole");
+                sessionCustomerId = HttpContext.Session.GetString("CustomerId");
+            }
+            catch
+            {
+                // Session not available
+            }
+
+            // Tự động nhận diện vai trò từ phiên đăng nhập thực tế của hệ thống
+            var role = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Role)?.Value
+                       ?? sessionRole
+                       ?? Request.Cookies["UserRole"]
+                       ?? Request.Cookies[RoleCookieKey]
+                       ?? "Customer";
+
+            if (role != "Staff" && role != "Admin")
+            {
+                role = "Customer";
+            }
+
+            var customerIdStr = User.Claims.FirstOrDefault(c => c.Type == "CustomerId")?.Value
+                                ?? sessionCustomerId
+                                ?? Request.Cookies["CustomerId"];
+
+            var customerId = Guid.TryParse(customerIdStr, out var parsedGuid) ? parsedGuid : demoCustomerId;
+
+            return (role, customerId);
         }
 
         // ==========================================

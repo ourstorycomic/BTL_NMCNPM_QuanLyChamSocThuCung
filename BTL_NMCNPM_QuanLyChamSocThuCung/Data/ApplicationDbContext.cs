@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using BTL_NMCNPM_QuanLyChamSocThuCung.Models;
 
 namespace BTL_NMCNPM_QuanLyChamSocThuCung.Data
@@ -10,24 +10,25 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Data
         {
         }
 
-        public DbSet<Account> Accounts => Set<Account>();
-        public DbSet<Customer> Customers => Set<Customer>();
-        public DbSet<Pet> Pets => Set<Pet>();
-        public DbSet<Vaccination> Vaccinations => Set<Vaccination>();
-        public DbSet<Service> Services => Set<Service>();
-        public DbSet<Appointment> Appointments => Set<Appointment>();
-        public DbSet<AppointmentService> AppointmentServices => Set<AppointmentService>();
-        public DbSet<ReceptionTicket> ReceptionTickets => Set<ReceptionTicket>();
-        public DbSet<CareProgress> CareProgresses => Set<CareProgress>();
-        public DbSet<Invoice> Invoices => Set<Invoice>();
-        public DbSet<InvoiceDetail> InvoiceDetails => Set<InvoiceDetail>();
+        // Khai báo các bảng (DbSet)
+        public DbSet<Account> Accounts { get; set; }
+        public DbSet<Customer> Customers { get; set; }
+        public DbSet<Pet> Pets { get; set; }
+        public DbSet<Vaccination> Vaccinations { get; set; }
+        public DbSet<Service> Services { get; set; }
+        public DbSet<Appointment> Appointments { get; set; }
+        public DbSet<AppointmentService> AppointmentServices { get; set; }
+        public DbSet<ReceptionTicket> ReceptionTickets { get; set; }
+        public DbSet<CareProgress> CareProgresses { get; set; }
+        public DbSet<Invoice> Invoices { get; set; }
+        public DbSet<InvoiceDetail> InvoiceDetails { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
             // ==========================================
-            // 1. Account
+            // 1. Cấu hình bảng Account
             // ==========================================
             modelBuilder.Entity<Account>(entity =>
             {
@@ -38,17 +39,17 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Data
 
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Id).HasDefaultValueSql("NEWID()");
-                entity.Property(e => e.Username).HasMaxLength(50).IsUnicode(true).IsRequired();
+                entity.Property(e => e.Username).HasMaxLength(50).IsRequired();
                 entity.HasIndex(e => e.Username).IsUnique();
-                entity.Property(e => e.PasswordHash).HasMaxLength(255).IsUnicode(false).IsRequired();
-                entity.Property(e => e.FullName).HasMaxLength(100).IsUnicode(true).IsRequired();
-                entity.Property(e => e.Role).HasMaxLength(20).IsUnicode(false).IsRequired();
+                entity.Property(e => e.PasswordHash).HasMaxLength(255).IsRequired();
+                entity.Property(e => e.FullName).HasMaxLength(100).IsRequired();
+                entity.Property(e => e.Role).HasMaxLength(20).IsRequired();
                 entity.Property(e => e.Status).HasDefaultValue(true).IsRequired();
                 entity.Property(e => e.CreatedAt).HasColumnType("datetime2").HasDefaultValueSql("SYSDATETIME()").IsRequired();
             });
 
             // ==========================================
-            // 2. Customer
+            // 2. Cấu hình bảng Customer
             // ==========================================
             modelBuilder.Entity<Customer>(entity =>
             {
@@ -56,15 +57,15 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Data
 
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Id).HasDefaultValueSql("NEWID()");
-                entity.Property(e => e.CustomerName).HasMaxLength(100).IsUnicode(true).IsRequired();
-                entity.Property(e => e.PhoneNumber).HasMaxLength(15).IsUnicode(false).IsRequired();
-                entity.Property(e => e.Email).HasMaxLength(254).IsUnicode(true);
-                entity.Property(e => e.Address).HasMaxLength(255).IsUnicode(true);
+                entity.Property(e => e.CustomerName).HasMaxLength(100).IsRequired();
+                entity.Property(e => e.PhoneNumber).HasMaxLength(15);
+                entity.Property(e => e.Email).HasMaxLength(254);
+                entity.Property(e => e.Address).HasMaxLength(255);
                 entity.Property(e => e.IsActive).HasDefaultValue(true).IsRequired();
                 entity.Property(e => e.CreatedAt).HasColumnType("datetime2").HasDefaultValueSql("SYSDATETIME()").IsRequired();
 
+                // Cấu hình quan hệ 1-1 với Account
                 entity.HasIndex(e => e.AccountId).IsUnique().HasFilter("[AccountId] IS NOT NULL");
-
                 entity.HasOne(e => e.Account)
                       .WithOne(a => a.Customer)
                       .HasForeignKey<Customer>(e => e.AccountId)
@@ -72,7 +73,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Data
             });
 
             // ==========================================
-            // 3. Pet
+            // 3. Cấu hình bảng Pet
             // ==========================================
             modelBuilder.Entity<Pet>(entity =>
             {
@@ -84,15 +85,15 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Data
 
                 entity.HasKey(e => e.PetId);
                 entity.Property(e => e.PetId).HasDefaultValueSql("NEWID()");
-                entity.Property(e => e.PetName).HasMaxLength(100).IsUnicode(true).IsRequired();
-                entity.Property(e => e.Species).HasMaxLength(50).IsUnicode(true).IsRequired();
-                entity.Property(e => e.Breed).HasMaxLength(100).IsUnicode(true);
-                entity.Property(e => e.Gender).HasMaxLength(10).IsUnicode(true).IsRequired();
+                entity.Property(e => e.PetName).HasMaxLength(100).IsRequired();
+                entity.Property(e => e.Species).HasMaxLength(50).IsRequired();
+                entity.Property(e => e.Breed).HasMaxLength(100);
+                entity.Property(e => e.Gender).HasMaxLength(10).IsRequired();
                 entity.Property(e => e.BirthDate).HasColumnType("date");
                 entity.Property(e => e.Weight).HasPrecision(5, 2).IsRequired();
                 entity.Property(e => e.MedicalHistory).HasColumnType("nvarchar(max)");
-                entity.Property(e => e.AllergyNote).HasMaxLength(255).IsUnicode(true);
-                entity.Property(e => e.ImageUrl).HasMaxLength(508).IsUnicode(false);
+                entity.Property(e => e.AllergyNote).HasMaxLength(255);
+                entity.Property(e => e.ImageUrl).HasMaxLength(508);
 
                 entity.HasOne(e => e.Customer)
                       .WithMany(c => c.Pets)
@@ -101,18 +102,17 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Data
             });
 
             // ==========================================
-            // 4. Vaccination
+            // 4. Cấu hình bảng Vaccination
             // ==========================================
             modelBuilder.Entity<Vaccination>(entity =>
             {
                 entity.ToTable("Vaccination");
-
                 entity.HasKey(e => e.VaccinationId);
                 entity.Property(e => e.VaccinationId).HasDefaultValueSql("NEWID()");
-                entity.Property(e => e.VaccineName).HasMaxLength(100).IsUnicode(true).IsRequired();
+                entity.Property(e => e.VaccineName).HasMaxLength(100).IsRequired();
                 entity.Property(e => e.VaccinationDate).HasColumnType("date").IsRequired();
                 entity.Property(e => e.NextDueDate).HasColumnType("date");
-                entity.Property(e => e.Note).HasMaxLength(255).IsUnicode(true);
+                entity.Property(e => e.Note).HasMaxLength(255);
 
                 entity.HasOne(e => e.Pet)
                       .WithMany(p => p.Vaccinations)
@@ -121,7 +121,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Data
             });
 
             // ==========================================
-            // 5. Service
+            // 5. Cấu hình bảng Service
             // ==========================================
             modelBuilder.Entity<Service>(entity =>
             {
@@ -135,9 +135,9 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Data
 
                 entity.HasKey(e => e.ServiceId);
                 entity.Property(e => e.ServiceId).HasDefaultValueSql("NEWID()");
-                entity.Property(e => e.ServiceName).HasMaxLength(100).IsUnicode(true).IsRequired();
-                entity.Property(e => e.Category).HasMaxLength(50).IsUnicode(true).IsRequired();
-                entity.Property(e => e.Description).HasMaxLength(255).IsUnicode(true);
+                entity.Property(e => e.ServiceName).HasMaxLength(100).IsRequired();
+                entity.Property(e => e.Category).HasMaxLength(50).IsRequired();
+                entity.Property(e => e.Description).HasMaxLength(255);
                 entity.Property(e => e.DurationMinutes).HasDefaultValue(30).IsRequired();
                 entity.Property(e => e.BasePrice).HasPrecision(18, 2).IsRequired();
                 entity.Property(e => e.WeightTierMin).HasPrecision(5, 2).HasDefaultValue(0m).IsRequired();
@@ -146,7 +146,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Data
             });
 
             // ==========================================
-            // 6. Appointment
+            // 6. Cấu hình bảng Appointment
             // ==========================================
             modelBuilder.Entity<Appointment>(entity =>
             {
@@ -159,8 +159,8 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Data
                 entity.Property(e => e.AppointmentId).HasDefaultValueSql("NEWID()");
                 entity.Property(e => e.AppointmentDate).HasColumnType("datetime2").IsRequired();
                 entity.Property(e => e.EndTime).HasColumnType("datetime2");
-                entity.Property(e => e.Status).HasMaxLength(30).IsUnicode(false).HasDefaultValue("Pending").IsRequired();
-                entity.Property(e => e.Notes).HasMaxLength(255).IsUnicode(true);
+                entity.Property(e => e.Status).HasMaxLength(30).HasDefaultValue("Pending").IsRequired();
+                entity.Property(e => e.Notes).HasMaxLength(255);
 
                 entity.HasOne(e => e.Pet)
                       .WithMany(p => p.Appointments)
@@ -169,7 +169,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Data
             });
 
             // ==========================================
-            // 7. AppointmentService
+            // 7. Cấu hình bảng AppointmentService
             // ==========================================
             modelBuilder.Entity<AppointmentService>(entity =>
             {
@@ -193,7 +193,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Data
             });
 
             // ==========================================
-            // 8. ReceptionTicket
+            // 8. Cấu hình bảng ReceptionTicket
             // ==========================================
             modelBuilder.Entity<ReceptionTicket>(entity =>
             {
@@ -221,7 +221,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Data
             });
 
             // ==========================================
-            // 9. CareProgress
+            // 9. Cấu hình bảng CareProgress
             // ==========================================
             modelBuilder.Entity<CareProgress>(entity =>
             {
@@ -232,9 +232,9 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Data
 
                 entity.HasKey(e => e.ProgressId);
                 entity.Property(e => e.ProgressId).HasDefaultValueSql("NEWID()");
-                entity.Property(e => e.StepDescription).HasMaxLength(255).IsUnicode(true).IsRequired();
-                entity.Property(e => e.ProgressStatus).HasMaxLength(20).IsUnicode(false).HasDefaultValue("Processing").IsRequired();
-                entity.Property(e => e.ResultImageUrl).HasMaxLength(508).IsUnicode(false);
+                entity.Property(e => e.StepDescription).HasMaxLength(255).IsRequired();
+                entity.Property(e => e.ProgressStatus).HasMaxLength(20).HasDefaultValue("Processing").IsRequired();
+                entity.Property(e => e.ResultImageUrl).HasMaxLength(508);
                 entity.Property(e => e.StaffNotes).HasColumnType("nvarchar(max)");
                 entity.Property(e => e.UpdatedAt).HasColumnType("datetime2").HasDefaultValueSql("SYSDATETIME()").IsRequired();
 
@@ -250,7 +250,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Data
             });
 
             // ==========================================
-            // 10. Invoice
+            // 10. Cấu hình bảng Invoice
             // ==========================================
             modelBuilder.Entity<Invoice>(entity =>
             {
@@ -266,12 +266,12 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Data
                 entity.HasKey(e => e.InvoiceId);
                 entity.Property(e => e.InvoiceId).HasDefaultValueSql("NEWID()");
                 entity.Property(e => e.Surcharge).HasPrecision(18, 2).HasDefaultValue(0m).IsRequired();
-                entity.Property(e => e.SurchargeReason).HasMaxLength(255).IsUnicode(true);
+                entity.Property(e => e.SurchargeReason).HasMaxLength(255);
                 entity.Property(e => e.DiscountAmount).HasPrecision(18, 2).HasDefaultValue(0m).IsRequired();
-                entity.Property(e => e.DiscountCode).HasMaxLength(50).IsUnicode(false);
+                entity.Property(e => e.DiscountCode).HasMaxLength(50);
                 entity.Property(e => e.TotalAmount).HasPrecision(18, 2).IsRequired();
-                entity.Property(e => e.PaymentMethod).HasMaxLength(30).IsUnicode(false).IsRequired();
-                entity.Property(e => e.PaymentStatus).HasMaxLength(30).IsUnicode(false).HasDefaultValue("Unpaid").IsRequired();
+                entity.Property(e => e.PaymentMethod).HasMaxLength(30).IsRequired();
+                entity.Property(e => e.PaymentStatus).HasMaxLength(30).HasDefaultValue("Unpaid").IsRequired();
                 entity.Property(e => e.PaymentTime).HasColumnType("datetime2");
                 entity.Property(e => e.CreatedAt).HasColumnType("datetime2").HasDefaultValueSql("SYSDATETIME()").IsRequired();
 
@@ -284,7 +284,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Data
             });
 
             // ==========================================
-            // 11. InvoiceDetail
+            // 11. Cấu hình bảng InvoiceDetail
             // ==========================================
             modelBuilder.Entity<InvoiceDetail>(entity =>
             {
@@ -310,6 +310,16 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Data
                       .WithMany(s => s.InvoiceDetails)
                       .HasForeignKey(e => e.ServiceId)
                       .OnDelete(DeleteBehavior.Restrict);
+                modelBuilder.Entity<Account>().HasData(new Account
+                {
+                    Id = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                    Username = "admin",
+                    PasswordHash = "123456789",
+                    FullName = "Administrator",
+                    Role = "Admin",
+                    Status = true,
+                    CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+                });
             });
         }
     }

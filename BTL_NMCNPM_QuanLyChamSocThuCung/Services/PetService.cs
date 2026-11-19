@@ -319,9 +319,22 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Services
                 return (false, "Tên vắc-xin không được để trống");
             }
 
-            if (model.NextDueDate.HasValue && model.NextDueDate.Value < model.VaccinationDate)
+            var today = DateOnly.FromDateTime(DateTime.Today);
+            if (model.VaccinationDate > today)
             {
-                return (false, "Ngày hẹn tiêm nhắc lại không thể trước ngày tiêm chủng!");
+                return (false, "Ngày tiêm không thể là ngày trong tương lai (tiêm rồi mới ghi nhận vào sổ)!");
+            }
+
+            if (model.NextDueDate.HasValue)
+            {
+                if (model.NextDueDate.Value <= model.VaccinationDate)
+                {
+                    return (false, "Ngày hẹn tiêm nhắc lại bắt buộc phải lớn hơn ngày tiêm chủng!");
+                }
+                if (model.NextDueDate.Value <= today)
+                {
+                    return (false, "Ngày hẹn tiêm nhắc lại bắt buộc phải là một ngày ở tương lai!");
+                }
             }
 
             var vaccination = new Vaccination
@@ -400,7 +413,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Services
                     Id = Guid.NewGuid(),
                     Username = "khachhang_demo",
                     PasswordHash = "$2a$11$samplehashcustomer",
-                    FullName = "Nguyễn Văn An",
+                    FullName = "Nguyễn Minh Anh",
                     Role = "Customer",
                     Status = true,
                     CreatedAt = DateTime.UtcNow
@@ -416,10 +429,10 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Services
                 {
                     Id = Guid.NewGuid(),
                     AccountId = customerAccount.Id,
-                    CustomerName = "Nguyễn Văn An",
-                    PhoneNumber = "0987654321",
-                    Email = "an.nguyen@petcare.vn",
-                    Address = "123 Cầu Giấy, Hà Nội",
+                    CustomerName = "Nguyễn Minh Anh",
+                    PhoneNumber = "0901234567",
+                    Email = "minhanh@gmail.com",
+                    Address = "42 Xuân Thủy, P. Thảo Điền, TP. Thủ Đức",
                     IsActive = true,
                     CreatedAt = DateTime.UtcNow
                 };
@@ -436,7 +449,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Services
                     Id = Guid.NewGuid(),
                     Username = "nhanvien_demo",
                     PasswordHash = "$2a$11$samplehashstaff",
-                    FullName = "Trần Thị Mai (Kỹ thuật viên)",
+                    FullName = "Hoàng Thu Trang (Lễ tân · Ca sáng)",
                     Role = "Staff",
                     Status = true,
                     CreatedAt = DateTime.UtcNow
@@ -453,14 +466,14 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Services
                 {
                     PetId = Guid.NewGuid(),
                     CustomerId = customer.Id,
-                    PetName = "Miu Miu",
+                    PetName = "Mochi",
                     Species = "Mèo",
                     Breed = "Mèo Anh lông ngắn",
-                    Gender = "Cái",
-                    BirthDate = new DateOnly(2023, 5, 10),
-                    Weight = 3.65m,
-                    MedicalHistory = "Đã triệt sản tháng 12/2023, hệ tiêu hóa nhạy cảm",
-                    AllergyNote = "Dị ứng cá ngừ đóng hộp và thuốc xịt ve rận ngoài da",
+                    Gender = "Đực",
+                    BirthDate = new DateOnly(2023, 11, 14),
+                    Weight = 5.60m,
+                    MedicalHistory = "Bé hơi nhát, nhẹ tay khi cắt móng. Vượt mức cân gói tiêu chuẩn (<= 5 kg).",
+                    AllergyNote = "Thành phần ngũ cốc, sữa tắm chứa Sulfate.",
                     ImageUrl = "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=600&auto=format&fit=crop&q=80"
                 };
 
@@ -474,8 +487,8 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Services
                     Gender = "Đực",
                     BirthDate = new DateOnly(2022, 10, 15),
                     Weight = 11.20m,
-                    MedicalHistory = "Từng điều trị nấm tai, khớp hông cần theo dõi",
-                    AllergyNote = "Dị ứng đạm bò (bị ngứa da và nổi mẩn đỏ)",
+                    MedicalHistory = "Từng điều trị nấm tai, khớp hông cần theo dõi.",
+                    AllergyNote = "Dị ứng đạm bò (bị ngứa da và nổi mẩn đỏ).",
                     ImageUrl = "https://images.unsplash.com/photo-1612536057832-2ff7ead7f363?w=600&auto=format&fit=crop&q=80"
                 };
 

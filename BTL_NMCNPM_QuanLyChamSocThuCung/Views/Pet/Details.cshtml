@@ -5,100 +5,104 @@
     bool isStaff = ViewBag.IsStaff == true;
 }
 
-<div class="d-flex align-items-center justify-content-between mb-4">
+<!-- Top Header & Actions -->
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
     <div>
         <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-1">
-                <li class="breadcrumb-item"><a asp-action="Index">Thú cưng</a></li>
-                <li class="breadcrumb-item active" aria-current="page">@Model.PetName</li>
+            <ol class="breadcrumb mb-1 small">
+                <li class="breadcrumb-item"><a asp-action="Index" class="text-decoration-none text-muted">Hồ sơ thú cưng</a></li>
+                <li class="breadcrumb-item active fw-bold text-dark" aria-current="page">@Model.PetName</li>
             </ol>
         </nav>
-        <h2 class="fw-bold mb-0 text-primary">
-            <i class="bi bi-file-earmark-medical-fill text-danger me-2"></i>Hồ sơ Sức khỏe & Tiêm chủng
-        </h2>
+        <h3 class="fw-bold text-dark mb-0 d-flex align-items-center">
+            <span class="rounded-3 bg-success bg-opacity-10 text-success p-2 d-inline-flex align-items-center justify-content-center me-2" style="width: 36px; height: 36px;">
+                <i class="bi bi-file-earmark-medical-fill"></i>
+            </span>
+            Chi tiết Hồ sơ & Lịch sử Y tế
+        </h3>
     </div>
     <div class="d-flex gap-2">
-        <a asp-action="Index" class="btn btn-outline-secondary rounded-pill">
+        <a asp-action="Index" class="btn btn-paw-outline">
             <i class="bi bi-arrow-left me-1"></i>Quay lại
         </a>
-        <a asp-action="Edit" asp-route-id="@Model.PetId" class="btn btn-warning rounded-pill px-3 shadow-sm">
+        <a asp-action="Edit" asp-route-id="@Model.PetId" class="btn btn-paw-primary">
             <i class="bi bi-pencil-square me-1"></i>Chỉnh sửa hồ sơ
         </a>
     </div>
 </div>
 
 <div class="row g-4">
-    <!-- CỘT TRÁI: THÔNG TIN SINH HỌC & CHỦ NUÔI -->
+    <!-- CỘT TRÁI: THẺ THÔNG TIN SINH HỌC & CHỦ NUÔI -->
     <div class="col-lg-4">
-        <div class="card border-0 shadow-sm mb-4">
-            <div class="card-body text-center p-4">
-                <!-- Avatar lớn -->
-                <div class="position-relative d-inline-block mb-3">
-                    @if (!string.IsNullOrEmpty(Model.ImageUrl))
-                    {
-                        <img src="@Model.ImageUrl" alt="@Model.PetName" 
-                             class="rounded-circle object-fit-cover border border-4 border-primary shadow" 
-                             style="width: 150px; height: 150px;" 
-                             onerror="this.onerror=null; this.src='https://placehold.co/150x150?text=@Model.PetName';" />
-                    }
-                    else
-                    {
-                        <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center border border-4 border-white shadow mx-auto" 
-                             style="width: 150px; height: 150px; font-size: 3.5rem;">
-                            @(Model.Species.Contains("Mèo", StringComparison.OrdinalIgnoreCase) ? "🐱" : "🐶")
-                        </div>
-                    }
-                    <span class="position-absolute bottom-0 end-0 badge rounded-pill @(Model.Gender == "Đực" ? "bg-info" : "bg-danger") shadow fs-6">
-                        @(Model.Gender == "Đực" ? "♂ Đực" : "♀ Cái")
-                    </span>
+        <div class="paw-card p-4 text-center mb-4">
+            <!-- Avatar vuông bo góc tròn theo chuẩn Figma -->
+            <div class="position-relative d-inline-block mb-3">
+                @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                {
+                    <img src="@Model.ImageUrl" alt="@Model.PetName" 
+                         class="pet-avatar-box object-fit-cover border" 
+                         style="width: 140px; height: 140px; border-radius: 18px;" 
+                         onerror="this.onerror=null; this.src='https://placehold.co/140x140?text=@Model.PetName';" />
+                }
+                else
+                {
+                    <div class="pet-avatar-box bg-success bg-opacity-10 text-success d-flex align-items-center justify-content-center border mx-auto" 
+                         style="width: 140px; height: 140px; border-radius: 18px; font-size: 3.5rem;">
+                        @(Model.Species.Contains("Mèo", StringComparison.OrdinalIgnoreCase) ? "🐱" : "🐶")
+                    </div>
+                }
+                <span class="position-absolute bottom-0 end-0 badge rounded-pill shadow-xs" 
+                      style="font-size: 0.75rem; transform: translate(10%, 15%); font-weight: 700; @(Model.Gender == "Đực" ? "background: #eff6ff; color: #2563eb; border: 1.5px solid #bfdbfe;" : "background: #fff1f2; color: #e11d48; border: 1.5px solid #fecdd3;")">
+                    @(Model.Gender == "Đực" ? "♂ Đực" : "♀ Cái")
+                </span>
+            </div>
+
+            <h4 class="fw-bold text-dark mb-1">@Model.PetName</h4>
+            <div class="text-muted small mb-3">
+                <span class="badge bg-light text-dark border px-2 py-1">@Model.Species</span>
+                @if (!string.IsNullOrEmpty(Model.Breed))
+                {
+                    <span class="badge bg-light text-secondary border px-2 py-1">@Model.Breed</span>
+                }
+            </div>
+
+            <!-- Các chỉ số thể trạng -->
+            <div class="row g-2 text-start bg-light rounded-3 p-3 mb-3 border">
+                <div class="col-6 mb-2">
+                    <span class="text-muted small d-block">Ngày sinh</span>
+                    <strong class="text-dark">@(Model.BirthDate?.ToString("dd/MM/yyyy") ?? "Chưa rõ")</strong>
                 </div>
-
-                <h3 class="fw-bold mb-1">@Model.PetName</h3>
-                <p class="text-muted mb-3">
-                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle fs-6">@Model.Species</span>
-                    @if (!string.IsNullOrEmpty(Model.Breed))
-                    {
-                        <span class="badge bg-light text-secondary border fs-6">@Model.Breed</span>
-                    }
-                </p>
-
-                <!-- Chỉ số sinh học -->
-                <div class="bg-light rounded-3 p-3 text-start mb-3">
-                    <div class="d-flex justify-content-between py-1 border-bottom">
-                        <span class="text-muted"><i class="bi bi-calendar-event me-2"></i>Ngày sinh:</span>
-                        <strong class="text-dark">@(Model.BirthDate?.ToString("dd/MM/yyyy") ?? "Chưa rõ")</strong>
-                    </div>
-                    <div class="d-flex justify-content-between py-1 border-bottom">
-                        <span class="text-muted"><i class="bi bi-hourglass-split me-2"></i>Tuổi hiện tại:</span>
-                        <strong class="text-dark">@Model.AgeDisplay</strong>
-                    </div>
-                    <div class="d-flex justify-content-between py-1 border-bottom">
-                        <span class="text-muted"><i class="bi bi-speedometer2 me-2"></i>Cân nặng:</span>
-                        <strong class="text-primary fs-5">@Model.Weight.ToString("F2") kg</strong>
-                    </div>
-                    <div class="d-flex justify-content-between py-1">
-                        <span class="text-muted"><i class="bi bi-calendar2-check me-2"></i>Số lần hẹn/dịch vụ:</span>
-                        <span class="badge bg-secondary">@Model.AppointmentCount lịch hẹn</span>
-                    </div>
+                <div class="col-6 mb-2">
+                    <span class="text-muted small d-block">Tuổi</span>
+                    <strong class="text-dark">@Model.AgeDisplay</strong>
                 </div>
+                <div class="col-6">
+                    <span class="text-muted small d-block">Cân nặng</span>
+                    <strong class="text-success fs-5">@Model.Weight.ToString("F2") kg</strong>
+                </div>
+                <div class="col-6">
+                    <span class="text-muted small d-block">Số lần làm dịch vụ</span>
+                    <strong class="text-dark">@Model.AppointmentCount lần</strong>
+                </div>
+            </div>
 
-                <!-- Thông tin chủ nuôi -->
-                <div class="card border-primary-subtle bg-primary-subtle bg-opacity-10 text-start p-3 rounded-3">
-                    <h6 class="fw-bold text-primary mb-2">
-                        <i class="bi bi-person-circle me-1"></i>Thông tin Chủ nuôi
-                    </h6>
-                    <div class="small">
-                        <div class="mb-1"><strong>Họ tên:</strong> @Model.OwnerName</div>
-                        <div class="mb-1"><strong>Điện thoại:</strong> <a href="tel:@Model.OwnerPhone" class="text-decoration-none">@Model.OwnerPhone</a></div>
-                        @if (!string.IsNullOrEmpty(Model.OwnerEmail))
-                        {
-                            <div class="mb-1"><strong>Email:</strong> @Model.OwnerEmail</div>
-                        }
-                        @if (!string.IsNullOrEmpty(Model.OwnerAddress))
-                        {
-                            <div><strong>Địa chỉ:</strong> @Model.OwnerAddress</div>
-                        }
-                    </div>
+            <!-- Thông tin Chủ nuôi -->
+            <div class="bg-light p-3 rounded-3 text-start border">
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-person-circle text-success me-2 fs-5"></i>
+                    <h6 class="fw-bold text-dark mb-0">Thông tin Chủ nuôi</h6>
+                </div>
+                <div class="small">
+                    <div class="text-dark mb-1">Họ tên: <strong>@Model.OwnerName</strong></div>
+                    <div class="text-dark mb-1">Điện thoại: <a href="tel:@Model.OwnerPhone" class="text-decoration-none text-success fw-bold">@Model.OwnerPhone</a></div>
+                    @if (!string.IsNullOrEmpty(Model.OwnerEmail))
+                    {
+                        <div class="text-muted mb-1 text-truncate">Email: @Model.OwnerEmail</div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.OwnerAddress))
+                    {
+                        <div class="text-muted">Địa chỉ: @Model.OwnerAddress</div>
+                    }
                 </div>
             </div>
         </div>
@@ -106,168 +110,167 @@
 
     <!-- CỘT PHẢI: CẢNH BÁO SỨC KHỎE (FR-09) & SỔ TIÊM CHỦNG (1NF) -->
     <div class="col-lg-8">
-        <!-- 1. KHỐI CẢNH BÁO SỨC KHỎE (FR-09) -->
-        <div class="card border-0 shadow-sm mb-4">
-            <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
-                <h5 class="fw-bold mb-0 text-dark">
-                    <i class="bi bi-shield-exclamation text-warning me-2"></i>Cảnh báo Sức khỏe & Lưu ý Chăm sóc (FR-09)
+        <!-- 1. KHỐI CẢNH BÁO SỨC KHỎE & TÍNH CÁCH (FR-09) -->
+        <div class="paw-card p-4 mb-4">
+            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-3">
+                <h5 class="fw-bold text-dark mb-0 d-flex align-items-center">
+                    <i class="bi bi-shield-exclamation text-warning me-2 fs-4"></i>
+                    Cảnh báo Sức khỏe & Lưu ý Chăm sóc (FR-09)
                 </h5>
                 @if (Model.HasMedicalAlert)
                 {
-                    <span class="badge bg-danger animate-pulse">
-                        <i class="bi bi-exclamation-octagon-fill me-1"></i>Có lưu ý y tế quan trọng
+                    <span class="badge bg-warning bg-opacity-25 text-warning-emphasis border border-warning px-3 py-2">
+                        <i class="bi bi-exclamation-triangle-fill text-warning me-1"></i>Có lưu ý y tế
                     </span>
                 }
                 else
                 {
-                    <span class="badge bg-success-subtle text-success border border-success-subtle">
-                        <i class="bi bi-check-circle-fill me-1"></i>Thể trạng ổn định
+                    <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2">
+                        <i class="bi bi-check-circle-fill me-1"></i>Thể trạng bình thường
                     </span>
                 }
             </div>
-            <div class="card-body p-4">
-                <div class="row g-3">
-                    <!-- Khối Dị ứng -->
-                    <div class="col-md-6">
-                        <div class="h-100 p-3 rounded-3 border-start border-4 @(!string.IsNullOrWhiteSpace(Model.AllergyNote) ? "bg-danger-subtle border-danger" : "bg-light border-secondary")">
-                            <h6 class="fw-bold @(!string.IsNullOrWhiteSpace(Model.AllergyNote) ? "text-danger" : "text-muted") mb-2">
-                                <i class="bi bi-capsule-pill me-1"></i>Ghi chú Dị ứng (Thuốc/Thức ăn):
-                            </h6>
-                            @if (!string.IsNullOrWhiteSpace(Model.AllergyNote))
-                            {
-                                <p class="mb-0 fw-semibold text-danger">@Model.AllergyNote</p>
-                                <small class="text-danger-emphasis d-block mt-2">
-                                    ⚠️ <em>Nhân viên tiếp nhận và kỹ thuật viên spa cần kiểm tra kỹ thành phần trước khi thực hiện dịch vụ!</em>
-                                </small>
-                            }
-                            else
-                            {
-                                <p class="mb-0 text-muted fst-italic">Chưa ghi nhận dị ứng thuốc hoặc thức ăn.</p>
-                            }
-                        </div>
-                    </div>
 
-                    <!-- Khối Tiền sử bệnh nền -->
-                    <div class="col-md-6">
-                        <div class="h-100 p-3 rounded-3 border-start border-4 @(!string.IsNullOrWhiteSpace(Model.MedicalHistory) ? "bg-warning-subtle border-warning" : "bg-light border-secondary")">
-                            <h6 class="fw-bold @(!string.IsNullOrWhiteSpace(Model.MedicalHistory) ? "text-warning-emphasis" : "text-muted") mb-2">
-                                <i class="bi bi-clipboard-pulse me-1"></i>Tiền sử Bệnh nền & Tính cách:
-                            </h6>
-                            @if (!string.IsNullOrWhiteSpace(Model.MedicalHistory))
-                            {
-                                <p class="mb-0 text-dark">@Model.MedicalHistory</p>
-                            }
-                            else
-                            {
-                                <p class="mb-0 text-muted fst-italic">Chưa có tiền sử bệnh lý mãn tính hoặc phẫu thuật.</p>
-                            }
+            <!-- Khối Alert màu vàng kem chuẩn ảnh Figma -->
+            <div class="paw-health-alert mb-3">
+                <div class="fw-bold text-warning-emphasis mb-2 d-flex align-items-center">
+                    <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>
+                    Tiền sử dị ứng & Cảnh báo thành phần:
+                </div>
+                <div class="text-dark ps-4">
+                    @if (!string.IsNullOrWhiteSpace(Model.AllergyNote))
+                    {
+                        <strong class="text-danger">@Model.AllergyNote</strong>
+                        <div class="small text-muted mt-1">
+                            * Lưu ý cho Kỹ thuật viên: Kiểm tra kỹ nhãn sữa tắm, thức ăn thưởng trước khi thực hiện dịch vụ cho bé.
                         </div>
-                    </div>
+                    }
+                    else
+                    {
+                        <span class="text-muted fst-italic">Chưa ghi nhận tiền sử dị ứng thuốc hay thực phẩm.</span>
+                    }
+                </div>
+            </div>
+
+            <!-- Khối Bệnh nền & Đặc điểm tính cách -->
+            <div class="p-3 bg-light rounded-3 border">
+                <div class="fw-bold text-dark mb-1 d-flex align-items-center">
+                    <i class="bi bi-clipboard2-pulse text-success me-2"></i>
+                    Tiền sử Bệnh nền & Tính cách đặc biệt:
+                </div>
+                <div class="ps-4">
+                    @if (!string.IsNullOrWhiteSpace(Model.MedicalHistory))
+                    {
+                        <div class="text-dark">@Model.MedicalHistory</div>
+                    }
+                    else
+                    {
+                        <div class="text-muted fst-italic small">Chưa ghi nhận bệnh lý mãn tính hoặc lưu ý đặc biệt.</div>
+                    }
                 </div>
             </div>
         </div>
 
         <!-- 2. SỔ THEO DÕI TIÊM CHỦNG ĐIỆN TỬ (BẢNG VACCINATION - 1NF) -->
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="paw-card p-4">
+            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-3 flex-wrap gap-2">
                 <div>
-                    <h5 class="fw-bold mb-0 text-dark">
-                        <i class="bi bi-eyedropper text-success me-2"></i>Lịch sử Tiêm chủng & Phòng bệnh
+                    <h5 class="fw-bold text-dark mb-1 d-flex align-items-center">
+                        <i class="bi bi-eyedropper text-success me-2 fs-4"></i>
+                        Lịch sử Tiêm chủng & Phòng bệnh
                     </h5>
-                    <small class="text-muted">Lưu trữ từng lần tiêm riêng biệt chuẩn hóa 1NF để theo dõi kháng thể và nhắc lịch</small>
+                    <div class="text-muted small">Mỗi lần tiêm được lưu thành một bản ghi riêng biệt (1NF) phục vụ theo dõi kháng thể và nhắc lịch</div>
                 </div>
-                <button type="button" class="btn btn-success rounded-pill shadow-sm px-3" data-bs-toggle="modal" data-bs-target="#addVaccineModal">
+                <button type="button" class="btn btn-paw-primary" data-bs-toggle="modal" data-bs-target="#addVaccineModal">
                     <i class="bi bi-plus-lg me-1"></i>Thêm mũi tiêm mới
                 </button>
             </div>
 
-            <div class="card-body p-4">
-                <!-- Banner mũi tiêm nhắc lại tiếp theo -->
-                @if (Model.NextDueVaccineDate.HasValue)
-                {
-                    var today = DateOnly.FromDateTime(DateTime.Today);
-                    bool isOverdue = Model.NextDueVaccineDate.Value < today;
-                    bool isDueSoon = !isOverdue && Model.NextDueVaccineDate.Value <= today.AddDays(14);
+            <!-- Banner Ngày hẹn tiêm nhắc lại tiếp theo -->
+            @if (Model.NextDueVaccineDate.HasValue)
+            {
+                var today = DateOnly.FromDateTime(DateTime.Today);
+                bool isOverdue = Model.NextDueVaccineDate.Value < today;
+                bool isDueSoon = !isOverdue && Model.NextDueVaccineDate.Value <= today.AddDays(14);
 
-                    <div class="alert @(isOverdue ? "alert-danger" : (isDueSoon ? "alert-warning" : "alert-info")) d-flex align-items-center mb-4 shadow-sm" role="alert">
-                        <i class="bi @(isOverdue ? "bi-bell-fill text-danger fs-3" : "bi-calendar-check-fill fs-3") me-3"></i>
-                        <div>
-                            <strong>Lịch tiêm nhắc lại gần nhất: </strong>
-                            <span class="fs-5 fw-bold">@Model.NextDueVaccineDate.Value.ToString("dd/MM/yyyy")</span>
+                <div class="alert @(isOverdue ? "alert-danger" : (isDueSoon ? "alert-warning" : "alert-success bg-success bg-opacity-10 border-success")) d-flex align-items-center p-3 mb-4 rounded-3" role="alert">
+                    <i class="bi @(isOverdue ? "bi-bell-fill text-danger fs-2" : "bi-calendar-check-fill text-success fs-2") me-3"></i>
+                    <div>
+                        <div class="fw-bold">Lịch hẹn tiêm nhắc lại gần nhất: 
+                            <span class="fs-5 text-dark ms-1">@Model.NextDueVaccineDate.Value.ToString("dd/MM/yyyy")</span>
                             @if (isOverdue)
                             {
                                 <span class="badge bg-danger ms-2">ĐÃ QUÁ HẠN</span>
-                                <div class="small mt-1 text-danger">Thú cưng đã quá hạn tiêm nhắc lại. Vui lòng sắp xếp tiêm sớm để đảm bảo kháng thể!</div>
                             }
                             else if (isDueSoon)
                             {
                                 <span class="badge bg-warning text-dark ms-2">SẮP ĐẾN HẸN (Trong 14 ngày tới)</span>
-                                <div class="small mt-1 text-dark">Hãy liên hệ phòng khám để đặt lịch tiêm phòng đúng hạn.</div>
                             }
                             else
                             {
-                                <span class="badge bg-info ms-2">CÒN HẠN</span>
+                                <span class="badge bg-success ms-2">CÒN HẠN</span>
                             }
                         </div>
+                        <small class="text-muted">Nhắc nhở tự động từ hệ thống quản lý tiêm phòng PawHaven.</small>
                     </div>
-                }
+                </div>
+            }
 
-                <!-- Bảng danh sách tiêm chủng -->
-                @if (Model.Vaccinations == null || !Model.Vaccinations.Any())
-                {
-                    <div class="text-center py-4 bg-light rounded-3">
-                        <i class="bi bi-shield-slash text-muted fs-1 d-block mb-2"></i>
-                        <p class="text-muted mb-2">Chưa có bản ghi tiêm chủng nào cho thú cưng này.</p>
-                        <button type="button" class="btn btn-sm btn-outline-success rounded-pill" data-bs-toggle="modal" data-bs-target="#addVaccineModal">
-                            <i class="bi bi-plus-lg me-1"></i>Ghi nhận mũi tiêm đầu tiên
-                        </button>
-                    </div>
-                }
-                else
-                {
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle border">
-                            <thead class="table-light">
+            <!-- Bảng Danh sách Tiêm chủng -->
+            @if (Model.Vaccinations == null || !Model.Vaccinations.Any())
+            {
+                <div class="text-center py-4 bg-light rounded-3 border">
+                    <i class="bi bi-shield-slash text-muted fs-1 d-block mb-2"></i>
+                    <p class="text-muted small mb-2">Chưa có bản ghi tiêm chủng nào cho thú cưng này.</p>
+                    <button type="button" class="btn btn-sm btn-paw-outline" data-bs-toggle="modal" data-bs-target="#addVaccineModal">
+                        <i class="bi bi-plus-lg me-1"></i>Ghi nhận mũi tiêm đầu tiên
+                    </button>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light small">
+                            <tr>
+                                <th scope="col" style="width: 32%;">Tên loại vắc-xin</th>
+                                <th scope="col" style="width: 20%;">Ngày tiêm</th>
+                                <th scope="col" style="width: 25%;">Hẹn nhắc lại</th>
+                                <th scope="col" style="width: 23%;">Ghi chú</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var vac in Model.Vaccinations)
+                            {
                                 <tr>
-                                    <th scope="col" style="width: 30%;">Tên vắc-xin</th>
-                                    <th scope="col" style="width: 20%;">Ngày tiêm</th>
-                                    <th scope="col" style="width: 25%;">Hẹn nhắc lại</th>
-                                    <th scope="col" style="width: 25%;">Ghi chú</th>
+                                    <td>
+                                        <strong class="text-dark">@vac.VaccineName</strong>
+                                    </td>
+                                    <td>
+                                        <i class="bi bi-calendar3 text-muted me-1 small"></i>
+                                        @vac.VaccinationDate.ToString("dd/MM/yyyy")
+                                    </td>
+                                    <td>
+                                        @if (vac.NextDueDate.HasValue)
+                                        {
+                                            <span class="badge @vac.StatusBadgeClass">
+                                                @vac.StatusText
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted small">Không hẹn nhắc</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="text-muted small">@(string.IsNullOrEmpty(vac.Note) ? "—" : vac.Note)</span>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var vac in Model.Vaccinations)
-                                {
-                                    <tr>
-                                        <td>
-                                            <strong class="text-dark">@vac.VaccineName</strong>
-                                        </td>
-                                        <td>
-                                            <i class="bi bi-calendar3 me-1 text-muted"></i>
-                                            @vac.VaccinationDate.ToString("dd/MM/yyyy")
-                                        </td>
-                                        <td>
-                                            @if (vac.NextDueDate.HasValue)
-                                            {
-                                                <span class="badge @vac.StatusBadgeClass">
-                                                    @vac.StatusText
-                                                </span>
-                                            }
-                                            else
-                                            {
-                                                <span class="text-muted small">Không hẹn nhắc</span>
-                                            }
-                                        </td>
-                                        <td>
-                                            <span class="text-muted small">@(string.IsNullOrEmpty(vac.Note) ? "—" : vac.Note)</span>
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                }
-            </div>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
         </div>
     </div>
 </div>
