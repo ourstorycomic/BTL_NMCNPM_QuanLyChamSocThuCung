@@ -278,15 +278,16 @@
 
         var currentRole = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Role)?.Value
                           ?? sessionRole
-                          ?? Context.Request.Cookies["UserRole"]
-                          ?? "Customer";
+                          ?? Context.Request.Cookies["UserRole"];
 
-        bool isStaffView = currentRole == "Staff" || currentRole == "Admin" || User.IsInRole("Staff") || User.IsInRole("Admin");
+        bool isAuthenticated = User.Identity?.IsAuthenticated == true || !string.IsNullOrEmpty(sessionRole) || !string.IsNullOrEmpty(Context.Request.Cookies["UserRole"]);
+
+        bool isStaffView = isAuthenticated && (currentRole == "Staff" || currentRole == "Admin" || User.IsInRole("Staff") || User.IsInRole("Admin"));
 
         var currentUserName = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Name)?.Value
                               ?? sessionName
                               ?? Context.Request.Cookies["FullName"]
-                              ?? (isStaffView ? "Hoàng Thu Trang" : "Nguyễn Minh Anh");
+                              ?? (isAuthenticated ? (isStaffView ? "Hoàng Thu Trang" : "Nguyễn Minh Anh") : "Khách");
 
         var currentCtrl = ViewContext.RouteData.Values["controller"]?.ToString();
     }
@@ -360,9 +361,12 @@
                          alt="Staff Avatar" class="rounded-circle me-2 object-fit-cover shadow-sm" style="width: 36px; height: 36px;">
                     <div>
                         <div class="fw-bold small text-dark lh-sm">@currentUserName</div>
-                        <div class="text-muted" style="font-size: 0.72rem;">Lễ tân · Ca sáng</div>
+                        <div class="text-muted" style="font-size: 0.72rem;">@(currentRole == "Admin" ? "Quản trị viên" : "Lễ tân · Ca sáng")</div>
                     </div>
                 </div>
+                <a asp-controller="Account" asp-action="DangXuat" class="btn btn-sm btn-light border text-danger rounded-circle p-1 d-inline-flex align-items-center justify-content-center" style="width: 32px; height: 32px;" title="Đăng xuất">
+                    <i class="bi bi-box-arrow-right"></i>
+                </a>
             </div>
         </aside>
 
@@ -451,20 +455,40 @@
                         <a asp-controller="Pet" asp-action="Index" class="customer-nav-link @(currentCtrl == "Pet" ? "active" : "")">Thú cưng</a>
                     </nav>
 
-                    <!-- Right User Information -->
-                    <div class="d-flex align-items-center gap-3">
-                        <button class="btn btn-light rounded-circle p-2 text-muted" type="button">
-                            <i class="bi bi-bell"></i>
-                        </button>
+                    <!-- Right User Information or Login/Register -->
+                    <div class="d-flex align-items-center gap-2">
+                        @if (isAuthenticated)
+                        {
+                            <button class="btn btn-light rounded-circle p-2 text-muted" type="button" title="Thông báo">
+                                <i class="bi bi-bell"></i>
+                            </button>
 
-                        <div class="d-flex align-items-center gap-2 bg-light rounded-pill p-1 pe-3 border">
-                            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80" 
-                                 alt="Customer Avatar" class="rounded-circle object-fit-cover shadow-sm" style="width: 32px; height: 32px;">
-                            <div class="text-start">
-                                <div class="fw-bold small text-dark lh-1">@currentUserName</div>
-                                <span class="badge bg-warning text-dark p-0 px-1" style="font-size: 0.65rem;">Khách thân thiết</span>
+                            <div class="dropdown">
+                                <button class="btn btn-light d-flex align-items-center gap-2 rounded-pill p-1 pe-3 border dropdown-toggle" type="button" id="userMenuDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80" 
+                                         alt="Customer Avatar" class="rounded-circle object-fit-cover shadow-sm" style="width: 32px; height: 32px;">
+                                    <div class="text-start">
+                                        <div class="fw-bold small text-dark lh-1">@currentUserName</div>
+                                        <span class="badge bg-warning text-dark p-0 px-1" style="font-size: 0.65rem;">Khách thân thiết</span>
+                                    </div>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3 mt-2" aria-labelledby="userMenuDropdown">
+                                    <li><a class="dropdown-item py-2" asp-controller="Pet" asp-action="Index"><i class="bi bi-heart-pulse-fill text-success me-2"></i>Hồ sơ thú cưng</a></li>
+                                    <li><a class="dropdown-item py-2" asp-controller="Appointment" asp-action="Index"><i class="bi bi-calendar3 text-primary me-2"></i>Lịch hẹn của tôi</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item py-2 text-danger fw-semibold" asp-controller="Account" asp-action="DangXuat"><i class="bi bi-box-arrow-right me-2"></i>Đăng xuất</a></li>
+                                </ul>
                             </div>
-                        </div>
+                        }
+                        else
+                        {
+                            <a asp-controller="Account" asp-action="DangNhap" class="btn btn-paw-outline text-nowrap px-3 py-1">
+                                <i class="bi bi-box-arrow-in-right me-1"></i>Đăng nhập
+                            </a>
+                            <a asp-controller="Account" asp-action="DangKy" class="btn btn-paw-primary text-nowrap px-3 py-1">
+                                <i class="bi bi-person-plus-fill me-1"></i>Đăng ký
+                            </a>
+                        }
                     </div>
                 </div>
             </div>

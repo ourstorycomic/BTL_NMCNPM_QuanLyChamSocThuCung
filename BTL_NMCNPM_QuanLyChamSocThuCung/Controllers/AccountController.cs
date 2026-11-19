@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using System.Security.Claims;
 using BTL_NMCNPM_QuanLyChamSocThuCung.Models;
 using BTL_NMCNPM_QuanLyChamSocThuCung.Data;
 
@@ -86,7 +89,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult DangNhap(string username, string password)
+        public async Task<IActionResult> DangNhap(string username, string password)
         {
             var user = _context.Accounts.FirstOrDefault(x => x.Username == username);
 
@@ -103,20 +106,62 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
                 return View();
             }
 
+            // 1. Lưu thông tin vào Session
             HttpContext.Session.SetString("AccountId", user.Id.ToString());
             HttpContext.Session.SetString("Username", user.Username);
             HttpContext.Session.SetString("FullName", user.FullName);
             HttpContext.Session.SetString("UserRole", user.Role);
 
+            // 2. Thiết lập Claims và xác thực Cookie chính thống
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.FullName),
+                new Claim(ClaimTypes.Role, user.Role),
+                new Claim("Username", user.Username)
+            };
+
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var authProperties = new AuthenticationProperties
+            {
+                IsPersistent = true,
+                ExpiresUtc = DateTimeOffset.UtcNow.AddHours(8)
+            };
+
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(claimsIdentity),
+                authProperties);
+
+            // 3. Cookie backup hỗ trợ hiển thị giao diện
+            Response.Cookies.Append("UserRole", user.Role, new CookieOptions { Expires = DateTimeOffset.UtcNow.AddHours(8) });
+            Response.Cookies.Append("FullName", user.FullName, new CookieOptions { Expires = DateTimeOffset.UtcNow.AddHours(8) });
+
+            TempData["SuccessMessage"] = $"Chào mừng {user.FullName} đã đăng nhập thành công!";
+
+            // 4. Điều hướng theo phân quyền
+            if (user.Role == "Staff")
+            {
+                return RedirectToAction("Index", "Reception");
+            }
+            if (user.Role == "Admin")
+            {
+                return RedirectToAction("Index", "Report");
+            }
+
             return RedirectToAction("Index", "Home");
         }
 
+        [HttpGet]
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult DangXuat()
+        public async Task<IActionResult> DangXuat()
         {
             HttpContext.Session.Clear();
-            return RedirectToAction(nameof(DangNhap));
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            Response.Cookies.Delete("UserRole");
+            Response.Cookies.Delete("FullName");
+            TempData["SuccessMessage"] = "Bạn đã đăng xuất khỏi hệ thống an toàn.";
+            return RedirectToAction("Index", "Home");
         }
 
         [HttpGet]

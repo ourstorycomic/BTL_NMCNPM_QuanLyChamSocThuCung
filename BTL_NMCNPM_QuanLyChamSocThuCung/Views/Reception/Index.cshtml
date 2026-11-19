@@ -1,4 +1,4 @@
-﻿@model BTL_NMCNPM_QuanLyChamSocThuCung.ViewModels.ReceptionIndexViewModel
+@model BTL_NMCNPM_QuanLyChamSocThuCung.ViewModels.ReceptionIndexViewModel
 @{
     ViewData["Title"] = "Tiếp nhận thú cưng tại quầy";
     var waitingCount = Model.Appointments.Count(a => a.Status == "Confirmed");
