@@ -77,7 +77,7 @@
                     </div>
                     <div>
                         <div class="text-uppercase text-muted fw-bold" style="font-size: 0.68rem; letter-spacing: 0.05em;">Thời gian</div>
-                        <div class="fw-bold text-dark lh-sm">@Model.AppointmentDate.ToString("HH:mm") – @Model.AppointmentDate.AddMinutes(85).ToString("HH:mm")</div>
+                        <div class="fw-bold text-dark lh-sm">@Model.AppointmentDate.ToString("HH:mm")@(Model.EndTime.HasValue ? $" – {Model.EndTime.Value:HH:mm}" : "")</div>
                         <div class="text-muted small">Lịch hẹn @apptCode</div>
                     </div>
                 </div>
@@ -86,12 +86,13 @@
             <!-- Box 4: Kỹ thuật viên -->
             <div class="col-12 col-sm-6 col-lg-3">
                 <div class="info-box-item">
-                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80" 
-                         alt="KTV" class="info-box-avatar border" />
+                    <span class="rounded-circle bg-primary bg-opacity-10 text-primary p-2 d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 40px; height: 40px;">
+                        <i class="bi bi-person-badge fs-5"></i>
+                    </span>
                     <div>
                         <div class="text-uppercase text-muted fw-bold" style="font-size: 0.68rem; letter-spacing: 0.05em;">Kỹ thuật viên</div>
                         <div class="fw-bold text-dark lh-sm">@Model.TechnicianName</div>
-                        <div class="text-muted small">Groomer · Bậc 2</div>
+                        <div class="text-muted small">Nhân viên phụ trách ca</div>
                     </div>
                 </div>
             </div>
@@ -100,9 +101,9 @@
 
     <!-- Alert Note KTV -->
     <div class="ktv-note-alert mb-4 d-flex align-items-center gap-2">
-        <i class="bi bi-exclamation-triangle-fill text-warning fs-5 flex-shrink-0"></i>
+        <i class="bi bi-info-circle-fill text-warning fs-5 flex-shrink-0"></i>
         <div>
-            <strong>Ghi chú KTV:</strong> @(string.IsNullOrWhiteSpace(Model.TechnicianNote) ? "Mochi vượt mức cân gói tiêu chuẩn (< 5 kg). Bé hơi cáu khi cắt móng." : Model.TechnicianNote)
+            <strong>Ghi chú tiếp nhận / KTV:</strong> @(string.IsNullOrWhiteSpace(Model.TechnicianNote) ? "Không có ghi chú bất thường từ kỹ thuật viên." : Model.TechnicianNote)
         </div>
     </div>
 

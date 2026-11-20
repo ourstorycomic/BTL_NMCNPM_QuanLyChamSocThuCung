@@ -1,3 +1,4 @@
+@model BTL_NMCNPM_QuanLyChamSocThuCung.ViewModels.HomeIndexViewModel
 @{
     ViewData["Title"] = "PawHaven - Hệ thống Quản lý Chăm sóc Thú cưng Tiêu chuẩn 5 Sao";
 }
@@ -43,7 +44,7 @@
                 </div>
             </div>
 
-            <!-- Cột minh họa thú cưng PawHaven (Khớp ảnh Image 1) -->
+            <!-- Cột minh họa thú cưng PawHaven -->
             <div class="col-lg-5">
                 <div class="hero-visual-card">
                     <!-- Bubble 1: Số lượng chăm sóc -->
@@ -52,7 +53,7 @@
                             <i class="bi bi-heart-pulse-fill"></i>
                         </span>
                         <div>
-                            <div class="fw-bold fs-6 text-dark lh-sm">12.500+</div>
+                            <div class="fw-bold fs-6 text-dark lh-sm">@(Model?.TotalPetsServed > 0 ? $"{Model.TotalPetsServed:N0}+" : "500+")</div>
                             <small class="text-muted" style="font-size: 0.72rem;">Bé cưng được chăm sóc</small>
                         </div>
                     </div>
@@ -69,9 +70,9 @@
                                 <i class="bi bi-star-fill"></i>
                                 <i class="bi bi-star-fill"></i>
                                 <i class="bi bi-star-fill"></i>
-                                <strong class="text-dark ms-1">4.9</strong>
+                                <strong class="text-dark ms-1">5.0</strong>
                             </div>
-                            <small class="text-muted" style="font-size: 0.72rem;">từ 3.200 khách hàng thân thiết</small>
+                            <small class="text-muted" style="font-size: 0.72rem;">từ @(Model?.TotalCustomers > 0 ? Model.TotalCustomers.ToString("N0") : "300+") khách hàng thân thiết</small>
                         </div>
                     </div>
                 </div>
@@ -84,7 +85,7 @@
         <div class="row g-3">
             <div class="col-6 col-md-3">
                 <div class="kpi-banner-item">
-                    <div class="kpi-num">12.500+</div>
+                    <div class="kpi-num">@(Model?.TotalPetsServed > 0 ? $"{Model.TotalPetsServed:N0}+" : "500+")</div>
                     <div class="text-dark fw-bold small mt-1">Lượt chăm sóc bé</div>
                     <small class="text-muted" style="font-size: 0.75rem;">An toàn & khỏe mạnh</small>
                 </div>
@@ -98,9 +99,9 @@
             </div>
             <div class="col-6 col-md-3">
                 <div class="kpi-banner-item">
-                    <div class="kpi-num">15 phút</div>
-                    <div class="text-dark fw-bold small mt-1">Xác nhận lịch hẹn</div>
-                    <small class="text-muted" style="font-size: 0.75rem;">Nhanh chóng qua tin nhắn</small>
+                    <div class="kpi-num">@(Model?.TotalServices > 0 ? Model.TotalServices.ToString() : "10+")</div>
+                    <div class="text-dark fw-bold small mt-1">Dịch vụ chuyên nghiệp</div>
+                    <small class="text-muted" style="font-size: 0.75rem;">Đa dạng cho chó & mèo</small>
                 </div>
             </div>
             <div class="col-6 col-md-3">
@@ -122,131 +123,82 @@
         </div>
 
         <div class="row g-4">
-            <!-- 1. Tắm vệ sinh -->
-            <div class="col-md-6 col-lg-4">
-                <div class="home-service-card">
-                    <div>
-                        <div class="service-icon-box bg-primary-subtle text-primary mb-3">
-                            <i class="bi bi-droplet-fill"></i>
-                        </div>
-                        <h5 class="fw-bold text-dark mb-2">Tắm Vệ Sinh Chuyên Sâu</h5>
-                        <p class="text-muted small mb-3">Sử dụng sữa tắm hữu cơ không Sulfate, êm dịu cho da mẫn cảm. Bao gồm vắt tuyến hôi, sấy chải bông xốp.</p>
-                        <div class="small text-muted mb-2"><i class="bi bi-clock me-1"></i>Thời gian: <strong>45 - 60 phút</strong></div>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center pt-3 border-top mt-3">
-                        <div>
-                            <small class="text-muted d-block" style="font-size: 0.72rem;">Giá chỉ từ</small>
-                            <span class="fw-bold text-success fs-5">150.000 đ</span>
-                        </div>
-                        <a asp-controller="Appointment" asp-action="Create" class="btn btn-sm btn-paw-outline">Đặt lịch</a>
-                    </div>
-                </div>
-            </div>
+            @if (Model != null && Model.FeaturedServices != null && Model.FeaturedServices.Any())
+            {
+                foreach (var svc in Model.FeaturedServices)
+                {
+                    string iconName = "bi-stars";
+                    string iconStyle = "bg-primary-subtle text-primary";
 
-            <!-- 2. Cắt tỉa lông -->
-            <div class="col-md-6 col-lg-4">
-                <div class="home-service-card">
-                    <div>
-                        <div class="service-icon-box bg-warning-subtle text-warning-emphasis mb-3">
-                            <i class="bi bi-scissors"></i>
-                        </div>
-                        <h5 class="fw-bold text-dark mb-2">Cắt Tỉa & Tạo Kiểu Nghệ Thuật</h5>
-                        <p class="text-muted small mb-3">Tạo kiểu Teddy bear, cạo vệ sinh 4 bàn chân, vùng bụng và tạo hình theo form chuẩn giống thú cưng.</p>
-                        <div class="small text-muted mb-2"><i class="bi bi-clock me-1"></i>Thời gian: <strong>60 - 90 phút</strong></div>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center pt-3 border-top mt-3">
-                        <div>
-                            <small class="text-muted d-block" style="font-size: 0.72rem;">Giá chỉ từ</small>
-                            <span class="fw-bold text-success fs-5">250.000 đ</span>
-                        </div>
-                        <a asp-controller="Appointment" asp-action="Create" class="btn btn-sm btn-paw-outline">Đặt lịch</a>
-                    </div>
-                </div>
-            </div>
+                    var cat = svc.Category?.ToLower() ?? "";
+                    var sName = svc.ServiceName?.ToLower() ?? "";
 
-            <!-- 3. Khách sạn thú cưng -->
-            <div class="col-md-6 col-lg-4">
-                <div class="home-service-card">
-                    <div>
-                        <div class="service-icon-box bg-success-subtle text-success mb-3">
-                            <i class="bi bi-houses-fill"></i>
-                        </div>
-                        <h5 class="fw-bold text-dark mb-2">Khách Sạn Lưu Trú 5 Sao</h5>
-                        <p class="text-muted small mb-3">Phòng riêng máy lạnh 24/24, trang bị camera giám sát xem qua app điện thoại, chế độ ăn theo khẩu phần riêng.</p>
-                        <div class="small text-muted mb-2"><i class="bi bi-shield-check me-1"></i>Camera 24/7 & Sân chơi riêng</div>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center pt-3 border-top mt-3">
-                        <div>
-                            <small class="text-muted d-block" style="font-size: 0.72rem;">Giá chỉ từ</small>
-                            <span class="fw-bold text-success fs-5">200.000 đ <small class="text-muted fs-6 fw-normal">/ ngày</small></span>
-                        </div>
-                        <a asp-controller="Appointment" asp-action="Create" class="btn btn-sm btn-paw-outline">Đặt lịch</a>
-                    </div>
-                </div>
-            </div>
+                    if (cat.Contains("tắm") || sName.Contains("tắm"))
+                    {
+                        iconName = "bi-droplet-fill";
+                        iconStyle = "bg-primary-subtle text-primary";
+                    }
+                    else if (cat.Contains("cắt") || sName.Contains("cắt") || sName.Contains("tỉa"))
+                    {
+                        iconName = "bi-scissors";
+                        iconStyle = "bg-warning-subtle text-warning-emphasis";
+                    }
+                    else if (cat.Contains("lưu trú") || cat.Contains("khách sạn") || sName.Contains("khách sạn"))
+                    {
+                        iconName = "bi-houses-fill";
+                        iconStyle = "bg-success-subtle text-success";
+                    }
+                    else if (cat.Contains("móng") || sName.Contains("móng") || sName.Contains("tai"))
+                    {
+                        iconName = "bi-clipboard2-pulse-fill";
+                        iconStyle = "bg-info-subtle text-info-emphasis";
+                    }
+                    else if (cat.Contains("y tế") || cat.Contains("khám") || sName.Contains("khám") || sName.Contains("tiêm"))
+                    {
+                        iconName = "bi-heart-pulse-fill";
+                        iconStyle = "bg-danger-subtle text-danger";
+                    }
+                    else if (cat.Contains("spa") || sName.Contains("spa") || sName.Contains("massage"))
+                    {
+                        iconName = "bi-flower1";
+                        iconStyle = "bg-secondary-subtle text-secondary-emphasis";
+                    }
 
-            <!-- 4. Vệ sinh tai & Cắt móng -->
-            <div class="col-md-6 col-lg-4">
-                <div class="home-service-card">
-                    <div>
-                        <div class="service-icon-box bg-info-subtle text-info-emphasis mb-3">
-                            <i class="bi bi-clipboard2-pulse-fill"></i>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="home-service-card h-100 d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="service-icon-box @iconStyle mb-3">
+                                    <i class="bi @iconName"></i>
+                                </div>
+                                <h5 class="fw-bold text-dark mb-2">@svc.ServiceName</h5>
+                                <p class="text-muted small mb-3">@(string.IsNullOrWhiteSpace(svc.Description) ? "Dịch vụ chăm sóc chuyên nghiệp theo tiêu chuẩn 5 sao của PawHaven." : svc.Description)</p>
+                                <div class="small text-muted mb-2">
+                                    <i class="bi bi-clock me-1"></i>Thời gian: <strong>@(svc.DurationMinutes >= 60 ? $"{svc.DurationMinutes / 60}h{(svc.DurationMinutes % 60 > 0 ? $"{svc.DurationMinutes % 60}p" : "")}" : $"{svc.DurationMinutes} phút")</strong>
+                                    @if (!string.IsNullOrEmpty(svc.Category))
+                                    {
+                                        <span class="ms-2 badge bg-light text-muted border">@svc.Category</span>
+                                    }
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center pt-3 border-top mt-3">
+                                <div>
+                                    <small class="text-muted d-block" style="font-size: 0.72rem;">Giá niêm yết</small>
+                                    <span class="fw-bold text-success fs-5">@svc.BasePrice.ToString("N0") đ</span>
+                                </div>
+                                <a asp-controller="Appointment" asp-action="Create" asp-route-serviceId="@svc.ServiceId" class="btn btn-sm btn-paw-outline">
+                                    <i class="bi bi-calendar-plus me-1"></i>Đặt lịch
+                                </a>
+                            </div>
                         </div>
-                        <h5 class="fw-bold text-dark mb-2">Vệ Sinh Tai & Cắt Mài Móng</h5>
-                        <p class="text-muted small mb-3">Làm sạch sâu ráy tai bằng dung dịch sinh học, nhỏ dưỡng tai ngăn ngừa viêm nhiễm, mài móng bo tròn êm ái.</p>
-                        <div class="small text-muted mb-2"><i class="bi bi-clock me-1"></i>Thời gian: <strong>20 phút</strong></div>
                     </div>
-                    <div class="d-flex justify-content-between align-items-center pt-3 border-top mt-3">
-                        <div>
-                            <small class="text-muted d-block" style="font-size: 0.72rem;">Giá chỉ từ</small>
-                            <span class="fw-bold text-success fs-5">80.000 đ</span>
-                        </div>
-                        <a asp-controller="Appointment" asp-action="Create" class="btn btn-sm btn-paw-outline">Đặt lịch</a>
-                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-12 text-center text-muted py-4">
+                    Đang cập nhật bảng giá dịch vụ mới nhất từ hệ thống...
                 </div>
-            </div>
-
-            <!-- 5. Khám sức khỏe tổng quát -->
-            <div class="col-md-6 col-lg-4">
-                <div class="home-service-card">
-                    <div>
-                        <div class="service-icon-box bg-danger-subtle text-danger mb-3">
-                            <i class="bi bi-heart-pulse-fill"></i>
-                        </div>
-                        <h5 class="fw-bold text-dark mb-2">Khám Sức Khỏe & Tiêm Phòng</h5>
-                        <p class="text-muted small mb-3">Bác sĩ thú y trực tiếp thăm khám lâm sàng tim phổi, kiểm tra ký sinh trùng và tư vấn phác đồ tiêm ngừa chuẩn y khoa.</p>
-                        <div class="small text-muted mb-2"><i class="bi bi-person-badge me-1"></i>Bác sĩ thú y chuyên khoa</div>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center pt-3 border-top mt-3">
-                        <div>
-                            <small class="text-muted d-block" style="font-size: 0.72rem;">Giá chỉ từ</small>
-                            <span class="fw-bold text-success fs-5">200.000 đ</span>
-                        </div>
-                        <a asp-controller="Appointment" asp-action="Create" class="btn btn-sm btn-paw-outline">Đặt lịch</a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 6. Spa thư giãn thảo mộc -->
-            <div class="col-md-6 col-lg-4">
-                <div class="home-service-card">
-                    <div>
-                        <div class="service-icon-box bg-secondary-subtle text-secondary-emphasis mb-3">
-                            <i class="bi bi-flower1"></i>
-                        </div>
-                        <h5 class="fw-bold text-dark mb-2">Spa Thư Giãn Thảo Mộc</h5>
-                        <p class="text-muted small mb-3">Massage huyệt đạo giảm stress, ủ dưỡng phục hồi nang lông bằng tinh dầu thiên nhiên, giúp bộ lông bồng bềnh thơm lâu.</p>
-                        <div class="small text-muted mb-2"><i class="bi bi-clock me-1"></i>Thời gian: <strong>45 phút</strong></div>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center pt-3 border-top mt-3">
-                        <div>
-                            <small class="text-muted d-block" style="font-size: 0.72rem;">Giá chỉ từ</small>
-                            <span class="fw-bold text-success fs-5">350.000 đ</span>
-                        </div>
-                        <a asp-controller="Appointment" asp-action="Create" class="btn btn-sm btn-paw-outline">Đặt lịch</a>
-                    </div>
-                </div>
-            </div>
+            }
         </div>
     </section>
 

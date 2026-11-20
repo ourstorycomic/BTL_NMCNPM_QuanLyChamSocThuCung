@@ -134,9 +134,9 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
             var customer = pet.Customer;
             var ticket = appointment.ReceptionTicket;
             var invoice = appointment.Invoice;
-            var techStaff = ticket?.Staff?.FullName ?? "Trần Đức Huy";
+            var techStaff = ticket?.Staff?.FullName ?? "Nhân viên quầy";
             var techNote = ticket?.CareProgresses?.OrderByDescending(cp => cp.UpdatedAt).FirstOrDefault()?.StaffNotes
-                           ?? (string.IsNullOrWhiteSpace(appointment.Notes) ? "Mochi vượt mức cân gói tiêu chuẩn (< 5 kg). Bé hơi cáu khi cắt móng." : appointment.Notes);
+                           ?? (string.IsNullOrWhiteSpace(appointment.Notes) ? null : appointment.Notes);
 
             var services = new List<BillingServiceItemViewModel>();
             if (appointment.AppointmentServices != null && appointment.AppointmentServices.Any())
@@ -185,6 +185,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
                 ActualWeight = ticket?.ActualWeight ?? pet.Weight,
                 AllergyNote = pet.AllergyNote,
                 AppointmentDate = appointment.AppointmentDate,
+                EndTime = appointment.EndTime,
                 TechnicianName = techStaff,
                 TechnicianNote = techNote,
                 Services = services,

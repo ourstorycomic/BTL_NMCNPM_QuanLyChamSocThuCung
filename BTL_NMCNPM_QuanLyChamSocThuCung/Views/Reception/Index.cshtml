@@ -3,6 +3,13 @@
     ViewData["Title"] = "Tiếp nhận thú cưng tại quầy";
     var waitingCount = Model.Appointments.Count(a => a.Status == "Confirmed");
     var processingCount = Model.Appointments.Count(a => a.Status == "Processing");
+    var totalStaff = Model.StaffMembers.Count;
+    var busyStaffIds = Model.Appointments
+        .Where(a => a.Status == "Processing" && a.ReceptionTicket != null)
+        .Select(a => a.ReceptionTicket!.StaffId)
+        .Distinct()
+        .ToList();
+    var freeStaffCount = Math.Max(0, totalStaff - busyStaffIds.Count);
     var firstAppt = Model.Appointments.FirstOrDefault();
     var pet = firstAppt?.Pet;
     var customer = pet?.Customer;
@@ -31,19 +38,19 @@
         <div class="col-4 col-md-4">
             <div class="kpi-stat-card">
                 <small class="text-muted fw-semibold d-block mb-1" style="font-size: 0.78rem;">Đang chờ</small>
-                <div class="kpi-stat-val text-warning">@(waitingCount > 0 ? waitingCount : 6)</div>
+                <div class="kpi-stat-val text-warning">@waitingCount</div>
             </div>
         </div>
         <div class="col-4 col-md-4">
             <div class="kpi-stat-card">
                 <small class="text-muted fw-semibold d-block mb-1" style="font-size: 0.78rem;">Đã tiếp nhận</small>
-                <div class="kpi-stat-val text-primary">@(processingCount > 0 ? processingCount : 9)</div>
+                <div class="kpi-stat-val text-primary">@processingCount</div>
             </div>
         </div>
         <div class="col-4 col-md-4">
             <div class="kpi-stat-card">
                 <small class="text-muted fw-semibold d-block mb-1" style="font-size: 0.78rem;">KTV rảnh</small>
-                <div class="kpi-stat-val text-success">3/4</div>
+                <div class="kpi-stat-val text-success">@freeStaffCount/@(totalStaff > 0 ? totalStaff : 1)</div>
             </div>
         </div>
     </div>
@@ -101,12 +108,12 @@
 
                         <div class="col-12 col-sm-4">
                             <div class="d-flex align-items-start gap-2">
-                                <img src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=100&auto=format&fit=crop&q=80" 
+                                <img src="@(string.IsNullOrEmpty(pet.ImageUrl) ? "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=100&auto=format&fit=crop&q=80" : pet.ImageUrl)" 
                                      alt="Pet" class="rounded-3 border object-fit-cover" style="width: 36px; height: 36px;" />
                                 <div>
                                     <div class="text-muted text-uppercase fw-bold" style="font-size: 0.65rem;">Thú cưng</div>
                                     <div class="fw-bold text-dark lh-sm small" id="resPetName">@pet.PetName</div>
-                                    <div class="text-muted" style="font-size: 0.75rem;">@pet.Breed · 3 tuổi</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;">@pet.Breed · @(pet.BirthDate.HasValue ? $"{(DateTime.Today.Year - pet.BirthDate.Value.Year)} tuổi" : pet.Species)</div>
                                 </div>
                             </div>
                         </div>
@@ -119,7 +126,10 @@
                                 <div>
                                     <div class="text-muted text-uppercase fw-bold" style="font-size: 0.65rem;">Giờ hẹn</div>
                                     <div class="fw-bold text-dark lh-sm small" id="resApptTime">@firstAppt.AppointmentDate.ToString("HH:mm")</div>
-                                    <div class="text-muted" style="font-size: 0.75rem;">Dự kiến 80 phút</div>
+                                    @{
+                                        var apptMins = firstAppt.AppointmentServices?.Sum(s => s.Service?.DurationMinutes ?? 30) ?? 30;
+                                    }
+                                    <div class="text-muted" style="font-size: 0.75rem;">Dự kiến @apptMins phút</div>
                                 </div>
                             </div>
                         </div>
@@ -129,25 +139,32 @@
                     <div class="mb-2">
                         <div class="text-muted text-uppercase fw-bold mb-1" style="font-size: 0.65rem;">Dịch vụ đã đặt</div>
                         <div class="d-flex flex-wrap gap-1">
-                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-1">
-                                <i class="bi bi-check2 me-1"></i>Tắm vệ sinh
-                            </span>
-                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-1">
-                                <i class="bi bi-check2 me-1"></i>Vệ sinh tai & cắt móng
-                            </span>
+                            @if (firstAppt.AppointmentServices != null && firstAppt.AppointmentServices.Any())
+                            {
+                                foreach (var aps in firstAppt.AppointmentServices)
+                                {
+                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-1">
+                                        <i class="bi bi-check2 me-1"></i>@(aps.Service?.ServiceName ?? "Dịch vụ")
+                                    </span>
+                                }
+                            }
+                            else
+                            {
+                                <span class="text-muted small">Chưa chỉ định dịch vụ cụ thể</span>
+                            }
                         </div>
                     </div>
 
                     <!-- Tiền sử dị ứng (Alert vàng) -->
                     <div class="p-2 px-3 rounded-3 mb-2 small" style="background-color: #fffbeb; border: 1px solid #fef3c7; color: #b45309;">
                         <i class="bi bi-exclamation-triangle-fill text-warning me-1"></i>
-                        <strong>Tiền sử dị ứng:</strong> @(string.IsNullOrWhiteSpace(pet.AllergyNote) ? "Thành phần ngũ cốc, sữa tắm chứa Sulfate." : pet.AllergyNote)
+                        <strong>Tiền sử dị ứng:</strong> @(string.IsNullOrWhiteSpace(pet.AllergyNote) ? "Không có tiền sử dị ứng hoặc mẫn cảm đặc biệt." : pet.AllergyNote)
                     </div>
 
                     <!-- Ghi chú của khách (Alert xám nhẹ) -->
                     <div class="p-2 px-3 rounded-3 small" style="background-color: #f8fafc; border: 1px solid #e2e8f0; color: #475569;">
                         <i class="bi bi-chat-left-dots text-muted me-1"></i>
-                        <strong>Ghi chú của khách:</strong> @(string.IsNullOrWhiteSpace(firstAppt.Notes) ? "Bé hơi nhát người lạ, xin nhẹ nhàng khi cắt móng." : firstAppt.Notes)
+                        <strong>Ghi chú của khách:</strong> @(string.IsNullOrWhiteSpace(firstAppt.Notes) ? "Không có ghi chú thêm từ khách hàng." : firstAppt.Notes)
                     </div>
                 </div>
 
@@ -171,11 +188,11 @@
                             <div class="weight-stepper-box">
                                 <button type="button" class="weight-btn" onclick="adjustWeight(-0.1)">-</button>
                                 <input type="number" step="0.1" min="0.1" name="ActualWeight" id="inputWeight" 
-                                       class="weight-input" value="@(pet.Weight > 0 ? pet.Weight.ToString("0.0") : "5.6")" />
+                                       class="weight-input" value="@(pet.Weight > 0 ? pet.Weight.ToString("0.0") : "5.0")" />
                                 <span class="text-muted fw-bold pe-2">kg</span>
                                 <button type="button" class="weight-btn" onclick="adjustWeight(0.1)">+</button>
                             </div>
-                            <small class="text-muted mt-1 d-block" style="font-size: 0.75rem;">Lần trước: 4,2 kg</small>
+                            <small class="text-muted mt-1 d-block" style="font-size: 0.75rem;">Hồ sơ: @(pet.Weight > 0 ? pet.Weight.ToString("0.0") : "-") kg</small>
                         </div>
 
                         <!-- Phân công Kỹ thuật viên -->
@@ -189,14 +206,14 @@
                                     <option value="">Chọn kỹ thuật viên</option>
                                     @foreach (var staff in Model.StaffMembers)
                                     {
-                                        <option value="@staff.Id" selected="@(staff.FullName.Contains("Huy") || Model.StaffMembers.First().Id == staff.Id ? "selected" : null)">
-                                            @staff.FullName (@(staff.Role == "Staff" ? "Groomer" : staff.Role))
+                                        <option value="@staff.Id" selected="@(Model.StaffMembers.First().Id == staff.Id ? "selected" : null)">
+                                            @staff.FullName (@(staff.Role == "Staff" ? "Kỹ thuật viên" : staff.Role))
                                         </option>
                                     }
                                 </select>
                             </div>
                             <small class="text-primary mt-1 d-block" style="font-size: 0.75rem;">
-                                <i class="bi bi-info-circle me-1"></i>Gợi ý theo dịch vụ & lịch trống
+                                <i class="bi bi-info-circle me-1"></i>Chỉ định nhân viên chịu trách nhiệm ca chăm sóc
                             </small>
                         </div>
                     </div>
@@ -207,7 +224,7 @@
                         
                         <!-- Quick Tag Chips -->
                         <div class="d-flex flex-wrap gap-1 mb-2">
-                            <span class="health-tag-chip" onclick="toggleHealthTag(this, 'Khỏe mạnh, ăn uống bình thường')">Khỏe mạnh, ăn uống bình thường</span>
+                            <span class="health-tag-chip" onclick="toggleHealthTag(this, 'Khỏe mạnh, hoạt bát')">Khỏe mạnh, hoạt bát</span>
                             <span class="health-tag-chip" onclick="toggleHealthTag(this, 'Có ve / bọ chét')">Có ve / bọ chét</span>
                             <span class="health-tag-chip" onclick="toggleHealthTag(this, 'Lông rối nhiều')">Lông rối nhiều</span>
                             <span class="health-tag-chip" onclick="toggleHealthTag(this, 'Da mẩn đỏ')">Da mẩn đỏ</span>
@@ -215,7 +232,7 @@
                         </div>
 
                         <textarea name="InitialCondition" id="inputInitialCondition" class="form-control rounded-3" rows="3"
-                                  placeholder="Mô tả tình trạng da, lông, tai, mắt, hành vi... khi tiếp nhận">Khỏe mạnh, hoạt bát. Da sạch, lông hơi rối nhẹ phần đuôi.</textarea>
+                                  placeholder="Bấm chọn các gợi ý nhanh phía trên hoặc nhập ghi nhận tình trạng da, lông, tai, mắt... khi tiếp nhận"></textarea>
                     </div>
 
                     <!-- Action Buttons -->
@@ -271,8 +288,12 @@
                                     var apptCust = apptPet.Customer;
                                     var isCat = apptPet.Species.Contains("Mèo");
                                     var statusBadge = appt.Status == "Confirmed" 
-                                        ? (rowIdx <= 2 ? "<span class='badge bg-primary-subtle text-primary border border-primary-subtle'>Đã đến</span>" : "<span class='badge bg-light text-muted border'>Chưa đến</span>")
-                                        : "<span class='badge bg-warning-subtle text-warning border border-warning-subtle'>Đang làm</span>";
+                                        ? "<span class='badge bg-primary-subtle text-primary border border-primary-subtle'>Chờ tiếp nhận</span>"
+                                        : "<span class='badge bg-warning-subtle text-warning border border-warning-subtle'>Đang chăm sóc</span>";
+
+                                    var svcNames = (appt.AppointmentServices != null && appt.AppointmentServices.Any())
+                                        ? string.Join(", ", appt.AppointmentServices.Select(s => s.Service?.ServiceName ?? "Dịch vụ"))
+                                        : "Chưa chọn dịch vụ";
 
                                     <tr class="waiting-row-item @(rowIdx == 1 ? "selected" : "")" 
                                         onclick="selectAppointmentRow(this, '@appt.AppointmentId', '@apptCust.CustomerName', '@apptCust.PhoneNumber', '@apptPet.PetName', '@apptPet.Breed', '@appt.AppointmentDate.ToString("HH:mm")', '@(apptPet.Weight > 0 ? apptPet.Weight.ToString("0.0") : "5.0")')">
@@ -290,8 +311,8 @@
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="text-muted small text-truncate" style="max-width: 110px;">
-                                            Tắm vệ sinh, Cắt tỉa...
+                                        <td class="text-muted small text-truncate" style="max-width: 120px;" title="@svcNames">
+                                            @svcNames
                                         </td>
                                         <td class="text-end text-nowrap">
                                             @Html.Raw(statusBadge)

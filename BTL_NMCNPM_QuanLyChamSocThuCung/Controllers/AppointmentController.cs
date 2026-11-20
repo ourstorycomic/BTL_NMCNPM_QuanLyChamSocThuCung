@@ -110,7 +110,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
         // 2. FORM ĐẶT LỊCH
         // ==========================================
         [HttpGet]
-        public async Task<IActionResult> Create()
+        public async Task<IActionResult> Create(Guid? serviceId)
         {
             var now = DateTime.Now;
             // Nếu ngoài giờ hoạt động (sau 18:00), mặc định đặt cho ngày mai lúc 09:00
@@ -122,6 +122,11 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
                 AppointmentDate = defaultDate,
                 StartTime = defaultTime
             };
+
+            if (serviceId.HasValue)
+            {
+                model.ServiceIds = new List<Guid> { serviceId.Value };
+            }
 
             await PopulateOptionsAsync(model);
 

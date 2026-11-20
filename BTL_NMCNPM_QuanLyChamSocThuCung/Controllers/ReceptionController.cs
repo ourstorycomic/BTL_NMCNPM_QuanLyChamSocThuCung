@@ -28,6 +28,9 @@ public class ReceptionController : Controller
             .AsNoTracking()
             .Include(a => a.Pet)
                 .ThenInclude(p => p.Customer)
+            .Include(a => a.AppointmentServices)
+                .ThenInclude(s => s.Service)
+            .Include(a => a.ReceptionTicket)
             .Where(a => a.Status == "Confirmed" || a.Status == "Processing")
             .AsQueryable();
 
