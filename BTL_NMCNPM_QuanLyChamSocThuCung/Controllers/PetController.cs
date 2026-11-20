@@ -63,7 +63,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
         public async Task<IActionResult> Index(string? searchTerm)
         {
             var (role, customerId) = await GetCurrentContextAsync();
-            bool isStaff = role == "Staff";
+            bool isStaff = role == "Staff" || role == "Admin";
 
             ViewBag.ActiveRole = role;
             ViewBag.SearchTerm = searchTerm;
@@ -74,12 +74,12 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
         }
 
         // ==========================================
-        // 2. Chi tiết hồ sơ thú cưng (FR-09)
+        // 2. Chi tiết hồ sơ thú cưng
         // ==========================================
         public async Task<IActionResult> Details(Guid id)
         {
             var (role, customerId) = await GetCurrentContextAsync();
-            bool isStaff = role == "Staff";
+            bool isStaff = role == "Staff" || role == "Admin";
 
             ViewBag.ActiveRole = role;
             ViewBag.IsStaff = isStaff;
@@ -100,7 +100,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
         public async Task<IActionResult> Create()
         {
             var (role, customerId) = await GetCurrentContextAsync();
-            bool isStaff = role == "Staff";
+            bool isStaff = role == "Staff" || role == "Admin";
 
             ViewBag.ActiveRole = role;
             ViewBag.IsStaff = isStaff;
@@ -125,7 +125,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
         public async Task<IActionResult> Create(PetCreateViewModel model)
         {
             var (role, customerId) = await GetCurrentContextAsync();
-            bool isStaff = role == "Staff";
+            bool isStaff = role == "Staff" || role == "Admin";
 
             ViewBag.ActiveRole = role;
             ViewBag.IsStaff = isStaff;
@@ -162,7 +162,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
         public async Task<IActionResult> Edit(Guid id)
         {
             var (role, customerId) = await GetCurrentContextAsync();
-            bool isStaff = role == "Staff";
+            bool isStaff = role == "Staff" || role == "Admin";
 
             ViewBag.ActiveRole = role;
             ViewBag.IsStaff = isStaff;
@@ -182,7 +182,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
         public async Task<IActionResult> Edit(PetEditViewModel model)
         {
             var (role, customerId) = await GetCurrentContextAsync();
-            bool isStaff = role == "Staff";
+            bool isStaff = role == "Staff" || role == "Admin";
 
             ViewBag.ActiveRole = role;
             ViewBag.IsStaff = isStaff;
@@ -211,7 +211,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
         public async Task<IActionResult> Delete(Guid id)
         {
             var (role, customerId) = await GetCurrentContextAsync();
-            bool isStaff = role == "Staff";
+            bool isStaff = role == "Staff" || role == "Admin";
 
             var (success, errorMessage) = await _petService.DeletePetAsync(id, customerId, isStaff);
             if (!success)
@@ -234,7 +234,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
         public async Task<IActionResult> AddVaccination(VaccinationCreateViewModel model)
         {
             var (role, customerId) = await GetCurrentContextAsync();
-            bool isStaff = role == "Staff";
+            bool isStaff = role == "Staff" || role == "Admin";
 
             if (!ModelState.IsValid)
             {

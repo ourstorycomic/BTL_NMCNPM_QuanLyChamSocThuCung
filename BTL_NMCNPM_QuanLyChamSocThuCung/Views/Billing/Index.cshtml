@@ -117,6 +117,22 @@
                             <td>
                                 <strong>@appt.AppointmentDate.ToString("HH:mm")</strong>
                                 <div class="text-muted small">@appt.AppointmentDate.ToString("dd/MM/yyyy")</div>
+                                @if (appt.Status == "Confirmed")
+                                {
+                                    <span class="badge bg-info-subtle text-info border border-info-subtle small mt-1" style="font-size: 0.7rem;">Đã xác nhận</span>
+                                }
+                                else if (appt.Status == "Processing")
+                                {
+                                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle small mt-1" style="font-size: 0.7rem;">Đang chăm sóc</span>
+                                }
+                                else if (appt.Status == "Completed")
+                                {
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle small mt-1" style="font-size: 0.7rem;">Đã hoàn thành</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary-subtle text-secondary small mt-1" style="font-size: 0.7rem;">Chờ tiếp nhận</span>
+                                }
                             </td>
                             <td>
                                 <div class="fw-bold text-dark">@appt.Pet.Customer.CustomerName</div>
@@ -126,7 +142,14 @@
                                 <span class="badge bg-light text-dark border">
                                     <i class="bi bi-paw me-1 text-success"></i>@appt.Pet.PetName
                                 </span>
-                                <small class="text-muted d-block">@(appt.ReceptionTicket?.ActualWeight ?? appt.Pet.Weight) kg</small>
+                                @if (!string.IsNullOrEmpty(appt.Pet.Breed))
+                                {
+                                    <small class="text-muted d-block">@appt.Pet.Breed · @(appt.ReceptionTicket?.ActualWeight ?? appt.Pet.Weight) kg</small>
+                                }
+                                else
+                                {
+                                    <small class="text-muted d-block">@(appt.ReceptionTicket?.ActualWeight ?? appt.Pet.Weight) kg</small>
+                                }
                             </td>
                             <td>
                                 @if (appt.AppointmentServices != null && appt.AppointmentServices.Any())

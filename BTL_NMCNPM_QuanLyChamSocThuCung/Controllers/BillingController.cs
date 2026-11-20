@@ -42,7 +42,7 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
             var todayRevenue = todayPaidInvoices.Sum(i => i.TotalAmount);
             var todayPaidCount = todayPaidInvoices.Count;
 
-            // 1.2. Danh sách các cuộc hẹn chưa thanh toán xong (Processing hoặc Completed nhưng chưa có hóa đơn Paid)
+            // 1.2. Danh sách các cuộc hẹn chưa thanh toán xong (Tất cả lịch hẹn chưa bị hủy và chưa thanh toán Paid)
             var pendingApptQuery = _db.Appointments
                 .AsNoTracking()
                 .Include(a => a.Pet)
@@ -51,9 +51,10 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
                     .ThenInclude(s => s.Service)
                 .Include(a => a.Invoice)
                 .Include(a => a.ReceptionTicket)
-                .Where(a => (a.Status == "Processing" || a.Status == "Completed") &&
+                .Where(a => a.Status != "Cancelled" &&
                             (a.Invoice == null || a.Invoice.PaymentStatus != "Paid"))
-                .OrderBy(a => a.AppointmentDate);
+                .OrderBy(a => a.AppointmentDate)
+                .AsQueryable();
 
             // 1.3. Danh sách hóa đơn
             var invoiceQuery = _db.Invoices
@@ -69,8 +70,15 @@ namespace BTL_NMCNPM_QuanLyChamSocThuCung.Controllers
             if (!string.IsNullOrWhiteSpace(keyword))
             {
                 var key = keyword.Trim();
+                pendingApptQuery = pendingApptQuery.Where(a =>
+                    a.Pet.PetName.Contains(key) ||
+                    (a.Pet.Breed != null && a.Pet.Breed.Contains(key)) ||
+                    a.Pet.Customer.CustomerName.Contains(key) ||
+                    a.Pet.Customer.PhoneNumber.Contains(key));
+
                 invoiceQuery = invoiceQuery.Where(i =>
                     i.Appointment.Pet.PetName.Contains(key) ||
+                    (i.Appointment.Pet.Breed != null && i.Appointment.Pet.Breed.Contains(key)) ||
                     i.Appointment.Pet.Customer.CustomerName.Contains(key) ||
                     i.Appointment.Pet.Customer.PhoneNumber.Contains(key) ||
                     i.InvoiceId.ToString().Contains(key));
